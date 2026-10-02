@@ -866,7 +866,8 @@ async function submitForm(form,type,F){
     if(!j.ok)throw new Error(j.error||"error");
     finish();
   }catch(e){
-    err.textContent=tr(MSG.fail);btn.disabled=false;lbl.textContent=tr(F.send);
+    console.error("[zaya-form]",e);
+    err.textContent=tr(MSG.fail)+" ["+String(e&&e.message||e).slice(0,80)+"]";btn.disabled=false;lbl.textContent=tr(F.send);
   }
 }
 document.addEventListener("click",e=>{
