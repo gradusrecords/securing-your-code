@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ZAYA</title>
+<meta name="description" content="ZAYA — Ташкент. Бизнес-консалтинг под ключ и модельное агентство. Твоя высота начинается здесь.">
+<meta name="theme-color" content="#050505">
+<link rel="icon" href="monogram.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --black:#050505;
+  --gold:#DBB577;
+  --gold-dim:#9C8157;
+  --green:#0B2F23;
+  --green-2:#0E3829;
+  --cream:#EEE7DA;
+  --mute:#8E887D;
+  --sage:#A7B3A9;
+  /* adaptive tokens: dark by default, flipped inside .paper */
+  --ink:var(--cream);
+  --soft:#A39D90;
+  --acc:var(--gold);
+  --dim:var(--gold-dim);
+  --line:rgba(219,181,119,.2);
+  --serif:"Cormorant Garamond","Cormorant",Garamond,"Times New Roman",serif;
+  --sans:"Jost","Futura","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --gutter:clamp(18px,4vw,64px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--black);color:var(--ink);font-family:var(--sans);font-weight:300;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.intro-on{overflow:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+::selection{background:var(--gold);color:var(--black)}
+:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+.wrap{max-width:1440px;margin-inline:auto;padding-inline:var(--gutter)}
+.cap{font-family:var(--sans);font-weight:400;font-size:11px;letter-spacing:.3em;text-transform:uppercase}
+.ul{background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size .6s var(--ease);padding-bottom:3px}
+.ul:hover,.ul:focus-visible,.ul[aria-current="page"]{background-size:100% 1px}
+
+/* ---------- painted background (WebGL) ---------- */
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block}
+body.nogl{background:radial-gradient(120% 90% at 50% 100%,#0E3829,#071a13 55%,#050505)}
+
+/* paper: warm travertine sections */
+.paper{
+  --ink:#17140F;--soft:#6D6558;--acc:#8F6D35;--dim:#8A7550;--line:rgba(23,20,15,.16);
+  color:var(--ink);color-scheme:light;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(120% 80% at 50% 0%,#F4EEE2,#E9E1D0 70%,#E2D9C5);
+}
+
+/* ---------- INTRO ---------- */
+.intro{position:fixed;inset:0;z-index:200;overflow:hidden;cursor:pointer}
+.intro .pn{position:absolute;top:0;bottom:0;width:50.1%;background:#050505;transition:transform 1.5s cubic-bezier(.77,0,.18,1);will-change:transform}
+.intro .pn.l{left:0;box-shadow:1px 0 0 rgba(219,181,119,.35)}
+.intro .pn.r{right:0;box-shadow:-1px 0 0 rgba(219,181,119,.35)}
+.intro .pn::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 100% 50%,rgba(14,56,41,.55),transparent 70%)}
+.intro .pn.r::before{background:radial-gradient(70% 60% at 0% 50%,rgba(14,56,41,.55),transparent 70%)}
+.intro.open .pn.l{transform:translateX(-101%)}
+.intro.open .pn.r{transform:translateX(101%)}
+.intro .stage{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:clamp(18px,3vh,30px);perspective:1100px;transition:opacity 1s var(--ease),transform 1.6s var(--ease)}
+.intro.open .stage{opacity:0;transform:scale(1.35)}
+.intro .vline{position:absolute;left:50%;top:0;width:1px;height:100%;background:linear-gradient(transparent,var(--gold) 40%,var(--gold) 60%,transparent);transform:scaleY(0);transform-origin:center;animation:vline 1.6s .1s var(--ease) forwards}
+@keyframes vline{0%{transform:scaleY(0);opacity:1}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:.0}}
+.intro .m-rot{position:relative;width:clamp(120px,18vw,190px);aspect-ratio:360/339;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.intro .m-in{position:absolute;inset:0;transform-style:preserve-3d;animation:monoIn 2.4s .5s var(--ease) both}
+@keyframes monoIn{0%{opacity:0;transform:rotateY(-200deg) scale(.5)}35%{opacity:1}100%{opacity:1;transform:rotateY(0) scale(1)}}
+.intro .word{font-family:var(--serif);font-weight:300;font-size:clamp(20px,2.4vw,30px);letter-spacing:.9em;margin-right:-.9em;color:var(--gold);animation:wordIn 2.4s 1.5s var(--ease) both}
+@keyframes wordIn{from{opacity:0;letter-spacing:1.6em;filter:blur(8px)}to{opacity:1;letter-spacing:.9em;filter:blur(0)}}
+.intro .sl{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(16px,1.6vw,21px);color:var(--cream);opacity:.0;animation:fadeSimple 1.8s 2.2s var(--ease) forwards}
+@keyframes fadeSimple{to{opacity:.8}}
+.intro .skip{position:absolute;right:var(--gutter);bottom:calc(28px + env(safe-area-inset-bottom,0px));all:unset;cursor:pointer;color:var(--gold-dim);position:absolute;right:var(--gutter);bottom:28px;z-index:3;transition:color .3s;font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+.intro .skip:hover{color:var(--gold)}
+
+/* ---------- 3D layer stack (extruded logos) ---------- */
+.stack{transform-style:preserve-3d}
+.stack img{position:absolute;inset:0;width:100%;height:100%;max-width:none;-webkit-user-drag:none;user-select:none}
+
+/* ---------- NAV ---------- */
+.nav{position:fixed;inset:0 0 auto;z-index:60;padding-top:env(safe-area-inset-top,0px);transition:background .6s var(--ease),border-color .6s var(--ease);border-bottom:1px solid transparent}
+.nav.solid{background:rgba(5,5,5,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-color:rgba(219,181,119,.2)}
+.nav .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:78px}
+.nav-l{display:flex;gap:32px;justify-self:start}
+.brand img{height:40px;width:auto;transition:transform .6s var(--ease)}
+.brand:hover img{transform:scale(1.06)}
+.nav-r{justify-self:end;display:flex;align-items:center;gap:32px}
+.lang{display:flex;gap:14px}
+.lang button{all:unset;cursor:pointer;color:#8E887D;transition:color .3s}
+.lang button[aria-pressed="true"]{color:var(--gold)}
+.lang button:focus-visible{outline:1px solid var(--gold)}
+.nav,.nav a{color:var(--cream)}
+@media (max-width:760px){.nav-l,.nav-r .contact-link{display:none}.nav .wrap{grid-template-columns:auto 1fr}.brand img{height:34px}}
+
+/* ---------- CURTAIN (between pages) ---------- */
+.curtain{position:fixed;inset:0;z-index:80;background:var(--green);transform:scaleY(0);transform-origin:bottom;pointer-events:none;display:grid;place-items:center}
+.curtain img{width:90px;opacity:0;transition:opacity .4s}
+.curtain.in{animation:cIn .7s var(--ease) forwards}
+.curtain.in img{opacity:1}
+.curtain.out{animation:cOut .8s var(--ease) forwards;transform-origin:top}
+@keyframes cIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes cOut{from{transform:scaleY(1)}to{transform:scaleY(0)}}
+
+/* ---------- HOME ---------- */
+.home{position:relative;min-height:100svh;display:grid;place-items:center;padding-block:110px 60px}
+.home-in{position:relative;z-index:2;width:100%;display:grid;justify-items:center;text-align:center;gap:clamp(20px,2.6vw,32px)}
+.home-in>*{animation-play-state:paused}
+body.ready .home-in>*{animation-play-state:running}
+.logo3d{margin:0;perspective:1200px;width:min(560px,74vw);aspect-ratio:1200/405;position:relative;animation:unveil 2.6s var(--ease) both}
+.logo3d .rot{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.logo3d::after{content:"";position:absolute;left:12%;right:12%;bottom:-34px;height:26px;background:radial-gradient(closest-side,rgba(0,0,0,.65),transparent);filter:blur(6px);transform:translateX(calc(var(--ry,0deg)*-1.2)) scaleX(calc(1 - var(--ay,0)*.15))}
+@keyframes unveil{from{opacity:0;transform:scale(.9) translateY(10px);filter:blur(12px)}to{opacity:1;transform:none;filter:blur(0)}}
+.slogan{margin:0;font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(24px,2.8vw,38px);animation:fade 2s .6s var(--ease) both;text-shadow:0 2px 24px rgba(0,0,0,.5)}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}}
+.choose{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,3vw,44px);width:min(960px,100%);margin-top:clamp(22px,4vw,48px);perspective:1500px;animation:fade 2s 1s var(--ease) both}
+.where{color:var(--gold);animation:fade 2s 1.4s var(--ease) both;opacity:.8}
+
+/* 3D slab: element with extruded edge layers (.ext) behind a clipped .front */
+.slab{position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(var(--lift,0px));transition:transform .7s var(--ease);will-change:transform}
+.slab .ext{position:absolute;inset:0;border-radius:inherit;pointer-events:none;transform:translateZ(calc(var(--z)*-2px));background:linear-gradient(100deg,#5c4527,#c9a266 45%,#6b5231);opacity:.9}
+.slab .sh{position:absolute;inset:6% 4% -4%;border-radius:inherit;background:#000;filter:blur(28px);opacity:.55;transform:translateZ(-60px)}
+.slab .front{position:relative;border-radius:inherit;overflow:hidden;isolation:isolate}
+.slab .glare{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;background:radial-gradient(420px 320px at var(--mx,50%) var(--my,0%),rgba(255,236,196,.22),transparent 60%);opacity:0;transition:opacity .6s var(--ease)}
+.slab:hover .glare{opacity:1}
+
+.door{display:block;border-radius:clamp(120px,22vw,230px) clamp(120px,22vw,230px) 4px 4px}
+.door .front{display:grid;gap:12px;justify-items:center;text-align:center;align-content:end;min-height:clamp(300px,34vw,400px);padding:clamp(28px,3.4vw,48px) clamp(22px,3vw,44px) clamp(30px,3.4vw,44px);border:1px solid rgba(219,181,119,.4);background:linear-gradient(180deg,rgba(5,5,5,.5),rgba(5,16,12,.78));backdrop-filter:blur(8px) saturate(1.2);-webkit-backdrop-filter:blur(8px) saturate(1.2)}
+.door .front::before{content:"";position:absolute;inset:0;z-index:-1;transform:scaleY(0);transform-origin:bottom;transition:transform .9s var(--ease)}
+.door.biz .front::before{background:linear-gradient(180deg,#0E3829,#0B2F23)}
+.door.mod .front::before{background:linear-gradient(180deg,#E4C58E,#DBB577)}
+.door:hover .front::before,.door:focus-visible .front::before{transform:scaleY(1)}
+.door{--lift:0px}
+.door:hover,.door:focus-visible{--lift:26px}
+.door .cap{color:var(--gold);transition:color .6s var(--ease)}
+.door h2{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(34px,3.8vw,54px);line-height:1;transition:color .6s var(--ease)}
+.door p{margin:0;max-width:26ch;color:#B3AC9E;font-size:15px;transition:color .6s var(--ease)}
+.door .arr{font-size:22px;color:var(--gold);transition:transform .6s var(--ease),color .6s;margin-top:6px}
+.door:hover .arr{transform:translateX(6px)}
+.door.mod:hover h2,.door.mod:hover .cap,.door.mod:hover p,.door.mod:hover .arr{color:#0a0a09}
+.door.biz:hover p{color:var(--sage)}
+@media (max-width:700px){.choose{grid-template-columns:1fr;max-width:420px}.door{border-radius:140px 140px 4px 4px}.door .front{min-height:260px}}
+
+/* ---------- PAGE HERO ---------- */
+.phero{padding-block:clamp(150px,18vw,230px) clamp(90px,11vw,150px);text-align:center;position:relative}
+.phero .cap{color:var(--gold);display:inline-flex;gap:14px;align-items:center}
+.phero .cap::before,.phero .cap::after{content:"";width:34px;height:1px;background:var(--gold);opacity:.6}
+.phero h1{margin:28px auto 0;font-family:var(--serif);font-weight:300;font-size:clamp(52px,9vw,138px);line-height:.98;max-width:14ch;text-wrap:balance;animation:fade 1.6s var(--ease) both;text-shadow:0 2px 40px rgba(0,0,0,.45)}
+.phero h1 em{font-style:italic;color:var(--gold)}
+.phero p{margin:32px auto 0;max-width:52ch;font-size:clamp(16px,1.4vw,19px);color:#C3CCC4;animation:fade 1.6s .2s var(--ease) both}
+.phero .acts{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:46px;animation:fade 1.6s .35s var(--ease) both}
+
+/* ---------- SECTIONS ---------- */
+section{padding-block:clamp(100px,13vw,190px)}
+.head{display:grid;justify-items:center;text-align:center;gap:22px;margin-bottom:clamp(56px,8vw,110px)}
+.head .cap{color:var(--dim);display:flex;align-items:center;gap:14px}
+.head .cap::before,.head .cap::after{content:"";width:26px;height:1px;background:currentColor;opacity:.6}
+.head h2{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(42px,5.6vw,80px);line-height:1.03;text-wrap:balance}
+.head h2 em{font-style:italic;color:var(--acc)}
+.head p{margin:0;max-width:48ch;color:var(--soft)}
+.rule{width:1px;height:52px;background:linear-gradient(var(--acc),transparent)}
+.rise{transform:translateY(40px);transition:transform 1.6s var(--ease)}
+.rise.in{transform:none}
+
+/* directions */
+.dirs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.dir{position:relative;padding:clamp(32px,3.6vw,56px);border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:16px;align-content:start;overflow:hidden;isolation:isolate}
+.dir::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0E3829,#0B2F23);z-index:-1;opacity:0;transition:opacity .9s var(--ease)}
+.dir:hover::before{opacity:1}
+.dir:hover{--ink:var(--cream);--soft:var(--sage);--acc:var(--gold);--dim:var(--gold)}
+.dir *{transition:color .8s var(--ease)}
+.dir .cap{color:var(--dim)}
+.dir h3{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(32px,3vw,44px);line-height:1.05;color:var(--ink)}
+.dir p{margin:0;color:var(--soft)}
+.dir ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
+.dir li{display:flex;gap:14px;align-items:baseline;font-size:15px;color:var(--ink)}
+.dir li::before{content:"";width:14px;height:1px;flex:none;background:var(--acc);transform:translateY(-4px)}
+@media (max-width:1000px){.dirs{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.dirs{grid-template-columns:1fr}}
+
+/* process */
+.proc{background:linear-gradient(180deg,rgba(5,20,15,.72),rgba(8,36,25,.82));backdrop-filter:blur(2px)}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);counter-reset:s}
+.steps li{counter-increment:s;padding:36px clamp(8px,2vw,32px) 0 0;display:grid;gap:10px;align-content:start;position:relative}
+.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--serif);font-style:italic;font-size:clamp(44px,4.4vw,64px);line-height:1;color:var(--gold)}
+.steps li::after{content:"";position:absolute;top:-1px;left:0;height:1px;width:0;background:var(--gold);transition:width 1.6s var(--ease)}
+.steps.in li::after{width:100%}
+.steps.in li:nth-child(2)::after{transition-delay:.25s}.steps.in li:nth-child(3)::after{transition-delay:.5s}.steps.in li:nth-child(4)::after{transition-delay:.75s}
+.steps strong{font-weight:400;font-size:19px}
+.steps p{margin:0;color:var(--sage);font-size:15px;max-width:30ch}
+.proc .head .cap{color:var(--gold)}
+.proc .head p{color:var(--sage)}
+@media (max-width:860px){.steps{grid-template-columns:1fr 1fr;row-gap:40px}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+
+/* for whom */
+.whom{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,28px)}
+.whom div{border:1px solid var(--line);padding:clamp(30px,3vw,48px);display:grid;gap:14px;background:rgba(5,12,9,.38);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.whom b{font-family:var(--serif);font-weight:300;font-size:clamp(26px,2.4vw,34px);line-height:1.1;color:var(--ink)}
+.whom p{margin:0;color:var(--soft);font-size:15px}
+.whom .tick{width:28px;height:1px;background:var(--gold);margin-bottom:6px}
+@media (max-width:860px){.whom{grid-template-columns:1fr}}
+
+/* models: arched 3D portraits */
+.faces{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(18px,2.4vw,40px)}
+.faces .face:nth-child(even){margin-top:clamp(40px,6vw,96px)}
+@media (max-width:900px){.faces{grid-template-columns:repeat(2,1fr)}}
+.face{display:block;perspective:1100px}
+.face .slab{aspect-ratio:3/4;border-radius:999px 999px 3px 3px}
+.face .front{position:absolute;inset:0;background:#07130f;outline:1px solid rgba(219,181,119,.35);outline-offset:-1px}
+.face .img{position:absolute;inset:0;transform:scale(1.14);transition:transform 2.2s var(--ease);background-size:cover;background-position:center}
+.face.in .img{transform:scale(1)}
+.face:hover .img{transform:scale(1.05)}
+.face .mono{position:absolute;left:50%;top:44%;width:34%;transform:translate(-50%,-50%) translateZ(70px);opacity:.5;transition:opacity 1s var(--ease);filter:drop-shadow(0 18px 18px rgba(0,0,0,.6));z-index:6;pointer-events:none}
+.face:hover .mono{opacity:.9}
+.face .soon{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:var(--gold);z-index:6;opacity:.85}
+.meta{display:flex;justify-content:space-between;align-items:baseline;margin-top:22px;gap:10px;padding-inline:6px}
+.meta h3{margin:0;font-family:var(--serif);font-weight:400;font-size:21px}
+.meta span{color:var(--gold);font-variant-numeric:tabular-nums}
+
+.join-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,7vw,120px);max-width:1100px;margin-inline:auto}
+@media (max-width:860px){.join-grid{grid-template-columns:1fr}}
+.join-grid h4{margin:0 0 20px;color:var(--dim)}
+.req{list-style:none;margin:0;padding:0}
+.req li{display:flex;justify-content:space-between;gap:24px;padding-block:22px;border-bottom:1px solid var(--line)}
+.req li span:first-child{color:var(--soft)}
+.req li span:last-child{text-align:right;color:var(--ink)}
+.path{list-style:none;margin:0;padding:0}
+.path li{display:grid;grid-template-columns:56px 1fr;gap:12px;padding-block:22px;border-bottom:1px solid var(--line)}
+.path li b{font-family:var(--serif);font-style:italic;font-weight:300;font-size:26px;line-height:1;color:var(--acc)}
+.path li strong{font-weight:400;display:block;color:var(--ink)}
+.path li p{margin:2px 0 0;color:var(--soft);font-size:14px}
+
+.center{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:clamp(52px,6vw,84px)}
+
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:19px 44px;border:1px solid var(--acc);color:var(--acc);font-family:var(--sans);font-weight:400;font-size:11px;letter-spacing:.28em;text-transform:uppercase;overflow:hidden;isolation:isolate;transition:color .6s var(--ease)}
+.btn::before{content:"";position:absolute;inset:0;background:var(--acc);transform:scaleY(0);transform-origin:bottom;transition:transform .6s var(--ease);z-index:-1}
+.btn:hover{color:var(--black)}
+.paper .btn:hover{color:#F4EEE2}
+.btn:hover::before{transform:scaleY(1)}
+.btn.fill{background:var(--acc);color:var(--black)}
+.paper .btn.fill{color:#F4EEE2}
+.btn.fill::before{background:var(--cream)}
+.paper .btn.fill::before{background:#17140F}
+.paper .btn.fill:hover{color:#F4EEE2}
+.btn.fill:hover{color:var(--black)}
+
+/* cross link band */
+.cross{border-top:1px solid rgba(219,181,119,.2);text-align:center;padding-block:clamp(80px,10vw,130px);background:rgba(5,5,5,.35)}
+.cross a{display:inline-grid;gap:10px;justify-items:center}
+.cross .cap{color:var(--gold-dim)}
+.cross b{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,68px);line-height:1;transition:color .5s}
+.cross a:hover b{color:var(--gold)}
+
+/* ---------- FOOTER ---------- */
+footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:rgba(5,5,5,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.f-mark{display:flex;flex-direction:column;align-items:center;gap:20px;margin-bottom:52px;text-align:center}
+.f-mark img{width:min(110px,28vw);height:auto}
+.f-mark span{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--gold)}
+.f-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;color:#8E887D}
+.f-row nav{display:flex;gap:28px;flex-wrap:wrap}
+.f-row .v{display:flex;gap:12px;align-items:center}
+.copy{all:unset;cursor:pointer;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim)}
+.copy:hover{color:var(--gold)}
+.copy:focus-visible{outline:1px solid var(--gold)}
+
+/* ---------- CURSOR ---------- */
+.cursor{position:fixed;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:300;transition:width .5s var(--ease),height .5s var(--ease),margin .5s var(--ease),background .5s;opacity:0}
+.cursor.big{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(219,181,119,.14);border:1px solid var(--gold)}
+@media (hover:hover) and (pointer:fine){.cursor{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rise,.face .img{transform:none!important}
+  .steps li::after{width:100%}
+  .intro{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+<div class="curtain" id="curtain" aria-hidden="true"><img src="monogram.png" alt=""></div>
+
+<!-- ================= INTRO ================= -->
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="pn l"></div><div class="pn r"></div>
+  <div class="vline"></div>
+  <div class="stage">
+    <div class="m-rot" data-rot><div class="m-in stack" data-stack="monogram.png" data-n="40" data-step="1.1"></div></div>
+    <div class="word">ZAYA</div>
+    <div class="sl" data-i="slogan">Твоя высота начинается здесь</div>
+  </div>
+  <button class="skip" id="skip" type="button" data-i="skip">Пропустить</button>
+</div>
+
+<nav class="nav" id="nav">
+  <div class="wrap">
+    <div class="nav-l cap">
+      <a href="#business" class="ul" data-route="business" data-i="n.biz">Бизнесу</a>
+      <a href="#models" class="ul" data-route="models" data-i="n.mod">Моделям</a>
+    </div>
+    <a href="#home" class="brand" aria-label="ZAYA"><img src="monogram.png" alt="ZA" width="360" height="339"></a>
+    <div class="nav-r cap">
+      <a href="#contact" class="contact-link ul" data-i="n.contact">Контакты</a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="ru" aria-pressed="true">RU</button>
+        <button type="button" data-lang="uz" aria-pressed="false">UZ</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HOME ================= -->
+<main id="v-home" data-view="home">
+  <header class="home">
+    <div class="home-in wrap">
+      <h1 class="logo3d" role="img" aria-label="ZAYA"><div class="rot stack" data-rot data-stack="zaya.png" data-n="30" data-step="1"></div></h1>
+      <p class="slogan" data-i="slogan">Твоя высота начинается здесь</p>
+      <div class="choose">
+        <a class="door biz slab" data-tilt href="#business">
+          <div class="front">
+            <span class="cap" data-i="d.biz.k">Для бизнеса</span>
+            <h2 data-i="d.biz.h">Клиентам</h2>
+            <p data-i="d.biz.p">Консалтинг и систематизация бизнеса под ключ</p>
+            <span class="arr" aria-hidden="true">→</span>
+            <i class="glare"></i>
+          </div>
+        </a>
+        <a class="door mod slab" data-tilt href="#models">
+          <div class="front">
+            <span class="cap" data-i="d.mod.k">ZAYA Model Agency</span>
+            <h2 data-i="d.mod.h">Моделям</h2>
+            <p data-i="d.mod.p">Кастинг и условия вступления в агентство</p>
+            <span class="arr" aria-hidden="true">→</span>
+            <i class="glare"></i>
+          </div>
+        </a>
+      </div>
+      <span class="cap where" data-i="city">Ташкент</span>
+    </div>
+  </header>
+</main>
+
+<!-- ================= BUSINESS ================= -->
+<main id="v-business" data-view="business" hidden>
+  <header class="phero">
+    <div class="wrap">
+      <span class="cap"><span data-i="b.k">ZAYA Consulting</span></span>
+      <h1 data-i="b.h">Бизнес <em>под ключ</em></h1>
+      <p data-i="b.p">Мы систематизируем ваш бизнес: от полной диагностики и стратегии до работающих отделов. Вы сохраняете своё видение, мы выстраиваем вокруг него систему.</p>
+      <div class="acts"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="b.cta">Получить консультацию</span></a><a class="btn mag" href="#directions"><span data-i="b.cta2">Направления</span></a></div>
+    </div>
+  </header>
+
+  <section id="directions" class="paper">
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="dir.k">Направления</span></span>
+        <h2 data-i="dir.h">Шесть опор <em>сильного бизнеса</em></h2>
+        <p data-i="dir.p">Берём на себя одно направление или выстраиваем всю компанию целиком.</p>
+      </div>
+      <div class="dirs" id="dirs"></div>
+    </div>
+  </section>
+
+  <section class="proc">
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="pr.k">Как мы работаем</span></span>
+        <h2 data-i="pr.h">От диагностики <em>до результата</em></h2>
+      </div>
+      <ol class="steps rise" id="steps"></ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="w.k">Для кого</span></span>
+        <h2 data-i="w.h">Когда бизнес готов <em>расти</em></h2>
+      </div>
+      <div class="whom rise" id="whom"></div>
+      <div class="center"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="b.cta">Получить консультацию</span></a></div>
+    </div>
+  </section>
+
+  <div class="cross"><a href="#models"><span class="cap" data-i="x.mod.k">ZAYA Model Agency</span><b data-i="x.mod">Стать моделью →</b></a></div>
+</main>
+
+<!-- ================= MODELS ================= -->
+<main id="v-models" data-view="models" hidden>
+  <header class="phero">
+    <div class="wrap">
+      <span class="cap"><span>ZAYA Model Agency</span></span>
+      <h1 data-i="m.h">Стань лицом <em>ZAYA</em></h1>
+      <p data-i="m.p">Модели для fashion, рекламы, показов и шоу-бизнеса. Опыт не обязателен: мы отбираем, обучаем и сопровождаем каждую модель.</p>
+      <div class="acts"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="m.cta">Записаться на кастинг</span></a><a class="btn mag" href="#conditions"><span data-i="m.cta2">Условия</span></a></div>
+    </div>
+  </header>
+
+  <section id="conditions" class="paper">
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="c.k">Кастинг</span></span>
+        <h2 data-i="c.h">Как вступить <em>в агентство</em></h2>
+        <div class="rule"></div>
+      </div>
+      <div class="join-grid">
+        <div class="rise"><h4 class="cap" data-i="c.req">Требования</h4><ul class="req" id="req"></ul></div>
+        <div class="rise"><h4 class="cap" data-i="c.path">Путь</h4><ol class="path" id="path"></ol></div>
+      </div>
+      <div class="center"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="m.apply">Подать заявку</span></a></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="f.k">Лица агентства</span></span>
+        <h2>New <em>Faces</em></h2>
+      </div>
+      <div class="faces" id="faces"></div>
+    </div>
+  </section>
+
+  <div class="cross"><a href="#business"><span class="cap" data-i="x.biz.k">ZAYA Consulting</span><b data-i="x.biz">Бизнес под ключ →</b></a></div>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="f-mark"><img src="monogram.png" alt="" width="360" height="339"><span data-i="slogan">Твоя высота начинается здесь</span></div>
+    <div class="f-row cap">
+      <span>© <span id="yr">2026</span> ZAYA</span>
+      <span class="v">Telegram @zaya_booking</span>
+      <span class="v"><span id="mail">info@zaya.uz</span><button class="copy" type="button" data-copy="info@zaya.uz" data-i="copy">Копировать</button></span>
+      <nav><a class="ul" href="#business" data-i="n.biz">Бизнесу</a><a class="ul" href="#models" data-i="n.mod">Моделям</a></nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $=id=>document.getElementById(id);
+
+/* ---------------- copy (short strings) ---------------- */
+const T={ru:{},uz:{
+"n.biz":"Biznesga","n.mod":"Modellarga","n.contact":"Aloqa","city":"Toshkent","copy":"Nusxa",
+"slogan":"Sening cho‘qqing shu yerdan boshlanadi",
+"d.biz.k":"Biznes uchun","d.biz.h":"Mijozlarga","d.biz.p":"Biznesni kalit topshirish asosida konsalting va tizimlashtirish",
+"d.mod.h":"Modellarga","d.mod.p":"Kasting va agentlikka qo‘shilish shartlari",
+"b.h":"Biznes <em>kalit topshirish</em> asosida","b.p":"Biznesingizni tizimlashtiramiz: to‘liq diagnostika va strategiyadan tortib ishlaydigan bo‘limlargacha. Siz o‘z qarashingizni saqlaysiz, biz uning atrofida tizim quramiz.","b.cta":"Konsultatsiya olish","b.cta2":"Yo‘nalishlar",
+"dir.k":"Yo‘nalishlar","dir.h":"Kuchli biznesning <em>olti tayanchi</em>","dir.p":"Bitta yo‘nalishni o‘z zimmamizga olamiz yoki butun kompaniyani to‘liq quramiz.",
+"pr.k":"Qanday ishlaymiz","pr.h":"Diagnostikadan <em>natijagacha</em>",
+"w.k":"Kim uchun","w.h":"Biznes <em>o‘sishga</em> tayyor bo‘lganda",
+"x.mod":"Model bo‘lish →",
+"m.h":"<em>ZAYA</em> yuzi bo‘l","m.p":"Fashion, reklama, podium va shou-biznes uchun modellar. Tajriba shart emas: har bir modelni tanlaymiz, o‘rgatamiz va qo‘llab-quvvatlaymiz.","m.cta":"Kastingga yozilish","m.cta2":"Shartlar",
+"c.k":"Kasting","c.h":"Agentlikka <em>qanday qo‘shilish</em> mumkin","c.req":"Talablar","c.path":"Yo‘l","m.apply":"Ariza topshirish",
+"f.k":"Agentlik yuzlari","x.biz":"Biznes kalit topshirish asosida →"},
+en:{
+"n.biz":"Business","n.mod":"Models","n.contact":"Contact","city":"Tashkent","copy":"Copy",
+"slogan":"Your heights begin here",
+"d.biz.k":"For business","d.biz.h":"Clients","d.biz.p":"Turnkey business consulting and systemisation",
+"d.mod.h":"Models","d.mod.p":"Casting and how to join the agency",
+"b.h":"Business, <em>turnkey</em>","b.p":"We systemise your business — from a full diagnostic and strategy to departments that actually run. You keep your vision; we build the system around it.","b.cta":"Book a consultation","b.cta2":"Directions",
+"dir.k":"Directions","dir.h":"Six pillars of <em>a strong business</em>","dir.p":"We take on a single function or build the entire company end to end.",
+"pr.k":"How we work","pr.h":"From diagnostic <em>to results</em>",
+"w.k":"Who it’s for","w.h":"When a business is ready <em>to grow</em>",
+"x.mod":"Become a model →",
+"m.h":"Become a <em>ZAYA</em> face","m.p":"Models for fashion, advertising, runway and entertainment. No experience needed: we select, train and guide every model.","m.cta":"Sign up for casting","m.cta2":"Conditions",
+"c.k":"Casting","c.h":"How to join <em>the agency</em>","c.req":"Requirements","c.path":"The path","m.apply":"Apply now",
+"f.k":"Our faces","x.biz":"Turnkey business →"}};
+document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.ru[el.dataset.i]=el.innerHTML});
+
+/* ---------------- structured content ---------------- */
+const C={
+ru:{
+dirs:[
+["Marketing","Маркетинг","Чтобы о вас знали и выбирали.",["Стратегия и позиционирование бренда","SMM, реклама и контент","Продакшн и лица для кампаний"]],
+["IT","IT","Чтобы бизнес работал как система.",["Автоматизация процессов","CRM и учёт","Сайты, боты и AI-ассистенты"]],
+["Legal","Юриспруденция","Чтобы рост был защищён.",["Структура и регистрация компании","Договоры и оферты","Сопровождение сделок"]],
+["Sales","Отдел продаж","Чтобы продажи не зависели от одного человека.",["Воронка и CRM-этапы","Скрипты и регламенты","Обучение и KPI менеджеров"]],
+["HR","HR","Чтобы в команде были правильные люди.",["Оргструктура и должностные инструкции","Найм и адаптация","Мотивация и корпоративная культура"]],
+["R&D","R&D","Чтобы бизнес не стоял на месте.",["Исследование рынка и конкурентов","Новые продукты и направления","Тестирование гипотез"]]],
+steps:[["Диагностика","Полный аудит бизнеса: находим риски, узкие места и точки роста."],["Стратегия","План развития под ваше видение, цели и ресурсы."],["Внедрение","Выстраиваем отделы и процессы под ключ."],["Сопровождение","Контролируем результат и развиваем систему дальше."]],
+whom:[["Владельцам малого бизнеса","Когда всё держится на вас и пора выстроить систему."],["Предпринимателям","Которые хотят масштабироваться без хаоса."],["Компаниям перед инвестициями","Чтобы бизнес был прозрачным и готовым к инвестору."]],
+req:[["Возраст","от 18 лет"],["Студенты","приветствуются"],["Опыт","не обязателен"],["Фото","лицо и полный рост, без фильтров"]],
+path:[["Заявка","Имя, возраст, рост и фото в Telegram @zaya_booking."],["Кастинг","Личная встреча в агентстве."],["Договор","Официальное сотрудничество."],["Портфолио","Фотосессия и первые проекты."]],
+face:["Портрет скоро","см"]},
+uz:{
+dirs:[
+["Marketing","Marketing","Sizni bilishsin va tanlashsin.",["Brend strategiyasi va pozitsiyalash","SMM, reklama va kontent","Prodakshn va kampaniyalar uchun yuzlar"]],
+["IT","IT","Biznes tizim kabi ishlasin.",["Jarayonlarni avtomatlashtirish","CRM va hisob","Saytlar, botlar va AI-yordamchilar"]],
+["Legal","Yurisprudensiya","O‘sish himoyalangan bo‘lsin.",["Kompaniya tuzilmasi va ro‘yxatdan o‘tkazish","Shartnomalar va ofertalar","Bitimlarni kuzatib borish"]],
+["Sales","Sotuv bo‘limi","Sotuv bir kishiga bog‘liq bo‘lmasin.",["Voronka va CRM bosqichlari","Skriptlar va reglamentlar","Menejerlarni o‘qitish va KPI"]],
+["HR","HR","Jamoada to‘g‘ri odamlar bo‘lsin.",["Tashkiliy tuzilma va lavozim yo‘riqnomalari","Yollash va moslashtirish","Motivatsiya va korporativ madaniyat"]],
+["R&D","R&D","Biznes bir joyda turib qolmasin.",["Bozor va raqobatchilarni tadqiq qilish","Yangi mahsulotlar va yo‘nalishlar","Gipotezalarni sinash"]]],
+steps:[["Diagnostika","Biznesning to‘liq auditi: xavflar, tor joylar va o‘sish nuqtalarini topamiz."],["Strategiya","Sizning qarashingiz, maqsad va resurslaringizga mos reja."],["Joriy etish","Bo‘lim va jarayonlarni kalit topshirish asosida quramiz."],["Kuzatuv","Natijani nazorat qilamiz va tizimni rivojlantiramiz."]],
+whom:[["Kichik biznes egalariga","Hammasi sizga bog‘liq bo‘lsa va tizim qurish vaqti kelganda."],["Tadbirkorlarga","Tartibsizliksiz kengaymoqchi bo‘lganlarga."],["Investitsiya oldidagi kompaniyalarga","Biznes shaffof va investorga tayyor bo‘lishi uchun."]],
+req:[["Yosh","18 yoshdan"],["Talabalar","xush kelibsiz"],["Tajriba","shart emas"],["Rasm","yuz va to‘liq bo‘y, filtrsiz"]],
+path:[["Ariza","Ism, yosh, bo‘y va rasmlarni Telegram @zaya_booking ga yuboring."],["Kasting","Agentlikda shaxsiy uchrashuv."],["Shartnoma","Rasmiy hamkorlik."],["Portfolio","Fotosessiya va ilk loyihalar."]],
+face:["Portret tez orada","sm"]},
+en:{
+dirs:[
+["Marketing","Marketing","So people know you — and choose you.",["Brand strategy and positioning","Social, advertising and content","Production and faces for campaigns"]],
+["IT","IT","So the business runs as a system.",["Process automation","CRM and accounting","Websites, bots and AI assistants"]],
+["Legal","Legal","So your growth is protected.",["Company structure and registration","Contracts and terms","Transaction support"]],
+["Sales","Sales team","So sales don’t depend on one person.",["Funnel and CRM stages","Scripts and playbooks","Training and KPIs for managers"]],
+["HR","HR","So the right people are on the team.",["Org structure and job descriptions","Hiring and onboarding","Motivation and culture"]],
+["R&D","R&D","So the business keeps moving.",["Market and competitor research","New products and directions","Hypothesis testing"]]],
+steps:[["Diagnostic","A full business audit: risks, bottlenecks and growth points."],["Strategy","A plan built around your vision, goals and resources."],["Implementation","We build departments and processes, turnkey."],["Support","We track results and keep developing the system."]],
+whom:[["Small business owners","When everything rests on you and it’s time for a system."],["Entrepreneurs","Who want to scale without chaos."],["Companies raising investment","So the business is transparent and investor-ready."]],
+req:[["Age","18+"],["Students","welcome"],["Experience","not required"],["Photos","face and full length, no filters"]],
+path:[["Apply","Send name, age, height and photos to @zaya_booking on Telegram."],["Casting","A personal meeting at the agency."],["Contract","Official partnership."],["Portfolio","A shoot and your first projects."]],
+face:["Portrait soon","cm"]}};
+
+T.uz.skip="O‘tkazib yuborish";T.en.skip="Skip";
+/* New Faces: put portrait URLs here (3:4), e.g. ["photos/1.jpg","photos/2.jpg","photos/3.jpg","photos/4.jpg"] */
+const PHOTOS=[];
+const FACES=[178,186,175,177];
+document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.ru[el.dataset.i]=el.innerHTML});
+
+/* ---------------- 3D helpers ---------------- */
+/* extruded logo: N copies of the PNG stacked in Z, darker toward the back */
+function buildStack(el){
+  const src=el.dataset.stack,n=+el.dataset.n||24,step=+el.dataset.step||1;
+  for(let i=0;i<n;i++){
+    const im=new Image();im.src=src;im.alt="";im.draggable=false;
+    im.style.transform=`translateZ(${((i-n/2)*step).toFixed(2)}px)`;
+    im.style.filter=`brightness(${(.38+.62*i/(n-1)).toFixed(3)})`;
+    el.appendChild(im);
+  }
+  el.classList.add("stack");
+}
+document.querySelectorAll("[data-stack]").forEach(buildStack);
+
+/* slab: extruded edge layers + shadow behind a clipped front */
+function buildSlab(el,layers){
+  const first=el.firstChild;
+  const sh=document.createElement("i");sh.className="sh";el.insertBefore(sh,first);
+  for(let i=1;i<=layers;i++){const e=document.createElement("i");e.className="ext";e.style.setProperty("--z",i);el.insertBefore(e,first)}
+}
+function bindTilt(el,max){
+  if(matchMedia("(hover:none)").matches||reduce)return;
+  el.addEventListener("pointermove",e=>{
+    const r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+    el.style.setProperty("--ry",((x-.5)*max*2).toFixed(2)+"deg");
+    el.style.setProperty("--rx",((.5-y)*max*1.4).toFixed(2)+"deg");
+    el.style.setProperty("--mx",(x*100).toFixed(1)+"%");el.style.setProperty("--my",(y*100).toFixed(1)+"%");
+  });
+  el.addEventListener("pointerleave",()=>{el.style.setProperty("--ry","0deg");el.style.setProperty("--rx","0deg")});
+}
+document.querySelectorAll(".door").forEach(d=>{buildSlab(d,9);bindTilt(d,9)});
+
+/* pointer-driven rotation for logo stacks (idle sway when the pointer rests / on touch) */
+const rots=[...document.querySelectorAll("[data-rot]")];
+let px=0,py=0,gx=0,gy=0,last=0,ang=0,ay=0;
+addEventListener("pointermove",e=>{px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5;last=performance.now()},{passive:true});
+(function spin(now){
+  now=now||0;
+  const idle=now-last>2500||matchMedia("(hover:none)").matches;
+  const sway=Math.sin(now*.0006);
+  const tx=idle?sway*.5:px,ty=idle?Math.cos(now*.0005)*.18:py;
+  gx+=(tx-gx)*.06;gy+=(ty-gy)*.06;
+  const ry=(gx*34).toFixed(2),rx=(-gy*20).toFixed(2);
+  rots.forEach(r=>{r.style.setProperty("--ry",ry+"deg");r.style.setProperty("--rx",rx+"deg")});
+  document.documentElement.style.setProperty("--ay",gx.toFixed(3));
+  if(!reduce)requestAnimationFrame(spin);
+})();
+
+function render(l){
+  const c=C[l];
+  $("dirs").innerHTML=c.dirs.map(d=>`<article class="dir"><span class="cap">${d[0]}</span><h3>${d[1]}</h3><p>${d[2]}</p><ul>${d[3].map(x=>`<li>${x}</li>`).join("")}</ul></article>`).join("");
+  $("steps").innerHTML=c.steps.map(s=>`<li><strong>${s[0]}</strong><p>${s[1]}</p></li>`).join("");
+  $("whom").innerHTML=c.whom.map(w=>`<div><span class="tick"></span><b>${w[0]}</b><p>${w[1]}</p></div>`).join("");
+  $("req").innerHTML=c.req.map(r=>`<li><span>${r[0]}</span><span>${r[1]}</span></li>`).join("");
+  $("path").innerHTML=c.path.map((p,i)=>`<li><b>${["i","ii","iii","iv"][i]}</b><div><strong>${p[0]}</strong><p>${p[1]}</p></div></li>`).join("");
+  $("faces").innerHTML=FACES.map((h,i)=>{
+    const ph=PHOTOS[i],bg=ph?`background-image:url('${ph}')`:`background:radial-gradient(60% 40% at 50% ${26+i*5}%,rgba(219,181,119,.28),transparent 70%),radial-gradient(90% 70% at ${i%2?20:80}% 100%,#14543d,transparent 70%),linear-gradient(180deg,${i%2?"#0E3829":"#18150f"},#050505)`;
+    return `<a class="face rise in" href="#conditions" aria-label="New Face ${["I","II","III","IV"][i]}"><div class="slab" data-slab><div class="front"><div class="img" style="${bg}"></div><i class="glare"></i></div><img class="mono" src="monogram.png" alt=""><span class="soon cap">${ph?"":c.face[0]}</span></div><div class="meta"><h3>New Face ${["I","II","III","IV"][i]}</h3><span class="cap">${h} ${c.face[1]}</span></div></a>`}).join("");
+  document.querySelectorAll("[data-slab]").forEach(s=>{buildSlab(s,10);bindTilt(s,12);s.removeAttribute("data-slab")});
+}
+
+function setLang(l){
+  document.documentElement.lang=l;
+  document.querySelectorAll("[data-i]").forEach(el=>{const v=(T[l]||{})[el.dataset.i]??T.ru[el.dataset.i];if(v!=null)el.innerHTML=v});
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===l));
+  render(l);revealIn(document.querySelector("main:not([hidden])"));
+  try{localStorage.setItem("zaya-lang",l)}catch(e){}
+}
+document.querySelectorAll(".lang button").forEach(b=>b.addEventListener("click",()=>setLang(b.dataset.lang)));
+
+/* ---------------- reveal ---------------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});
+function revealIn(root){if(!root)return;root.querySelectorAll(".rise:not(.in)").forEach(el=>{if(el.getBoundingClientRect().top<innerHeight)el.classList.add("in");else io.observe(el)})}
+
+/* ---------------- router ---------------- */
+const VIEWS={home:"v-home",business:"v-business",models:"v-models"};
+const ANCHORS={directions:"business",conditions:"models"};
+let current=null;
+const curtain=$("curtain");
+function show(view,anchor){
+  Object.entries(VIEWS).forEach(([k,id])=>$(id).hidden=k!==view);
+  document.querySelectorAll("[data-route]").forEach(a=>{if(a.dataset.route===view)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  current=view;
+  if(anchor){requestAnimationFrame(()=>$(anchor).scrollIntoView())}else scrollTo(0,0);
+  revealIn($(VIEWS[view]));
+}
+function route(first){
+  const h=location.hash.slice(1);
+  if(h==="contact"){$("contact").scrollIntoView({behavior:"smooth"});return}
+  let view=VIEWS[h]?h:(ANCHORS[h]||"home"),anchor=ANCHORS[h]?h:null;
+  if(view===current){if(anchor)$(anchor).scrollIntoView({behavior:"smooth"});else scrollTo({top:0,behavior:"smooth"});return}
+  if(first||reduce){show(view,anchor);return}
+  curtain.className="curtain in";
+  setTimeout(()=>{show(view,anchor);curtain.className="curtain out"},720);
+}
+addEventListener("hashchange",()=>route(false));
+
+/* ---------------- nav, copy, cursor ---------------- */
+const nav=$("nav");addEventListener("scroll",()=>nav.classList.toggle("solid",scrollY>60),{passive:true});
+document.addEventListener("click",e=>{const b=e.target.closest(".copy");if(!b)return;const o=b.textContent;const ok=()=>{b.textContent="✓";setTimeout(()=>b.textContent=o,1400)};
+  const sel=()=>{const r=document.createRange();r.selectNodeContents($("mail"));const s=getSelection();s.removeAllRanges();s.addRange(r)};
+  navigator.clipboard?navigator.clipboard.writeText(b.dataset.copy).then(ok).catch(sel):sel()});
+const cur=$("cursor");let cx=0,cy=0,tx=0,ty=0;
+addEventListener("pointermove",e=>{tx=e.clientX;ty=e.clientY;cur.classList.toggle("big",!!e.target.closest("a,button"))},{passive:true});
+(function loop(){cx+=(tx-cx)*.18;cy+=(ty-cy)*.18;cur.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop)})();
+if(!reduce)document.querySelectorAll(".mag").forEach(m=>{
+  m.addEventListener("pointermove",e=>{const r=m.getBoundingClientRect();m.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.18}px,${(e.clientY-r.top-r.height/2)*.3}px)`});
+  m.addEventListener("pointerleave",()=>{m.style.transition="transform .8s cubic-bezier(.16,1,.3,1),color .6s";m.style.transform=""});
+  m.addEventListener("pointerenter",()=>{m.style.transition="color .6s"});
+});
+
+/* ---------------- painted background: oil-on-marble shader ---------------- */
+(function paint(){
+  const cv=$("bg"),gl=cv.getContext("webgl",{antialias:false,alpha:false,powerPreference:"low-power"});
+  if(!gl){document.body.classList.add("nogl");cv.remove();return}
+  const vs="attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
+  const fs=`precision highp float;
+uniform vec2 uRes,uM;uniform float uT,uS;
+float h(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 p){float a=.5,s=0.;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<5;i++){s+=a*n(p);p=m*p;a*=.5;}return s;}
+void main(){
+  vec2 uv=gl_FragCoord.xy/uRes;
+  vec2 p=(gl_FragCoord.xy-.5*uRes)/uRes.y*1.7;
+  p.y-=uS*.0005;p+=(uM-.5)*.3;
+  float t=uT*.022;
+  vec2 q=vec2(fbm(p+vec2(0.,t)),fbm(p+vec2(5.2,1.3)-t));
+  vec2 r=vec2(fbm(p*1.1+3.*q+vec2(1.7,9.2)+t*1.3),fbm(p*1.1+3.*q+vec2(8.3,2.8)-t*.8));
+  float f=fbm(p+3.2*r);
+  float vein=1.-abs(2.*fbm(p*1.25+3.*r+vec2(t))-1.);
+  float v1=pow(vein,10.),v2=pow(vein,3.);
+  vec3 deep=vec3(.010,.032,.027),em=vec3(.040,.180,.132),moss=vec3(.11,.32,.23),gold=vec3(.86,.71,.47);
+  vec3 c=mix(deep,em,smoothstep(.12,.72,f));
+  c=mix(c,moss,smoothstep(.55,.95,f)*.4);
+  c+=gold*v1*.42+gold*v2*.02;
+  float br=fbm(vec2(p.x*2.2+r.x*3.,p.y*17.+r.y*4.));
+  c*=.9+.2*br;
+  float asp=uRes.x/uRes.y;
+  float d=distance(uv*vec2(asp,1.),uM*vec2(asp,1.));
+  c+=gold*.08*exp(-d*d*5.)*(.5+f);
+  c*=1.-.6*pow(length(uv-.5)*1.25,2.2);
+  c+=(h(gl_FragCoord.xy+fract(uT))-.5)*.04;
+  gl_FragColor=vec4(c,1.);
+}`;
+  function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return gl.getShaderParameter(o,gl.COMPILE_STATUS)?o:null}
+  const v=sh(gl.VERTEX_SHADER,vs),f=sh(gl.FRAGMENT_SHADER,fs);
+  if(!v||!f){document.body.classList.add("nogl");cv.remove();return}
+  const pr=gl.createProgram();gl.attachShader(pr,v);gl.attachShader(pr,f);gl.linkProgram(pr);gl.useProgram(pr);
+  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const a=gl.getAttribLocation(pr,"a");gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+  const U=k=>gl.getUniformLocation(pr,k),uRes=U("uRes"),uM=U("uM"),uT=U("uT"),uS=U("uS");
+  const SC=.5;
+  function size(){cv.width=Math.max(2,Math.round(innerWidth*SC));cv.height=Math.max(2,Math.round(innerHeight*SC));gl.viewport(0,0,cv.width,cv.height)}
+  size();addEventListener("resize",size);
+  let mx=.5,my=.5,sx=.5,sy=.5,t0=performance.now();
+  addEventListener("pointermove",e=>{mx=e.clientX/innerWidth;my=1-e.clientY/innerHeight},{passive:true});
+  function frame(now){
+    sx+=(mx-sx)*.03;sy+=(my-sy)*.03;
+    gl.uniform2f(uRes,cv.width,cv.height);gl.uniform2f(uM,sx,sy);gl.uniform1f(uT,reduce?40:(now-t0)/1000+40);gl.uniform1f(uS,scrollY);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    if(!reduce)requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  if(reduce)addEventListener("scroll",()=>requestAnimationFrame(frame),{passive:true});
+})();
+
+/* ---------------- intro ---------------- */
+const intro=$("intro");
+function ready(){document.body.classList.add("ready")}
+(function(){
+  let seen=false;try{seen=sessionStorage.getItem("zaya-intro")==="1"}catch(e){}
+  if(/[?&]intro\b/.test(location.search))seen=false;
+  if(seen||reduce){intro.remove();ready();return}
+  try{sessionStorage.setItem("zaya-intro","1")}catch(e){}
+  document.body.classList.add("intro-on");
+  let done=false;
+  function open(){
+    if(done)return;done=true;
+    intro.classList.add("open");
+    setTimeout(ready,550);
+    setTimeout(()=>{intro.remove();document.body.classList.remove("intro-on")},1800);
+  }
+  setTimeout(open,4200);
+  intro.addEventListener("click",open);
+  addEventListener("keydown",e=>{if(e.key==="Escape"||e.key==="Enter"||e.key===" ")open()});
+})();
+
+$("yr").textContent=new Date().getFullYear();
+let saved="ru";try{saved=localStorage.getItem("zaya-lang")||"ru"}catch(e){}
+route(true);
+setLang(T[saved]?saved:"ru");
+})();
+</script>
+</body>
+</html>
