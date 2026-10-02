@@ -272,6 +272,49 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
 .copy:hover{color:var(--gold)}
 .copy:focus-visible{outline:1px solid var(--gold)}
 
+/* ---------- FORMS ---------- */
+body.dlg-on{overflow:hidden}
+button.btn{background:none;cursor:pointer}
+.btn:disabled{opacity:.5;pointer-events:none}
+.dlg{position:fixed;padding:0;border:1px solid rgba(219,181,119,.4);background:linear-gradient(180deg,#07130e,#050505);color:var(--cream);color-scheme:dark;width:min(760px,calc(100vw - 24px));max-width:none;max-height:calc(100svh - 24px);overflow:auto;overscroll-behavior:contain;box-shadow:0 40px 120px rgba(0,0,0,.7)}
+.dlg::backdrop{background:rgba(2,6,4,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.dlg[open]{animation:dlgIn .6s var(--ease)}
+@keyframes dlgIn{from{opacity:0;transform:translateY(24px)}}
+.dlg .x{all:unset;cursor:pointer;position:absolute;top:12px;right:16px;padding:4px 10px;font-size:32px;line-height:1;color:var(--gold);z-index:2}
+.dlg .x:focus-visible{outline:1px solid var(--gold)}
+.dlg-in{position:relative;padding:clamp(34px,5vw,56px) clamp(20px,5vw,56px) clamp(28px,4vw,48px)}
+.dlg .cap{color:var(--gold)}
+.dlg h2{margin:14px 0 0;font-family:var(--serif);font-weight:300;font-size:clamp(34px,5vw,52px);line-height:1}
+.dlg .sub{margin:14px 0 0;color:var(--sage);font-size:15px;max-width:52ch}
+.frm{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:36px}
+.frm .full{grid-column:1/-1}
+.frm .fld{display:grid;gap:6px;align-content:start;min-width:0;border:0;padding:0;margin:0}
+.frm .fld[hidden]{display:none}
+.frm .fld>.cap,.frm legend.cap{padding:0;color:var(--gold-dim);font-size:10px;letter-spacing:.24em}
+.frm .rq{color:var(--gold)}
+.frm input:not([type=checkbox]),.frm select,.frm textarea{width:100%;font:inherit;font-size:16px;color:var(--cream);background:transparent;border:0;border-bottom:1px solid rgba(219,181,119,.35);border-radius:0;padding:10px 0;outline:0;transition:border-color .4s,box-shadow .4s}
+.frm input:focus,.frm select:focus,.frm textarea:focus{border-color:var(--gold);box-shadow:0 1px 0 var(--gold)}
+.frm input::placeholder,.frm textarea::placeholder{color:#5f5b52}
+.frm select option{background:#0a1511;color:var(--cream)}
+.frm textarea{min-height:110px;resize:vertical}
+.frm .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.chips label{position:relative;cursor:pointer}
+.chips input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.chips span{display:block;padding:9px 16px;border:1px solid rgba(219,181,119,.35);font-size:13px;letter-spacing:.04em;transition:background .4s var(--ease),color .4s var(--ease)}
+.chips input:checked+span{background:var(--gold);color:var(--black)}
+.chips input:focus-visible+span{outline:1px solid var(--gold);outline-offset:3px}
+.agree{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--soft);cursor:pointer}
+.agree input{margin-top:5px;accent-color:var(--gold);flex:none}
+.frm .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.frm .err{margin:0;min-height:1.4em;color:#E8A08A;font-size:14px}
+.frm .act{display:grid;gap:10px;justify-items:start}
+.done{text-align:center;padding-block:clamp(30px,6vw,60px)}
+.done h2{margin-top:0}
+.done .sub{margin-inline:auto}
+.done .center{margin-top:36px}
+@media (max-width:600px){.frm{grid-template-columns:1fr}.frm .trio{gap:10px}}
+
 /* ---------- CURSOR ---------- */
 .cursor{position:fixed;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:300;transition:width .5s var(--ease),height .5s var(--ease),margin .5s var(--ease),background .5s;opacity:0}
 .cursor.big{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(219,181,119,.14);border:1px solid var(--gold)}
@@ -358,7 +401,7 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
       <span class="cap"><span data-i="b.k">ZAYA Consulting</span></span>
       <h1 data-i="b.h">Бизнес <em>под ключ</em></h1>
       <p data-i="b.p">Мы систематизируем ваш бизнес: от полной диагностики и стратегии до работающих отделов. Вы сохраняете своё видение, мы выстраиваем вокруг него систему.</p>
-      <div class="acts"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="b.cta">Получить консультацию</span></a><a class="btn mag" href="#directions"><span data-i="b.cta2">Направления</span></a></div>
+      <div class="acts"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить консультацию</span></a><a class="btn mag" href="#directions"><span data-i="b.cta2">Направления</span></a></div>
     </div>
   </header>
 
@@ -390,7 +433,7 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
         <h2 data-i="w.h">Когда бизнес готов <em>расти</em></h2>
       </div>
       <div class="whom rise" id="whom"></div>
-      <div class="center"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="b.cta">Получить консультацию</span></a></div>
+      <div class="center"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить консультацию</span></a></div>
     </div>
   </section>
 
@@ -404,7 +447,7 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
       <span class="cap"><span>ZAYA Model Agency</span></span>
       <h1 data-i="m.h">Стань лицом <em>ZAYA</em></h1>
       <p data-i="m.p">Модели для fashion, рекламы, показов и шоу-бизнеса. Опыт не обязателен: мы отбираем, обучаем и сопровождаем каждую модель.</p>
-      <div class="acts"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="m.cta">Записаться на кастинг</span></a><a class="btn mag" href="#conditions"><span data-i="m.cta2">Условия</span></a></div>
+      <div class="acts"><a class="btn fill mag" href="#" data-open="apply" role="button"><span data-i="m.cta">Записаться на кастинг</span></a><a class="btn mag" href="#conditions"><span data-i="m.cta2">Условия</span></a></div>
     </div>
   </header>
 
@@ -419,7 +462,7 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
         <div class="rise"><h4 class="cap" data-i="c.req">Требования</h4><ul class="req" id="req"></ul></div>
         <div class="rise"><h4 class="cap" data-i="c.path">Путь</h4><ol class="path" id="path"></ol></div>
       </div>
-      <div class="center"><a class="btn fill mag" href="https://t.me/zaya_booking" target="_blank" rel="noopener"><span data-i="m.apply">Подать заявку</span></a></div>
+      <div class="center"><a class="btn fill mag" href="#" data-open="apply" role="button"><span data-i="m.apply">Подать заявку</span></a></div>
     </div>
   </section>
 
@@ -435,6 +478,11 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
 
   <div class="cross"><a href="#business"><span class="cap" data-i="x.biz.k">ZAYA Consulting</span><b data-i="x.biz">Бизнес под ключ →</b></a></div>
 </main>
+
+<dialog class="dlg" id="dlg" aria-labelledby="dlg-t">
+  <button class="x" type="button" data-close aria-label="Close">×</button>
+  <div class="dlg-in" id="dlg-body"></div>
+</dialog>
 
 <footer id="contact">
   <div class="wrap">
@@ -599,6 +647,133 @@ function setLang(l){
   try{localStorage.setItem("zaya-lang",l)}catch(e){}
 }
 document.querySelectorAll(".lang button").forEach(b=>b.addEventListener("click",()=>setLang(b.dataset.lang)));
+
+/* ---------------- forms: brief (business) / application (models) -> Google Sheets via Apps Script ---------------- */
+/* Paste the deployed Apps Script web-app URL here (see apps-script/README.md). */
+const FORM_URL="";
+const li=()=>({ru:0,uz:1,en:2})[document.documentElement.lang]||0;
+const tr=a=>a[li()];
+/* option = [stored value (ru), ru, uz, en] shown as [ru, uz, en]; stored value is always the Russian text for the sheet */
+const DIRS_B=[["Маркетинг","Marketing","Marketing"],["IT","IT","IT"],["Юриспруденция","Yurisprudensiya","Legal"],["Отдел продаж","Sotuv bo‘limi","Sales team"],["HR","HR","HR"],["R&D","R&D","R&D"],["Комплексно под ключ","Kompleks, kalit topshirish","Full turnkey"]];
+const DIRS_M=[["Показы","Podium","Runway"],["Фотосъёмки","Fotosuratga olish","Photoshoots"],["Реклама / видео","Reklama / video","Ads / video"],["Клипы","Klip","Music videos"],["Шоурум / промо","Shourum / promo","Showroom / promo"]];
+const FORMS={
+brief:{
+  kicker:"ZAYA Consulting",
+  title:["Бриф на консультацию","Konsultatsiya uchun brif","Consultation brief"],
+  sub:["Расскажите о бизнесе и задаче. Менеджер ZAYA изучит бриф и свяжется с вами.","Biznes va vazifa haqida yozing. ZAYA menejeri brifni ko‘rib chiqib, siz bilan bog‘lanadi.","Tell us about your business and goal. A ZAYA manager will review the brief and contact you."],
+  send:["Отправить бриф","Brifni yuborish","Send brief"],
+  done:["Мы получили ваш бриф. Менеджер ZAYA свяжется с вами в ближайшее время.","Brifingizni oldik. ZAYA menejeri tez orada siz bilan bog‘lanadi.","We have your brief. A ZAYA manager will contact you shortly."],
+  fields:[
+  {n:"name",t:"text",r:1,a:"name",l:["Ваше имя","Ismingiz","Your name"]},
+  {n:"company",t:"text",a:"organization",l:["Компания / проект","Kompaniya / loyiha","Company / project"]},
+  {n:"position",t:"text",a:"organization-title",l:["Должность","Lavozim","Position"]},
+  {n:"phone",t:"tel",r:1,a:"tel",ph:"+998",l:["Телефон","Telefon","Phone"]},
+  {n:"telegram",t:"text",ph:"@username",l:["Telegram","Telegram","Telegram"]},
+  {n:"email",t:"email",a:"email",l:["E-mail","E-mail","E-mail"]},
+  {n:"city",t:"text",v:"Ташкент",a:"address-level2",l:["Город","Shahar","City"]},
+  {n:"industry",t:"text",r:1,l:["Сфера бизнеса","Biznes sohasi","Industry"]},
+  {n:"team",t:"select",o:[["1–5","1–5","1–5"],["6–20","6–20","6–20"],["21–50","21–50","21–50"],["50+","50+","50+"]],l:["Размер команды","Jamoa hajmi","Team size"]},
+  {n:"contact",t:"select",o:[["Telegram","Telegram","Telegram"],["Звонок","Qo‘ng‘iroq","Phone call"],["E-mail","E-mail","E-mail"]],l:["Как с вами удобнее связаться","Siz bilan qanday bog‘lanish qulay","Preferred way to reach you"]},
+  {n:"dirs",t:"chips",f:1,r:1,o:DIRS_B,l:["Что нужно бизнесу","Biznesga nima kerak","What the business needs"]},
+  {n:"task",t:"textarea",f:1,r:1,l:["Опишите задачу или проблему","Vazifa yoki muammoni tasvirlang","Describe the goal or problem"]},
+  {n:"budget",t:"select",o:[["до $1 000","$1 000 gacha","up to $1,000"],["$1 000–5 000","$1 000–5 000","$1,000–5,000"],["$5 000–15 000","$5 000–15 000","$5,000–15,000"],["от $15 000","$15 000 dan","from $15,000"],["Обсудим","Muhokama qilamiz","To discuss"]],l:["Ориентировочный бюджет","Taxminiy byudjet","Approximate budget"]},
+  {n:"timing",t:"select",o:[["Как можно скорее","Imkon qadar tezroq","As soon as possible"],["В течение месяца","Bir oy ichida","Within a month"],["1–3 месяца","1–3 oy","1–3 months"],["Пока изучаю","Hozircha o‘rganyapman","Just exploring"]],l:["Когда хотите начать","Qachon boshlamoqchisiz","When to start"]}
+  ]},
+apply:{
+  kicker:"ZAYA Model Agency",
+  title:["Анкета модели","Model anketasi","Model application"],
+  sub:["Заполните анкету. Менеджер ZAYA изучит её и свяжется с вами, чтобы пригласить на кастинг.","Anketani to‘ldiring. ZAYA menejeri uni ko‘rib chiqib, sizni kastingga taklif qilish uchun bog‘lanadi.","Fill in the application. A ZAYA manager will review it and contact you to invite you to a casting."],
+  send:["Отправить анкету","Anketani yuborish","Send application"],
+  done:["Мы получили вашу анкету. Менеджер ZAYA свяжется с вами после рассмотрения.","Anketangizni oldik. ZAYA menejeri ko‘rib chiqqach, siz bilan bog‘lanadi.","We have your application. A ZAYA manager will contact you after reviewing it."],
+  fields:[
+  {n:"name",t:"text",r:1,a:"name",l:["Имя и фамилия","Ism va familiya","First and last name"]},
+  {n:"birth",t:"date",r:1,a:"bday",l:["Дата рождения","Tug‘ilgan sana","Date of birth"]},
+  {n:"gender",t:"select",r:1,o:[["Женский","Ayol","Female"],["Мужской","Erkak","Male"]],l:["Пол","Jinsi","Gender"]},
+  {n:"city",t:"text",v:"Ташкент",a:"address-level2",l:["Город","Shahar","City"]},
+  {n:"phone",t:"tel",r:1,a:"tel",ph:"+998",l:["Телефон","Telefon","Phone"]},
+  {n:"telegram",t:"text",r:1,ph:"@username",l:["Telegram","Telegram","Telegram"]},
+  {n:"instagram",t:"text",ph:"@username",l:["Instagram","Instagram","Instagram"]},
+  {n:"parent",t:"text",f:1,minor:1,l:["Родитель или опекун: имя и телефон (для моделей младше 18 лет)","Ota-ona yoki vasiy: ism va telefon (18 yoshgacha)","Parent or guardian: name and phone (for models under 18)"]},
+  {n:"height",t:"number",r:1,min:100,max:230,l:["Рост, см","Bo‘y, sm","Height, cm"]},
+  {n:"weight",t:"number",min:15,max:200,l:["Вес, кг","Vazn, kg","Weight, kg"]},
+  {n:"params",t:"trio",f:1,s:[["Грудь","Ko‘krak","Bust"],["Талия","Bel","Waist"],["Бёдра","Son","Hips"]],l:["Параметры, см","Parametrlar, sm","Measurements, cm"]},
+  {n:"shoe",t:"text",l:["Размер обуви","Oyoq kiyim o‘lchami","Shoe size"]},
+  {n:"hair",t:"text",l:["Цвет волос","Soch rangi","Hair colour"]},
+  {n:"eyes",t:"text",l:["Цвет глаз","Ko‘z rangi","Eye colour"]},
+  {n:"exp",t:"select",r:1,o:[["Нет опыта","Tajriba yo‘q","No experience"],["До 1 года","1 yilgacha","Under 1 year"],["1–3 года","1–3 yil","1–3 years"],["Больше 3 лет","3 yildan ko‘p","Over 3 years"]],l:["Опыт","Tajriba","Experience"]},
+  {n:"dirs",t:"chips",f:1,r:1,o:DIRS_M,l:["Направления","Yo‘nalishlar","Directions"]},
+  {n:"contract",t:"select",v:"Нет",o:[["Нет","Yo‘q","No"],["Да","Ha","Yes"]],l:["Есть контракт с другим агентством?","Boshqa agentlik bilan shartnoma bormi?","Under contract with another agency?"]},
+  {n:"portfolio",t:"text",l:["Портфолио: ссылка на Instagram или Google Drive","Portfolio: Instagram yoki Google Drive havolasi","Portfolio: Instagram or Google Drive link"]},
+  {n:"about",t:"textarea",f:1,l:["О себе","O‘zingiz haqingizda","About you"]}
+  ]}
+};
+const AGREE=["Согласен(на) на обработку персональных данных. Менеджер ZAYA свяжется со мной.","Shaxsiy ma’lumotlarni qayta ishlashga roziman. ZAYA menejeri men bilan bog‘lanadi.","I agree to the processing of my personal data. A ZAYA manager will contact me."];
+const MSG={
+  chips:["Выберите хотя бы один вариант","Kamida bitta variantni tanlang","Choose at least one option"],
+  sending:["Отправляем…","Yuborilmoqda…","Sending…"],
+  fail:["Не удалось отправить. Попробуйте ещё раз или напишите нам в Telegram @zaya_booking.","Yuborib bo‘lmadi. Qayta urinib ko‘ring yoki Telegram @zaya_booking ga yozing.","Could not send. Please try again or message us on Telegram @zaya_booking."],
+  thanks:["Спасибо!","Rahmat!","Thank you!"],
+  close:["Закрыть","Yopish","Close"]
+};
+const dlg=$("dlg"),dbody=$("dlg-body");let lastFocus=null;
+const ageOf=s=>{const d=new Date(s);if(!s||isNaN(d))return 99;const n=new Date();let a=n.getFullYear()-d.getFullYear();if(n<new Date(n.getFullYear(),d.getMonth(),d.getDate()))a--;return a};
+function fieldHTML(f){
+  const id="f-"+f.n,lab=tr(f.l),rq=f.r?' <span class="rq" aria-hidden="true">*</span>':"";
+  const cls="fld"+(f.f?" full":""),hid=f.minor?" hidden data-minor":"",req=f.r?" required":"";
+  if(f.t==="chips")return `<fieldset class="${cls}"><legend class="cap">${lab}${rq}</legend><div class="chips">${f.o.map(o=>`<label><input type="checkbox" name="${f.n}" value="${o[0]}"><span>${o[li()]}</span></label>`).join("")}</div></fieldset>`;
+  if(f.t==="trio")return `<fieldset class="${cls}"><legend class="cap">${lab}</legend><div class="trio">${f.s.map((s,i)=>`<input type="number" inputmode="numeric" min="30" max="200" name="${f.n}${i}" placeholder="${tr(s)}" aria-label="${tr(s)}">`).join("")}</div></fieldset>`;
+  let c;
+  if(f.t==="select")c=`<select id="${id}" name="${f.n}"${req}><option value="">—</option>${f.o.map(o=>`<option value="${o[0]}"${f.v===o[0]?" selected":""}>${o[li()]}</option>`).join("")}</select>`;
+  else if(f.t==="textarea")c=`<textarea id="${id}" name="${f.n}" maxlength="1500"${req}></textarea>`;
+  else c=`<input id="${id}" name="${f.n}" type="${f.t}" maxlength="120"${req}${f.a?` autocomplete="${f.a}"`:""}${f.ph?` placeholder="${f.ph}"`:""}${f.v?` value="${f.v}"`:""}${f.min!=null?` min="${f.min}" max="${f.max}" inputmode="numeric"`:""}${f.t==="tel"?' inputmode="tel"':""}>`;
+  return `<div class="${cls}"${hid}><label class="cap" for="${id}">${lab}${rq}</label>${c}</div>`;
+}
+function openForm(type){
+  const F=FORMS[type];if(!F)return;
+  lastFocus=document.activeElement;
+  dbody.innerHTML=`<span class="cap">${F.kicker}</span><h2 id="dlg-t">${tr(F.title)}</h2><p class="sub">${tr(F.sub)}</p><form class="frm" data-type="${type}">${F.fields.map(fieldHTML).join("")}<label class="agree full"><input type="checkbox" name="consent" required><span>${tr(AGREE)}</span></label><div class="hp" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off"></div><div class="act full"><p class="err" role="alert"></p><button class="btn fill" type="submit"><span>${tr(F.send)}</span></button></div></form>`;
+  const form=dbody.querySelector("form");
+  const b=form.elements.birth;
+  if(b){const p=form.querySelector("[data-minor]");b.max=new Date().toISOString().slice(0,10);b.min="1940-01-01";
+    b.addEventListener("change",()=>{const m=!!b.value&&ageOf(b.value)<18;p.hidden=!m;p.querySelector("input").required=m})}
+  form.addEventListener("submit",e=>{e.preventDefault();submitForm(form,type,F)});
+  document.body.classList.add("dlg-on");
+  if(!dlg.open)dlg.showModal();
+  dlg.scrollTop=0;
+}
+async function submitForm(form,type,F){
+  const err=form.querySelector(".err"),btn=form.querySelector("button[type=submit]"),lbl=btn.querySelector("span");
+  err.textContent="";
+  const fd=new FormData(form),data={};
+  F.fields.forEach(f=>{
+    if(f.t==="chips")data[f.n]=fd.getAll(f.n).join(", ");
+    else if(f.t==="trio")data[f.n]=[0,1,2].map(i=>String(fd.get(f.n+i)||"").trim()).filter(Boolean).join("-");
+    else data[f.n]=String(fd.get(f.n)||"").trim();
+  });
+  const miss=F.fields.find(f=>f.t==="chips"&&f.r&&!data[f.n]);
+  if(miss){err.textContent=tr(MSG.chips);form.querySelector(`[name="${miss.n}"]`).focus();return}
+  const finish=()=>{dbody.innerHTML=`<div class="done"><span class="cap">${F.kicker}</span><h2 id="dlg-t">${tr(MSG.thanks)}</h2><p class="sub">${tr(F.done)}</p><div class="center"><button class="btn" type="button" data-close><span>${tr(MSG.close)}</span></button></div></div>`;dlg.scrollTop=0};
+  if(fd.get("website")){finish();return}/* honeypot: pretend success */
+  btn.disabled=true;lbl.textContent=tr(MSG.sending);
+  try{
+    if(!FORM_URL)throw new Error("FORM_URL is not set");
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),25000);
+    const r=await fetch(FORM_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({type,lang:document.documentElement.lang,consent:true,...data}),signal:ctl.signal});
+    clearTimeout(to);
+    const j=await r.json();
+    if(!j.ok)throw new Error(j.error||"error");
+    finish();
+  }catch(e){
+    err.textContent=tr(MSG.fail);btn.disabled=false;lbl.textContent=tr(F.send);
+  }
+}
+document.addEventListener("click",e=>{
+  const o=e.target.closest("[data-open]");
+  if(o){e.preventDefault();openForm(o.dataset.open);return}
+  if(e.target.closest("[data-close]"))dlg.close();
+});
+dlg.addEventListener("click",e=>{if(e.target!==dlg)return;const r=dlg.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dlg.close()});
+dlg.addEventListener("close",()=>{document.body.classList.remove("dlg-on");dbody.innerHTML="";if(lastFocus&&lastFocus.focus)lastFocus.focus()});
 
 /* ---------------- reveal ---------------- */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});
