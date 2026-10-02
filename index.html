@@ -788,7 +788,7 @@ dlg.addEventListener("close",()=>{document.body.classList.remove("dlg-on");dbody
 
 /* ---------------- music ---------------- */
 /* MUSIC_SRC: path to your own licensed track (e.g. "music.mp3"). Empty = built-in generated ambient pad. */
-const MUSIC_SRC="";
+const MUSIC_SRC="music.mp3";
 (function(){
   const btn=$("snd");let on=false,ctx=null,master=null,audio=null,fadeT=0,offT=0;
   const pref=()=>{try{return localStorage.getItem("zaya-music")}catch(e){return null}};
@@ -819,7 +819,7 @@ const MUSIC_SRC="";
   function play(){
     clearTimeout(offT);
     if(MUSIC_SRC){
-      audio=audio||Object.assign(new Audio(MUSIC_SRC),{loop:true,volume:0});
+      audio=audio||Object.assign(new Audio(MUSIC_SRC),{loop:true,volume:0,preload:"auto"});
       audio.play().then(()=>fade(audio,.5,2500)).catch(()=>{on=false;ui()});
     }else{
       if(!ctx&&!buildSynth())return;
