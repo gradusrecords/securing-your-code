@@ -71,8 +71,6 @@ body.nogl{background:radial-gradient(120% 90% at 50% 100%,#0E3829,#071a13 55%,#0
 .intro.open .pn.r{transform:translateX(101%)}
 .intro .stage{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:clamp(18px,3vh,30px);perspective:1100px;transition:opacity 1s var(--ease),transform 1.6s var(--ease)}
 .intro.open .stage{opacity:0;transform:scale(1.35)}
-.intro .vline{position:absolute;left:50%;top:0;width:1px;height:100%;background:linear-gradient(transparent,var(--gold) 40%,var(--gold) 60%,transparent);transform:scaleY(0);transform-origin:center;animation:vline 1.6s .1s var(--ease) forwards}
-@keyframes vline{0%{transform:scaleY(0);opacity:1}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:.0}}
 .intro .m-rot{position:relative;width:clamp(120px,18vw,190px);aspect-ratio:360/339;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
 .intro .m-in{position:absolute;inset:0;transform-style:preserve-3d;animation:monoIn 2.4s .5s var(--ease) both}
 @keyframes monoIn{0%{opacity:0;transform:rotateY(-200deg) scale(.5)}35%{opacity:1}100%{opacity:1;transform:rotateY(0) scale(1)}}
@@ -345,7 +343,7 @@ button.btn{background:none;cursor:pointer}
 /* ---------- CURSOR ---------- */
 .cursor{position:fixed;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:300;transition:width .5s var(--ease),height .5s var(--ease),margin .5s var(--ease),background .5s;opacity:0}
 .cursor.big{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(219,181,119,.14);border:1px solid var(--gold)}
-@media (hover:hover) and (pointer:fine){.cursor{opacity:1}}
+@media (hover:hover) and (pointer:fine){body.cur .cursor{opacity:1}}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -363,7 +361,6 @@ button.btn{background:none;cursor:pointer}
 <!-- ================= INTRO ================= -->
 <div class="intro" id="intro" aria-hidden="true">
   <div class="pn l"></div><div class="pn r"></div>
-  <div class="vline"></div>
   <div class="stage">
     <div class="m-rot" data-rot><div class="m-in stack" data-stack="monogram.png" data-n="40" data-step="1.1"></div></div>
     <div class="word">ZAYA</div>
@@ -940,7 +937,7 @@ document.addEventListener("click",e=>{const b=e.target.closest(".copy");if(!b)re
   const sel=()=>{const r=document.createRange();r.selectNodeContents($("mail"));const s=getSelection();s.removeAllRanges();s.addRange(r)};
   navigator.clipboard?navigator.clipboard.writeText(b.dataset.copy).then(ok).catch(sel):sel()});
 const cur=$("cursor");let cx=0,cy=0,tx=0,ty=0;
-addEventListener("pointermove",e=>{tx=e.clientX;ty=e.clientY;cur.classList.toggle("big",!!e.target.closest("a,button"))},{passive:true});
+addEventListener("pointermove",e=>{document.body.classList.add("cur");tx=e.clientX;ty=e.clientY;cur.classList.toggle("big",!!e.target.closest("a,button"))},{passive:true});
 (function loop(){cx+=(tx-cx)*.18;cy+=(ty-cy)*.18;cur.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop)})();
 if(!reduce)document.querySelectorAll(".mag").forEach(m=>{
   m.addEventListener("pointermove",e=>{const r=m.getBoundingClientRect();m.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.18}px,${(e.clientY-r.top-r.height/2)*.3}px)`});
