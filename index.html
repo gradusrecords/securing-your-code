@@ -315,6 +315,16 @@ button.btn{background:none;cursor:pointer}
 .done .center{margin-top:36px}
 @media (max-width:600px){.frm{grid-template-columns:1fr}.frm .trio{gap:10px}}
 
+/* ---------- MUSIC TOGGLE ---------- */
+.snd{all:unset;cursor:pointer;display:flex;gap:3px;align-items:flex-end;height:18px;padding:6px 4px;box-sizing:content-box}
+.snd:focus-visible{outline:1px solid var(--gold);outline-offset:2px}
+.snd i{display:block;width:2px;height:4px;background:#8E887D;transition:background .4s,height .6s var(--ease)}
+.snd[aria-pressed="true"] i{background:var(--gold);animation:eq 1.1s ease-in-out infinite}
+.snd[aria-pressed="true"] i:nth-child(2){animation-delay:-.4s}
+.snd[aria-pressed="true"] i:nth-child(3){animation-delay:-.8s}
+.snd[aria-pressed="true"] i:nth-child(4){animation-delay:-.2s}
+@keyframes eq{0%,100%{height:4px}50%{height:16px}}
+
 /* ---------- CURSOR ---------- */
 .cursor{position:fixed;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:300;transition:width .5s var(--ease),height .5s var(--ease),margin .5s var(--ease),background .5s;opacity:0}
 .cursor.big{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(219,181,119,.14);border:1px solid var(--gold)}
@@ -354,6 +364,7 @@ button.btn{background:none;cursor:pointer}
     <a href="#home" class="brand" aria-label="ZAYA"><img src="monogram.png" alt="ZA" width="360" height="339"></a>
     <div class="nav-r cap">
       <a href="#contact" class="contact-link ul" data-i="n.contact">Контакты</a>
+      <button class="snd" id="snd" type="button" aria-pressed="false" aria-label="Music" title="Music"><i></i><i></i><i></i><i></i></button>
       <div class="lang" role="group" aria-label="Language">
         <button type="button" data-lang="ru" aria-pressed="true">RU</button>
         <button type="button" data-lang="uz" aria-pressed="false">UZ</button>
@@ -774,6 +785,63 @@ document.addEventListener("click",e=>{
 });
 dlg.addEventListener("click",e=>{if(e.target!==dlg)return;const r=dlg.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dlg.close()});
 dlg.addEventListener("close",()=>{document.body.classList.remove("dlg-on");dbody.innerHTML="";if(lastFocus&&lastFocus.focus)lastFocus.focus()});
+
+/* ---------------- music ---------------- */
+/* MUSIC_SRC: path to your own licensed track (e.g. "music.mp3"). Empty = built-in generated ambient pad. */
+const MUSIC_SRC="";
+(function(){
+  const btn=$("snd");let on=false,ctx=null,master=null,audio=null,fadeT=0,offT=0;
+  const pref=()=>{try{return localStorage.getItem("zaya-music")}catch(e){return null}};
+  const save=v=>{try{localStorage.setItem("zaya-music",v)}catch(e){}};
+  const ui=()=>btn.setAttribute("aria-pressed",on);
+  function fade(a,to,ms,done){clearInterval(fadeT);const from=a.volume,t0=performance.now();
+    fadeT=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/ms);a.volume=from+(to-from)*k;if(k>=1){clearInterval(fadeT);done&&done()}},40)}
+  function buildSynth(){
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
+    ctx=new AC();master=ctx.createGain();master.gain.value=0;
+    const lp=ctx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=900;lp.Q.value=.4;
+    const dl=ctx.createDelay(1.5);dl.delayTime.value=.62;
+    const fb=ctx.createGain();fb.gain.value=.5;const wet=ctx.createGain();wet.gain.value=.45;
+    lp.connect(master);lp.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(master);master.connect(ctx.destination);
+    const lfo=ctx.createOscillator();lfo.frequency.value=.05;const lg=ctx.createGain();lg.gain.value=350;lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
+    /* D minor 9 pad: D2 A2 D3 F3 A3 C4 E4, each voice detuned in pairs and slowly swelling */
+    [73.42,110,146.83,174.61,220,261.63,329.63].forEach((f,i)=>{
+      [-6,6].forEach(c=>{
+        const o=ctx.createOscillator();o.type=i%2?"triangle":"sine";o.frequency.value=f;o.detune.value=c;
+        const g=ctx.createGain();g.gain.value=.05/(1+i*.3);
+        const l=ctx.createOscillator();l.frequency.value=.03+Math.random()*.05;
+        const lgn=ctx.createGain();lgn.gain.value=g.gain.value*.7;l.connect(lgn);lgn.connect(g.gain);
+        o.connect(g);g.connect(lp);o.start();l.start();
+      });
+    });
+    return true;
+  }
+  function play(){
+    clearTimeout(offT);
+    if(MUSIC_SRC){
+      audio=audio||Object.assign(new Audio(MUSIC_SRC),{loop:true,volume:0});
+      audio.play().then(()=>fade(audio,.5,2500)).catch(()=>{on=false;ui()});
+    }else{
+      if(!ctx&&!buildSynth())return;
+      ctx.resume();master.gain.setTargetAtTime(.55,ctx.currentTime,1.6);
+    }
+    on=true;ui();
+  }
+  function stop(){
+    on=false;ui();
+    if(audio)fade(audio,0,800,()=>audio.pause());
+    if(ctx){master.gain.setTargetAtTime(0,ctx.currentTime,.4);offT=setTimeout(()=>{if(!on)ctx.suspend()},2200)}
+  }
+  btn.addEventListener("click",()=>{disarm();if(on){stop();save("0")}else{play();save("1")}});
+  /* browsers block sound until a gesture: start on the first one, unless the visitor muted it before */
+  const arm=e=>{if(e.target.closest&&e.target.closest("#snd"))return;disarm();if(pref()!=="0"&&!on)play()};
+  const disarm=()=>{removeEventListener("pointerdown",arm,true);removeEventListener("keydown",arm,true)};
+  addEventListener("pointerdown",arm,true);addEventListener("keydown",arm,true);
+  document.addEventListener("visibilitychange",()=>{
+    if(!on)return;
+    if(document.hidden){audio&&audio.pause();ctx&&ctx.suspend()}else{audio&&audio.play().catch(()=>{});ctx&&ctx.resume()}
+  });
+})();
 
 /* ---------------- reveal ---------------- */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});
