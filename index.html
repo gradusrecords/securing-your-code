@@ -148,6 +148,21 @@ body.ready .home-in>*{animation-play-state:running}
 .door.biz:hover p{color:var(--sage)}
 @media (max-width:700px){.choose{grid-template-columns:1fr;max-width:420px}.door{border-radius:140px 140px 4px 4px}.door .front{min-height:260px}}
 
+/* ---------- HOME: about + fork ---------- */
+.cue{display:grid;justify-items:center;gap:14px;margin-top:clamp(10px,3vh,34px);color:var(--gold);animation:fade 2s 1.4s var(--ease) both}
+.cue::after{content:"";width:1px;height:54px;background:linear-gradient(var(--gold),transparent);transform-origin:top;animation:cue 2.4s var(--ease) infinite}
+@keyframes cue{0%{transform:scaleY(0)}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+.about .head p{max-width:56ch}
+.duo{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.duo article{padding:clamp(32px,4vw,64px);border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:16px;align-content:start}
+.duo .cap{color:var(--dim)}
+.duo h3{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(34px,3.6vw,52px);line-height:1.05}
+.duo p{margin:0;color:var(--soft);max-width:44ch}
+.aline{margin:clamp(56px,7vw,96px) 0 0;text-align:center;font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(26px,3.4vw,46px);line-height:1.2;color:var(--acc);text-wrap:balance}
+.fork .head{margin-bottom:clamp(48px,6vw,84px)}
+.fork .choose{margin-top:0;margin-inline:auto;animation:none}
+@media (max-width:760px){.duo{grid-template-columns:1fr}}
+
 /* ---------- PAGE HERO ---------- */
 .phero{padding-block:clamp(150px,18vw,230px) clamp(90px,11vw,150px);text-align:center;position:relative}
 .phero .cap{color:var(--gold);display:inline-flex;gap:14px;align-items:center}
@@ -380,6 +395,41 @@ button.btn{background:none;cursor:pointer}
     <div class="home-in wrap">
       <h1 class="logo3d" role="img" aria-label="ZAYA"><div class="rot stack" data-rot data-stack="zaya.png" data-n="30" data-step="1"></div></h1>
       <p class="slogan" data-i="slogan">Твоя высота начинается здесь</p>
+      <span class="cap where" data-i="city">Ташкент</span>
+      <a class="cue cap" href="#about"><span data-i="cue">Узнать о нас</span></a>
+    </div>
+  </header>
+
+  <section id="about" class="paper about">
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="ab.k">О нас</span></span>
+        <h2 data-i="ab.h">Мы — <em>ZAYA</em></h2>
+        <p data-i="ab.p">Компания из Ташкента, которая растит бизнес и людей. Мы выстраиваем системы и открываем лица: два направления, одна высота.</p>
+      </div>
+      <div class="duo rise">
+        <article>
+          <span class="cap" data-i="ab.biz.k">ZAYA Consulting</span>
+          <h3 data-i="ab.biz.h">Бизнес под ключ</h3>
+          <p data-i="ab.biz.p">Систематизируем бизнес от диагностики и стратегии до работающих отделов: маркетинг, IT, юриспруденция, продажи, HR и R&amp;D.</p>
+        </article>
+        <article>
+          <span class="cap" data-i="ab.mod.k">ZAYA Model Agency</span>
+          <h3 data-i="ab.mod.h">Модельное агентство</h3>
+          <p data-i="ab.mod.p">Отбираем, обучаем и сопровождаем моделей для fashion, рекламы, показов и шоу-бизнеса. Опыт не обязателен.</p>
+        </article>
+      </div>
+      <p class="aline rise" data-i="ab.line">Бизнесу — система. Моделям — путь. Вам — высота.</p>
+    </div>
+  </section>
+
+  <section id="choose" class="fork">
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="fk.k">Твой путь</span></span>
+        <h2 data-i="fk.h">Ты бизнесмен <em>или модель?</em></h2>
+        <p data-i="fk.p">Выбери свой путь, и мы покажем, с чего начать.</p>
+      </div>
       <div class="choose">
         <a class="door biz slab" data-tilt href="#business">
           <div class="front">
@@ -400,9 +450,8 @@ button.btn{background:none;cursor:pointer}
           </div>
         </a>
       </div>
-      <span class="cap where" data-i="city">Ташкент</span>
     </div>
-  </header>
+  </section>
 </main>
 
 <!-- ================= BUSINESS ================= -->
@@ -584,6 +633,19 @@ path:[["Apply","Send name, age, height and photos to @zaya_booking on Telegram."
 face:["Portrait soon","cm"]}};
 
 T.uz.skip="O‘tkazib yuborish";T.en.skip="Skip";
+Object.assign(T.uz,{"cue":"Biz haqimizda bilib oling",
+"ab.k":"Biz haqimizda","ab.h":"Biz — <em>ZAYA</em>","ab.p":"Toshkentdagi kompaniya: biznesni va odamlarni o‘stiramiz. Tizimlar quramiz va yuzlarni kashf etamiz: ikki yo‘nalish, bitta cho‘qqi.",
+"ab.biz.k":"ZAYA Consulting","ab.biz.h":"Biznes kalit topshirish asosida","ab.biz.p":"Biznesni diagnostika va strategiyadan tortib ishlaydigan bo‘limlargacha tizimlashtiramiz: marketing, IT, yurisprudensiya, sotuv, HR va R&amp;D.",
+"ab.mod.k":"ZAYA Model Agency","ab.mod.h":"Model agentligi","ab.mod.p":"Fashion, reklama, podium va shou-biznes uchun modellarni tanlaymiz, o‘rgatamiz va qo‘llab-quvvatlaymiz. Tajriba shart emas.",
+"ab.line":"Biznesga — tizim. Modellarga — yo‘l. Sizga — cho‘qqi.",
+"fk.k":"Sening yo‘ling","fk.h":"Sen tadbirkormisan <em>yoki modelmi?</em>","fk.p":"Yo‘lingni tanla, nimadan boshlashni ko‘rsatamiz."});
+Object.assign(T.en,{"cue":"Get to know us",
+"ab.k":"About us","ab.h":"We are <em>ZAYA</em>","ab.p":"A Tashkent company that grows businesses and people. We build systems and discover faces: two directions, one height.",
+"ab.biz.k":"ZAYA Consulting","ab.biz.h":"Business, turnkey","ab.biz.p":"We systemise your business from diagnostic and strategy to departments that run: marketing, IT, legal, sales, HR and R&amp;D.",
+"ab.mod.k":"ZAYA Model Agency","ab.mod.h":"Model agency","ab.mod.p":"We select, train and guide models for fashion, advertising, runway and entertainment. No experience needed.",
+"ab.line":"For business — a system. For models — a path. For you — heights.",
+"fk.k":"Your path","fk.h":"Are you a business owner <em>or a model?</em>","fk.p":"Choose your path and we’ll show you where to start."});
+
 /* New Faces: put portrait URLs here (3:4), e.g. ["photos/1.jpg","photos/2.jpg","photos/3.jpg","photos/4.jpg"] */
 const PHOTOS=[];
 const FACES=[178,186,175,177];
@@ -849,7 +911,7 @@ function revealIn(root){if(!root)return;root.querySelectorAll(".rise:not(.in)").
 
 /* ---------------- router ---------------- */
 const VIEWS={home:"v-home",business:"v-business",models:"v-models"};
-const ANCHORS={directions:"business",conditions:"models"};
+const ANCHORS={directions:"business",conditions:"models",about:"home",choose:"home"};
 let current=null;
 const curtain=$("curtain");
 function show(view,anchor){
