@@ -49,6 +49,18 @@ img{display:block;max-width:100%}
 #bg{position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block}
 body.nogl{background:radial-gradient(120% 90% at 50% 100%,#0E3829,#071a13 55%,#050505)}
 
+/* photo backdrop: real fashion / TV / business scenes, cross-faded per page */
+#photos{position:fixed;inset:0;z-index:-1;overflow:hidden;background:#050505}
+#photos .ph{position:absolute;inset:-3%;background-size:cover;background-position:center;opacity:0;transform:scale(1.04);transition:opacity 2s var(--ease);will-change:opacity,transform}
+#photos .ph.on{opacity:1;animation:kb 26s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1.04) translate3d(0,0,0)}to{transform:scale(1.16) translate3d(-1.2%,-1%,0)}}
+#photos .veil{position:absolute;inset:0;background:
+  radial-gradient(90% 70% at 50% 45%,rgba(5,5,5,.12),rgba(5,5,5,.55)),
+  linear-gradient(180deg,rgba(5,5,5,.55),rgba(5,5,5,.18) 38%,rgba(5,5,5,.78)),
+  linear-gradient(120deg,rgba(11,47,35,.34),transparent 60%)}
+body:not(.has-photo) #photos{display:none}
+body.has-photo #bg{opacity:0}
+
 /* paper: warm travertine sections */
 .paper{
   --ink:#17140F;--soft:#6D6558;--acc:#8F6D35;--dim:#8A7550;--line:rgba(23,20,15,.16);
@@ -218,6 +230,7 @@ section{padding-block:clamp(100px,13vw,190px)}
 .face .img{position:absolute;inset:0;transform:scale(1.14);transition:transform 2.2s var(--ease);background-size:cover;background-position:center}
 .face.in .img{transform:scale(1)}
 .face:hover .img{transform:scale(1.05)}
+.face.has .mono,.face.has .soon{display:none}
 .face .mono{position:absolute;left:50%;top:44%;width:34%;transform:translate(-50%,-50%) translateZ(70px);opacity:.5;transition:opacity 1s var(--ease);filter:drop-shadow(0 18px 18px rgba(0,0,0,.6));z-index:6;pointer-events:none}
 .face:hover .mono{opacity:.9}
 .face .soon{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:var(--gold);z-index:6;opacity:.85}
@@ -280,6 +293,7 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   .rise,.face .img{transform:none!important}
+  #photos .ph.on{animation:none}
   .steps li::after{width:100%}
   .intro{display:none}
 }
@@ -287,6 +301,13 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
 </head>
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
+<div id="photos" aria-hidden="true">
+  <div class="ph" data-view="home" data-src="photos/runway.png"></div>
+  <div class="ph" data-view="home" data-src="photos/stage.png"></div>
+  <div class="ph" data-view="business" data-src="photos/business.png"></div>
+  <div class="ph" data-view="models" data-src="photos/backstage.png"></div>
+  <div class="veil"></div>
+</div>
 <div class="cursor" id="cursor" aria-hidden="true"></div>
 <div class="curtain" id="curtain" aria-hidden="true"><img src="monogram.png" alt=""></div>
 
@@ -526,7 +547,9 @@ face:["Portrait soon","cm"]}};
 
 T.uz.skip="O‘tkazib yuborish";T.en.skip="Skip";
 /* New Faces: put portrait URLs here (3:4), e.g. ["photos/1.jpg","photos/2.jpg","photos/3.jpg","photos/4.jpg"] */
-const PHOTOS=[];
+const PHOTOS=["photos/face-1.png","photos/face-2.png","photos/face-3.png","photos/face-4.png"];
+const PHOTO_OK=[];
+PHOTOS.forEach((u,i)=>{const im=new Image();im.onload=()=>{PHOTO_OK[i]=1;if(typeof render==="function"&&document.getElementById("faces"))render(document.documentElement.lang||"ru")};im.src=u});
 const FACES=[178,186,175,177];
 document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.ru[el.dataset.i]=el.innerHTML});
 
@@ -586,8 +609,8 @@ function render(l){
   $("req").innerHTML=c.req.map(r=>`<li><span>${r[0]}</span><span>${r[1]}</span></li>`).join("");
   $("path").innerHTML=c.path.map((p,i)=>`<li><b>${["i","ii","iii","iv"][i]}</b><div><strong>${p[0]}</strong><p>${p[1]}</p></div></li>`).join("");
   $("faces").innerHTML=FACES.map((h,i)=>{
-    const ph=PHOTOS[i],bg=ph?`background-image:url('${ph}')`:`background:radial-gradient(60% 40% at 50% ${26+i*5}%,rgba(219,181,119,.28),transparent 70%),radial-gradient(90% 70% at ${i%2?20:80}% 100%,#14543d,transparent 70%),linear-gradient(180deg,${i%2?"#0E3829":"#18150f"},#050505)`;
-    return `<a class="face rise in" href="#conditions" aria-label="New Face ${["I","II","III","IV"][i]}"><div class="slab" data-slab><div class="front"><div class="img" style="${bg}"></div><i class="glare"></i></div><img class="mono" src="monogram.png" alt=""><span class="soon cap">${ph?"":c.face[0]}</span></div><div class="meta"><h3>New Face ${["I","II","III","IV"][i]}</h3><span class="cap">${h} ${c.face[1]}</span></div></a>`}).join("");
+    const ph=PHOTO_OK[i]?PHOTOS[i]:null,bg=ph?`background:url('${ph}') center top/cover no-repeat`:`background:radial-gradient(60% 40% at 50% ${26+i*5}%,rgba(219,181,119,.28),transparent 70%),radial-gradient(90% 70% at ${i%2?20:80}% 100%,#14543d,transparent 70%),linear-gradient(180deg,${i%2?"#0E3829":"#18150f"},#050505)`;
+    return `<a class="face rise in${ph?" has":""}" href="#conditions" aria-label="New Face ${["I","II","III","IV"][i]}"><div class="slab" data-slab><div class="front"><div class="img" style="${bg}"></div><i class="glare"></i></div><img class="mono" src="monogram.png" alt=""><span class="soon cap">${ph?"":c.face[0]}</span></div><div class="meta"><h3>New Face ${["I","II","III","IV"][i]}</h3><span class="cap">${h} ${c.face[1]}</span></div></a>`}).join("");
   document.querySelectorAll("[data-slab]").forEach(s=>{buildSlab(s,10);bindTilt(s,12);s.removeAttribute("data-slab")});
 }
 
@@ -604,6 +627,22 @@ document.querySelectorAll(".lang button").forEach(b=>b.addEventListener("click",
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});
 function revealIn(root){if(!root)return;root.querySelectorAll(".rise:not(.in)").forEach(el=>{if(el.getBoundingClientRect().top<innerHeight)el.classList.add("in");else io.observe(el)})}
 
+/* ---------------- photo backdrop ---------------- */
+const phs=[...document.querySelectorAll("#photos .ph")];
+phs.forEach(el=>{const im=new Image();im.onload=()=>{el.style.backgroundImage=`url('${el.dataset.src}')`;el.dataset.ok="1";pickBg(current)};im.src=el.dataset.src});
+let homeIdx=0,homeTimer=null;
+function pickBg(view){
+  if(!view)return;
+  const ok=phs.filter(e=>e.dataset.view===view&&e.dataset.ok);
+  phs.forEach(e=>e.classList.remove("on"));
+  document.body.classList.toggle("has-photo",ok.length>0);
+  clearInterval(homeTimer);
+  if(!ok.length)return;
+  ok[homeIdx%ok.length].classList.add("on");
+  if(view==="home"&&ok.length>1&&!reduce)homeTimer=setInterval(()=>{homeIdx++;phs.forEach(e=>e.classList.remove("on"));ok[homeIdx%ok.length].classList.add("on")},8000);
+}
+addEventListener("pointermove",e=>{if(reduce)return;const x=(e.clientX/innerWidth-.5)*-14,y=(e.clientY/innerHeight-.5)*-10;$("photos").style.transform=`translate3d(${x}px,${y}px,0)`},{passive:true});
+
 /* ---------------- router ---------------- */
 const VIEWS={home:"v-home",business:"v-business",models:"v-models"};
 const ANCHORS={directions:"business",conditions:"models"};
@@ -615,6 +654,7 @@ function show(view,anchor){
   current=view;
   if(anchor){requestAnimationFrame(()=>$(anchor).scrollIntoView())}else scrollTo(0,0);
   revealIn($(VIEWS[view]));
+  pickBg(view);
 }
 function route(first){
   const h=location.hash.slice(1);
@@ -687,6 +727,7 @@ void main(){
   let mx=.5,my=.5,sx=.5,sy=.5,t0=performance.now();
   addEventListener("pointermove",e=>{mx=e.clientX/innerWidth;my=1-e.clientY/innerHeight},{passive:true});
   function frame(now){
+    if(document.body.classList.contains("has-photo")){if(!reduce)requestAnimationFrame(frame);return}
     sx+=(mx-sx)*.03;sy+=(my-sy)*.03;
     gl.uniform2f(uRes,cv.width,cv.height);gl.uniform2f(uM,sx,sy);gl.uniform1f(uT,reduce?40:(now-t0)/1000+40);gl.uniform1f(uS,scrollY);
     gl.drawArrays(gl.TRIANGLES,0,3);
