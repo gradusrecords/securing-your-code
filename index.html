@@ -1046,7 +1046,7 @@ function labelSeasons(){
 const fx=(function(){
   const cv=$("fx"),c=cv.getContext("2d"),cv2=$("fx2"),c2=cv2.getContext("2d");
   let W=0,H=0,kind="",P=[],Q=[],L=[],Cl=[],Stars=[],Bk=[],R=[],S=[],Bd=[],tree=null,hills=null,t=0,last=0,rz=0;
-  let surf=[],dirty=true,lastScan=0,beadT=0;
+  let surf=[],dirty=true,lastScan=0,lastScroll=0,beadT=0;
   const r=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)],TAU=Math.PI*2,small=()=>W<700;
   const dprv=()=>Math.min(devicePixelRatio||1,1.5);
   const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
@@ -1060,33 +1060,58 @@ const fx=(function(){
     dirty=true;
     if(reduce)draw(0);
   }
-  /* ---------- text / logo surfaces the rain lands on and the snow flows around ---------- */
+  /* ---------- surfaces: letters (big type) and words (small type), logo, cards, buttons ---------- */
+  let bk=[],Y0=0,OFF=0;const BW=32;
+  function bucket(){
+    bk=Array.from({length:Math.ceil(W/BW)+2},()=>[]);
+    for(const s of surf){const a=Math.max(0,Math.floor(s.l/BW)),b=Math.min(bk.length-1,Math.floor(s.r/BW));for(let i=a;i<=b;i++)bk[i].push(s)}
+  }
   function scan(){
     const out=[],B=document.body.classList;
-    if(B.contains("intro-on")||B.contains("dlg-on")){surf=out;return}
+    Y0=scrollY;OFF=0;
+    if(B.contains("intro-on")||B.contains("dlg-on")){surf=out;bucket();return}
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(n){
       if(!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
       const p=n.parentElement;
       return !p||p.closest("script,style,canvas,dialog,[hidden],[aria-hidden='true']")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}});
-    const rg=document.createRange();let n;
+    const rg=document.createRange(),fsMap=new Map();let n;
     while((n=walker.nextNode())){
-      rg.selectNodeContents(n);
-      for(const q of rg.getClientRects()){
-        if(q.width<8||q.height<8||q.bottom<0||q.top>H||q.right<0||q.left>W)continue;
-        out.push({k:"t",l:q.left,r:q.right,t:q.top+q.height*.16,b:q.bottom});
+      rg.selectNodeContents(n);let vis=false;
+      for(const q of rg.getClientRects()){if(q.width>=6&&q.height>=8&&q.bottom>0&&q.top<H&&q.right>0&&q.left<W){vis=true;break}}
+      if(!vis)continue;
+      const p=n.parentElement;let fs=fsMap.get(p);if(fs==null){fs=parseFloat(getComputedStyle(p).fontSize)||16;fsMap.set(p,fs)}
+      const fx=!!p.closest(".nav,.mq"),txt=n.nodeValue;
+      if(fs>=22){
+        for(let i=0;i<txt.length;i++){
+          if(!txt[i].trim())continue;rg.setStart(n,i);rg.setEnd(n,i+1);
+          for(const q of rg.getClientRects()){if(q.width<3||q.height<8||q.bottom<0||q.top>H)continue;const sh=q.width*.12;out.push({k:"t",fx,l:q.left+sh,r:q.right-sh,t:q.top+q.height*.16,b:q.bottom})}
+        }
+      }else{
+        const re=/\S+/g;let m;
+        while((m=re.exec(txt))){
+          rg.setStart(n,m.index);rg.setEnd(n,m.index+m[0].length);
+          for(const q of rg.getClientRects()){if(q.width<6||q.height<8||q.bottom<0||q.top>H||q.right<0||q.left>W)continue;out.push({k:"t",fx,l:q.left,r:q.right,t:q.top+q.height*.16,b:q.bottom})}
+        }
       }
     }
     const lg=document.querySelector(".logo3d");
-    if(lg&&!lg.closest("[hidden]")){const q=lg.getBoundingClientRect();if(q.width&&q.bottom>0&&q.top<H)out.push({k:"s",l:q.left,r:q.right,t:q.top,b:q.bottom})}
+    if(lg&&!lg.closest("[hidden]")){const q=lg.getBoundingClientRect();if(q.width&&q.bottom>0&&q.top<H)out.push({k:"s",fx:false,l:q.left,r:q.right,t:q.top,b:q.bottom})}
     document.querySelectorAll(".door,.face .slab").forEach(e=>{
       if(e.closest("[hidden]"))return;const q=e.getBoundingClientRect();if(!q.width||q.bottom<0||q.top>H)return;
       const R0=parseFloat(getComputedStyle(e).borderTopLeftRadius)||0;
-      out.push({k:"a",l:q.left,r:q.right,t:q.top,b:q.bottom,R:Math.min(R0,q.width/2)});
+      out.push({k:"a",fx:false,l:q.left,r:q.right,t:q.top,b:q.bottom,R:Math.min(R0,q.width/2)});
     });
     document.querySelectorAll(".btn").forEach(e=>{
-      if(e.closest("[hidden],dialog"))return;const q=e.getBoundingClientRect();if(q.width&&q.bottom>0&&q.top<H)out.push({k:"b",l:q.left,r:q.right,t:q.top,b:q.bottom});
+      if(e.closest("[hidden],dialog"))return;const q=e.getBoundingClientRect();if(q.width&&q.bottom>0&&q.top<H)out.push({k:"b",fx:!!e.closest(".mq"),l:q.left,r:q.right,t:q.top,b:q.bottom});
     });
-    surf=out;
+    surf=out;bucket();
+    /* flakes resting on the old surfaces: re-attach to the new ones or let them go */
+    for(const f of P){
+      if(!f.st)continue;
+      let ok=null;const l=bk[f.x/BW|0]||[];
+      for(const s of l){const ty=topAt(s,f.x);if(ty!==null&&Math.abs(ty-(f.y+f.r))<8){ok=s;break}}
+      if(ok)f.s=ok;else{f.st=0;f.ramp=.3;f.bx=f.x-Math.sin(t*f.f+f.ph)*f.amp}
+    }
   }
   function topAt(s,x){
     if(x<s.l||x>s.r)return null;
@@ -1094,7 +1119,18 @@ const fx=(function(){
     if(s.k==="a"){const R0=s.R;let dx=0;if(x<s.l+R0)dx=s.l+R0-x;else if(x>s.r-R0)dx=x-(s.r-R0);return dx>0?s.t+R0-Math.sqrt(Math.max(0,R0*R0-dx*dx)):s.t}
     return s.t;
   }
-  function firstHit(x,y0,y1){let hy=null;for(const s of surf){const ty=topAt(s,x);if(ty!==null&&y0<=ty&&y1>=ty&&(hy===null||ty<hy))hy=ty}return hy}
+  const yOf=(s,x)=>{const ty=topAt(s,x);return ty===null?null:ty+(s.fx?0:OFF)};
+  function hitSurf(x,y0,y1){
+    const l=bk[x/BW|0];if(!l)return null;let best=null,by=0;
+    for(const s of l){const ty=yOf(s,x);if(ty!==null&&y0<=ty&&y1>=ty&&(best===null||ty<by)){best=s;by=ty}}
+    return best?{s:best,y:by}:null;
+  }
+  function firstHit(x,y0,y1){const h=hitSurf(x,y0,y1);return h?h.y:null}
+  function nearAbove(x,y,d){
+    const l=bk[x/BW|0];if(!l)return null;
+    for(const s of l){const ty=yOf(s,x);if(ty!==null&&ty>y&&ty-y<d)return s}
+    return null;
+  }
   /* ---------- scenery ---------- */
   function fir(g,x,base,w,h,ly){
     g.fillStyle=ly.col;
@@ -1140,7 +1176,7 @@ const fx=(function(){
       R=Array.from({length:small()?70:130},()=>({x:r(0,W+H*.2),y:r(-H,H),len:r(10,22),v:r(650,950)}));S=[];Bd=[];
     },
     winter(){
-      P=Array.from({length:small()?70:140},()=>{const z=Math.random();return{x:r(0,W),y:r(-H*.1,H),z,r:.8+z*2.6,vy:14+z*44,ph:r(0,TAU)}});
+      P=Array.from({length:small()?70:140},()=>{const z=Math.random(),x=r(0,W);return{x,bx:x,y:r(-H*.1,H),z,r:.8+z*2.6,vy:10+z*32,ph:r(0,TAU),f:r(.5,1.1),amp:12+z*30,st:0,ramp:1,rest:0,dir:1,s:null,sx:0,land:Math.random()<.55}});
       Cl=Array.from({length:6},()=>({x:r(0,W),y:r(-H*.04,H*.22),r:r(200,400),v:r(3,8),a:r(.04,.08)}));
       buildTrees();
     }
@@ -1253,12 +1289,28 @@ const fx=(function(){
       for(const d of L){const a=(.3+.7*Math.max(0,Math.sin(t*d.f+d.ph)))*(.55+.45*(n+TOD.dusk));c.globalAlpha=a*.16;c.fillStyle="#FFD58C";c.beginPath();c.arc(d.x,d.y,6,0,TAU);c.fill();c.globalAlpha=a;c.fillStyle="#FFE2A8";c.beginPath();c.arc(d.x,d.y,1.6,0,TAU);c.fill()}
       c.fillStyle="#fff";
       for(const p of P){
-        p.y+=p.vy*dt;p.x+=Math.sin(t*.7+p.ph)*10*dt*(.4+p.z)+5*dt;
-        if(p.y>H+5){p.y=-5;p.x=r(0,W)}if(p.x>W+5)p.x=-5;
-        /* snow never touches the text: flakes flow around lines, buttons and the logo */
-        for(const s of surf){
-          if(p.x<s.l-8||p.x>s.r+8||p.y<s.t-6||p.y>s.b+6)continue;
-          const edge=p.x<(s.l+s.r)/2?s.l-10:s.r+10;p.x+=(edge-p.x)*Math.min(1,7*dt);
+        const w=t*p.f+p.ph;
+        if(p.st===0){
+          /* parachute: slow pendulum sway, the fall speeds up and slows down with the swing */
+          const vy=p.vy*p.ramp*(.8+.2*Math.cos(2*w));p.ramp=Math.min(1,p.ramp+dt*.6);
+          p.bx+=(5+Math.sin(t*.3)*3)*dt;
+          const sway=Math.sin(w)*p.amp;let nx=p.bx+sway;
+          if(!p.land){/* weavers feel the letters below and drift into the gaps */
+            const s=nearAbove(nx,p.y+p.r,42);if(s){p.bx+=(nx<(s.l+s.r)/2?-1:1)*60*dt;nx=p.bx+sway}
+          }
+          const ny=p.y+vy*dt;
+          if(p.land){
+            const h=hitSurf(nx,p.y+p.r,ny+p.r);
+            if(h){p.st=1;p.s=h.s;p.rest=r(.5,1.7);p.y=h.y-p.r;p.sx=nx;p.dir=nx<(h.s.l+h.s.r)/2?-1:1;p.x=nx}
+          }
+          if(p.st===0){p.x=nx;p.y=ny;if(p.y>H+5){p.y=-5;p.bx=r(0,W);p.ramp=.6;p.land=Math.random()<.55}if(p.bx>W+60)p.bx=-60}
+        }else{
+          /* touched a letter: settles, rests a moment, then slides off the edge and floats on down */
+          const ty=yOf(p.s,p.sx);
+          if(ty!==null)p.y=ty-p.r;
+          if(p.st===1){p.rest-=dt;p.sx+=p.dir*5*dt;if(p.rest<=0)p.st=2}
+          else{p.sx+=p.dir*(30+(p.rest<0?0:0))*dt;if(p.sx<p.s.l-2||p.sx>p.s.r+2){p.st=0;p.ramp=.15;p.bx=p.sx-Math.sin(w)*p.amp}}
+          p.x=p.sx;
         }
         c.globalAlpha=.3+.6*p.z;c.beginPath();c.arc(p.x,p.y,p.r,0,TAU);c.fill();
       }
@@ -1284,8 +1336,8 @@ const fx=(function(){
     c2.stroke();
     /* water gathers under the lines of text and drips down */
     beadT-=dt;
-    if(beadT<=0){beadT=r(.25,.7);const lines=surf.filter(s=>s.k==="t"&&s.b>0&&s.b<H&&s.r-s.l>30);
-      if(lines.length&&Bd.length<14){const s=pick(lines);Bd.push({x:r(s.l+4,s.r-4),y:s.b-1,u:0,v:0})}}
+    if(beadT<=0){beadT=r(.25,.7);const lines=surf.filter(s=>{const b=s.b+(s.fx?0:OFF);return s.k==="t"&&b>0&&b<H&&s.r-s.l>14});
+      if(lines.length&&Bd.length<14){const s=pick(lines);Bd.push({x:r(s.l+2,s.r-2),y:s.b+(s.fx?0:OFF)-1,u:0,v:0})}}
     for(let i=Bd.length-1;i>=0;i--){
       const b=Bd[i];
       if(b.u<1){b.u+=dt/.9;c2.fillStyle="rgba(225,238,250,.85)";c2.beginPath();c2.arc(b.x,b.y,1+1.5*Math.min(1,b.u),0,TAU);c2.fill();continue}
@@ -1310,12 +1362,16 @@ const fx=(function(){
   function frame(now){
     requestAnimationFrame(frame);
     const dt=Math.min(.05,(now-last)/1000||0);last=now;t+=dt;
-    if((kind==="autumn"||kind==="winter")&&now-lastScan>(dirty?110:700)){scan();dirty=false;lastScan=now}
+    if(kind==="autumn"||kind==="winter"){
+      OFF=Y0-scrollY;
+      /* while scrolling, surfaces just follow the page; rescan when it settles */
+      if(now-lastScroll>140&&now-lastScan>(dirty?120:800)){scan();dirty=false;lastScan=now}
+    }
     draw(dt);
   }
   size();
   addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(size,150)});
-  addEventListener("scroll",()=>{dirty=true},{passive:true});
+  addEventListener("scroll",()=>{dirty=true;lastScroll=performance.now()},{passive:true});
   addEventListener("hashchange",()=>{dirty=true;setTimeout(()=>{dirty=true},800)});
   if(!reduce)requestAnimationFrame(frame);
   return{set(k,instant){
