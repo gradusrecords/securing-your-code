@@ -302,10 +302,10 @@ footer{border-top:1px solid rgba(219,181,119,.2);padding-block:64px;background:r
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
 <div id="photos" aria-hidden="true">
-  <div class="ph" data-view="home" data-src="photos/runway.png"></div>
-  <div class="ph" data-view="home" data-src="photos/stage.png"></div>
-  <div class="ph" data-view="business" data-src="photos/business.png"></div>
-  <div class="ph" data-view="models" data-src="photos/backstage.png"></div>
+  <div class="ph" data-view="home" data-src="photos/runway.png" data-alt="https://d8j0ntlcm91z4.cloudfront.net/user_3Jh46Rmc6V5nVINPA82AwWlzoTP/hf_20261003_211247_2aaaf5e4-064c-4e3e-a4a8-1870f6de4803.png"></div>
+  <div class="ph" data-view="home" data-src="photos/stage.png" data-alt="https://d8j0ntlcm91z4.cloudfront.net/user_3Jh46Rmc6V5nVINPA82AwWlzoTP/hf_20261003_211248_eb52a155-4c95-4ea2-85e4-89fbed2ec729.png"></div>
+  <div class="ph" data-view="business" data-src="photos/business.png" data-alt="https://d8j0ntlcm91z4.cloudfront.net/user_3Jh46Rmc6V5nVINPA82AwWlzoTP/hf_20261003_211248_b02b58d4-0703-4cb5-930b-7c56b5cf10ca.png"></div>
+  <div class="ph" data-view="models" data-src="photos/backstage.png" data-alt="https://d8j0ntlcm91z4.cloudfront.net/user_3Jh46Rmc6V5nVINPA82AwWlzoTP/hf_20261003_211248_7fd3dcea-27db-48d9-a2b5-e5d9ceac8278.png"></div>
   <div class="veil"></div>
 </div>
 <div class="cursor" id="cursor" aria-hidden="true"></div>
@@ -547,9 +547,13 @@ face:["Portrait soon","cm"]}};
 
 T.uz.skip="O‘tkazib yuborish";T.en.skip="Skip";
 /* New Faces: put portrait URLs here (3:4), e.g. ["photos/1.jpg","photos/2.jpg","photos/3.jpg","photos/4.jpg"] */
+const CDN="https://d8j0ntlcm91z4.cloudfront.net/user_3Jh46Rmc6V5nVINPA82AwWlzoTP/";
+const PHOTO_ALT=["hf_20261003_211428_578cbfe3-3660-4b0d-b48f-782285641081.png","hf_20261003_211504_dcb7ce3b-73e6-4c4d-aba3-5c78fe793034.png","hf_20261003_211535_91702520-b9c5-4ff3-bb17-dc7963318303.png","hf_20261003_211247_44e823c4-9b23-4656-a340-9d0c8797de9e.png"];
 const PHOTOS=["photos/face-1.png","photos/face-2.png","photos/face-3.png","photos/face-4.png"];
 const PHOTO_OK=[];
-PHOTOS.forEach((u,i)=>{const im=new Image();im.onload=()=>{PHOTO_OK[i]=1;if(typeof render==="function"&&document.getElementById("faces"))render(document.documentElement.lang||"ru")};im.src=u});
+/* load local file first, fall back to the hosted copy */
+function loadImg(srcs,ok){const u=srcs.shift();if(!u)return;const im=new Image();im.onload=()=>ok(u);im.onerror=()=>loadImg(srcs,ok);im.src=u}
+PHOTOS.forEach((u,i)=>loadImg([u,CDN+PHOTO_ALT[i]],url=>{PHOTOS[i]=url;PHOTO_OK[i]=1;if(typeof render==="function"&&document.getElementById("faces"))render(document.documentElement.lang||"ru")}));
 const FACES=[178,186,175,177];
 document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.ru[el.dataset.i]=el.innerHTML});
 
@@ -629,7 +633,7 @@ function revealIn(root){if(!root)return;root.querySelectorAll(".rise:not(.in)").
 
 /* ---------------- photo backdrop ---------------- */
 const phs=[...document.querySelectorAll("#photos .ph")];
-phs.forEach(el=>{const im=new Image();im.onload=()=>{el.style.backgroundImage=`url('${el.dataset.src}')`;el.dataset.ok="1";pickBg(current)};im.src=el.dataset.src});
+phs.forEach(el=>loadImg([el.dataset.src,el.dataset.alt],u=>{el.style.backgroundImage=`url('${u}')`;el.dataset.ok="1";pickBg(current)}));
 let homeIdx=0,homeTimer=null;
 function pickBg(view){
   if(!view)return;
