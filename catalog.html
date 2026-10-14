@@ -176,7 +176,7 @@ function star(ctx,cx,cy,r,on){ctx.beginPath();for(let k=0;k<10;k++){const a=-Mat
   if(on){const g=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,"#f3d9a2");g.addColorStop(1,"#b98d4a");ctx.fillStyle=g;ctx.fill()}else{ctx.strokeStyle="rgba(217,180,119,.45)";ctx.lineWidth=1.6;ctx.stroke()}}
 // agency score out of 10 (set by the agency): 10 = favourite of the agency (gets a badge), most models 9, the last few in each list 8
 const RW=[10,10,9,9,9,9,9,9,9,8,8,8];
-const RM=[9,9,9,9,9,9,9,9,9,9,8,8,8];
+const RM=[10,9,10,9,9,9,9,9,9,9,8,8,8];
 
 let LOGO;
 const PW=900,PH=1272,u=PW/100;
