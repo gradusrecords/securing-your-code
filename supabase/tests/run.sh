@@ -15,6 +15,7 @@ PSQL="psql -X -q -h /tmp -p $PORT -U postgres -d postgres -v ON_ERROR_STOP=1"
 $PSQL -c 'create extension pgtap' >/dev/null
 $PSQL -f "$ROOT/supabase/tests/_bootstrap.sql" >/dev/null
 for f in "$ROOT"/supabase/migrations/*.sql; do $PSQL -f "$f" >/dev/null; done
+for f in "$ROOT"/supabase/seed/*.sql; do $PSQL -f "$f" >/dev/null; done
 fail=0
 for t in "$ROOT"/supabase/tests/[0-9]*.test.sql; do
   echo "== $(basename "$t")"

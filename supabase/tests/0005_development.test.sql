@@ -12,6 +12,8 @@ insert into public.model_profiles (id, full_name, birth_date, gender, phone, tel
   ('00000000-0000-0000-0000-0000000000a1', 'M', '2000-01-01', 'female', '+998900000001', '@m', 170, '0', 'approved'),
   ('00000000-0000-0000-0000-0000000000a2', 'N', '2000-01-01', 'female', '+998900000002', '@n', 170, '0', 'approved'),
   ('00000000-0000-0000-0000-0000000000a3', 'U', '2000-01-01', 'female', '+998900000003', '@u', 170, '0', 'pending');
+-- seeded starter content must not interfere with this test's own fixture
+update public.dev_tasks set is_active = false;
 insert into public.dev_tasks (title, description, points)
   select jsonb_build_object('ru', 'task ' || g), '{}'::jsonb, 5 from generate_series(1, 12) g;
 
