@@ -26,8 +26,8 @@
 
 ## 3D-каталог
 Страница сгенерирована из `catalog.html` сайта ZAYA без зашитых данных моделей: `node mobile/scripts/build-catalog-html.js <путь к catalog.html>`.
-Проверка в headless-браузере: `THREE_JS=<путь к three.min.js r128> CHROMIUM=<путь к chrome> node mobile/scripts/catalog-smoke.js`
-(`THREE_JS` нужен только если CDN недоступен).
+three.js (r128) встроен в страницу, интернет нужен только для шрифтов (без них используются системные).
+Проверка в headless-браузере: `CHROMIUM=<путь к chrome> node mobile/scripts/catalog-smoke.js`.
 
 ## Push-уведомления
 Тесты логики отправки: `node --test "supabase/functions/**/*.test.js"`.

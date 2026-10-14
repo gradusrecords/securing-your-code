@@ -43,3 +43,23 @@ test('links to the marketing site are neutralised', () => {
 test('a source that does not look like the catalog is rejected', () => {
   expect(() => buildCatalogHtml('<html></html>')).toThrow();
 });
+
+describe('offline three.js', () => {
+  const withCdn = source.replace('</head>', '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script></head>');
+
+  test('the CDN script is replaced by the inlined library', () => {
+    const out = buildCatalogHtml(withCdn, { threeSource: 'var THREE={marker:1};' });
+    expect(out).not.toContain('cdnjs.cloudflare.com');
+    expect(out).toContain('var THREE={marker:1};');
+  });
+
+  test('a literal closing script tag inside the library cannot break the page', () => {
+    const out = buildCatalogHtml(withCdn, { threeSource: 'var s="</script>";' });
+    expect(out).not.toContain('var s="</script>";');
+    expect(out).toContain('<\\/script>');
+  });
+
+  test('without a library the CDN reference is kept', () => {
+    expect(buildCatalogHtml(withCdn)).toContain('cdnjs.cloudflare.com');
+  });
+});

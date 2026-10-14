@@ -7,7 +7,7 @@ function replaceBlock(src, name, re) {
   return src.replace(re, `const ${name}=${DATA}.${name}||[];`);
 }
 
-function buildCatalogHtml(source) {
+function buildCatalogHtml(source, options = {}) {
   let out = source;
   out = replaceBlock(out, 'W', /const W=\[[\s\S]*?\n\];/);
   out = replaceBlock(out, 'M', /const M=\[[\s\S]*?\n\];/);
@@ -20,6 +20,14 @@ function buildCatalogHtml(source) {
 
   // The site's comment about photo slugs quotes a real model's name.
   out = out.replace(/\/\* slug = [^\n]*?\*\//g, '');
+
+  // Offline use: inline three.js instead of loading it from the CDN.
+  if (options.threeSource) {
+    const cdn = /<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/three\.js\/[^"]*"><\/script>/;
+    if (!cdn.test(out)) throw new Error('catalog source has no three.js CDN script');
+    const safe = options.threeSource.split('</script').join('<\\/script');
+    out = out.replace(cdn, () => `<script>${safe}</script>`);
+  }
 
   out = out.split('href="index.html#models"').join('href="#"').split('href="index.html"').join('href="#"');
   out = out.replace('</head>', '<style>.site{display:none!important}</style></head>');

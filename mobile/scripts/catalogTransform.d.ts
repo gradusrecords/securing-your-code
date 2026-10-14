@@ -1,1 +1,1 @@
-export function buildCatalogHtml(source: string): string;
+export function buildCatalogHtml(source: string, options?: { threeSource?: string }): string;
