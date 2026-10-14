@@ -4,7 +4,7 @@
 
 **Goal:** Рабочий каркас: мобильное приложение Expo с входом (Google, Apple, email), выбором роли и экранами-оболочками по ролям, поверх Supabase-базы с правилами доступа (RLS), которые уже на этом этапе не дают бизнесмену читать контакты моделей.
 
-**Architecture:** Монорепозиторий с `app/` (Expo, TypeScript), `supabase/` (миграции SQL и тесты pgTAP). Роль хранится в `profiles.role` и задаётся триггером при регистрации (только `model` или `business`; `admin` назначается вручную). Публичные данные моделей для бизнесмена отдаются только через представление `public_model_cards`. Админка (`admin/`) в этом этапе не создаётся.
+**Architecture:** Монорепозиторий с `mobile/` (Expo, TypeScript), `supabase/` (миграции SQL и тесты pgTAP). Роль хранится в `profiles.role` и задаётся триггером при регистрации (только `model` или `business`; `admin` назначается вручную). Публичные данные моделей для бизнесмена отдаются только через представление `public_model_cards`. Админка (`admin/`) в этом этапе не создаётся.
 
 **Tech Stack:** Expo SDK (React Native), TypeScript, expo-router, @supabase/supabase-js, expo-apple-authentication, @react-native-google-signin/google-signin, i18next, Jest (jest-expo), Supabase CLI, pgTAP.
 
@@ -19,7 +19,7 @@
 - Изоляция реализуется RLS в PostgreSQL и ограниченными представлениями, а не только интерфейсом.
 - Бизнесмен не видит телефон, Telegram, Instagram, дату рождения, данные родителя моделей.
 - Секреты и ключи не хранятся в репозитории (только переменные окружения; в репозитории `.env.example`).
-- Код проекта в каталогах `app/` и `supabase/`; существующие файлы репозитория (OWASP Juice Shop) не изменяются.
+- Код проекта в каталогах `mobile/` и `supabase/`; существующие файлы репозитория (OWASP Juice Shop) не изменяются.
 
 ## Review Focus
 
@@ -34,7 +34,7 @@
 ## File Structure
 
 ```
-app/                              Expo-приложение
+mobile/                           Expo-приложение
   app.json, package.json, tsconfig.json, jest.config.js
   .env.example                    EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY, GOOGLE_WEB_CLIENT_ID
   src/lib/supabase.ts             клиент Supabase
@@ -43,7 +43,8 @@ app/                              Expo-приложение
   src/auth/authService.ts         email/Google/Apple вход, выход, роль
   src/auth/useSession.ts          хук состояния сессии и роли
   app/_layout.tsx                 корневой layout, роутинг по состоянию
-  app/(auth)/login.tsx, register.tsx, choose-role.tsx
+  app/splash.tsx                  экран загрузки
+  app/(auth)/login.tsx, register.tsx, choose-role.tsx, admin-note.tsx
   app/(model)/_layout.tsx, development.tsx, orders.tsx, profile.tsx
   app/(business)/_layout.tsx, orders.tsx, catalog.tsx, ideas.tsx
   __tests__/                      тесты Jest
@@ -62,18 +63,18 @@ README.md (каталог проекта: docs/zaya-setup.md)
 ### Task 1: Каркас проекта и инструменты
 
 **Files:**
-- Create: `app/` (через `npx create-expo-app@latest app --template tabs` с последующей очисткой примеров), `app/jest.config.js`, `app/.env.example`
+- Create: `mobile/` (через `npx create-expo-app@latest app --template tabs` с последующей очисткой примеров), `mobile/jest.config.js`, `mobile/.env.example`
 - Create: `supabase/config.toml` (через `supabase init`)
 - Create: `docs/zaya-setup.md`
-- Test: `app/__tests__/smoke.test.ts`
+- Test: `mobile/__tests__/smoke.test.ts`
 
 **Interfaces:**
-- Produces: рабочие команды `npm test --prefix app` (Jest) и `supabase test db` (pgTAP); `app/src/lib/theme.ts` экспортирует `theme: { colors: { black: '#050505'; gold: '#DBB577'; green: '#0B2F23'; green2: '#0E3829'; cream: '#EEE7DA' }; fonts: { serif: string; sans: string } }`.
+- Produces: рабочие команды `npm test --prefix mobile` (Jest) и `supabase test db` (pgTAP); `mobile/src/lib/theme.ts` экспортирует `theme: { colors: { black: '#050505'; gold: '#DBB577'; green: '#0B2F23'; green2: '#0E3829'; cream: '#EEE7DA' }; fonts: { serif: string; sans: string } }`.
 
-- [ ] **Step 1: Write the failing test** `app/__tests__/smoke.test.ts`: импортирует `theme` из `../src/lib/theme` и проверяет `theme.colors.gold === '#DBB577'` и `theme.colors.black === '#050505'`.
-- [ ] **Step 2: Run** `npm test --prefix app` — ожидается FAIL (модуль не найден).
-- [ ] **Step 3: Create** Expo-проект в `app/` (TypeScript, expo-router), удалить шаблонные экраны-примеры, настроить `jest-expo`; реализовать `theme` в `app/src/lib/theme.ts`. Добавить `app/.env.example` с тремя переменными из File Structure. Выполнить `supabase init` в корне. Описать в `docs/zaya-setup.md` запуск (Docker для `supabase start`, `npm test`).
-- [ ] **Step 4: Run** `npm test --prefix app` — ожидается PASS.
+- [ ] **Step 1: Write the failing test** `mobile/__tests__/smoke.test.ts`: импортирует `theme` из `../src/lib/theme` и проверяет `theme.colors.gold === '#DBB577'` и `theme.colors.black === '#050505'`.
+- [ ] **Step 2: Run** `npm test --prefix mobile` — ожидается FAIL (модуль не найден).
+- [ ] **Step 3: Create** Expo-проект в `mobile/` (TypeScript, expo-router), удалить шаблонные экраны-примеры, настроить `jest-expo`; реализовать `theme` в `mobile/src/lib/theme.ts`. Добавить `mobile/.env.example` с тремя переменными из File Structure. Выполнить `supabase init` в корне. Описать в `docs/zaya-setup.md` запуск (Docker для `supabase start`, `npm test`).
+- [ ] **Step 4: Run** `npm test --prefix mobile` — ожидается PASS.
 - [ ] **Step 5: Commit** `feat: scaffold Expo app and Supabase project`.
 
 ---
@@ -129,15 +130,15 @@ README.md (каталог проекта: docs/zaya-setup.md)
 ### Task 4: Сервис авторизации по email
 
 **Files:**
-- Create: `app/src/lib/supabase.ts`, `app/src/auth/authService.ts`
-- Test: `app/__tests__/authService.test.ts`
+- Create: `mobile/src/lib/supabase.ts`, `mobile/src/auth/authService.ts`
+- Test: `mobile/__tests__/authService.test.ts`
 
 **Interfaces:**
 - Consumes: Supabase-клиент из `supabase.ts`.
 - Produces: `export type Role = 'model' | 'business' | 'admin'`; `signUpWithEmail(email: string, password: string, role: 'model' | 'business'): Promise<void>`; `signInWithEmail(email: string, password: string): Promise<void>`; `signOut(): Promise<void>`; `getMyRole(): Promise<Role | null>` (читает `profiles.role` текущего пользователя); `setMyRole(role: 'model' | 'business'): Promise<void>` (вызывает RPC `set_my_role`).
 
 - [ ] **Step 1: Write failing tests** (Supabase-клиент мокается): `signUpWithEmail` вызывает `auth.signUp` с `options.data = { role }`; `signInWithEmail` пробрасывает ошибку Supabase как `Error` с её сообщением; `getMyRole` возвращает `null`, если профиль без роли; `setMyRole` вызывает `rpc('set_my_role', { new_role })`.
-- [ ] **Step 2: Run** `npm test --prefix app -- authService` — ожидается FAIL.
+- [ ] **Step 2: Run** `npm test --prefix mobile -- authService` — ожидается FAIL.
 - [ ] **Step 3: Implement** функции с сигнатурами выше; клиент создаётся из `EXPO_PUBLIC_SUPABASE_URL` и `EXPO_PUBLIC_SUPABASE_ANON_KEY`, хранилище сессии `AsyncStorage`, `autoRefreshToken: true`.
 - [ ] **Step 4: Run** тесты — ожидается PASS.
 - [ ] **Step 5: Commit** `feat(app): email auth service`.
@@ -147,15 +148,15 @@ README.md (каталог проекта: docs/zaya-setup.md)
 ### Task 5: Вход через Google и Apple
 
 **Files:**
-- Modify: `app/src/auth/authService.ts`, `app/app.json`
-- Test: `app/__tests__/socialAuth.test.ts`
+- Modify: `mobile/src/auth/authService.ts`, `mobile/app.json`
+- Test: `mobile/__tests__/socialAuth.test.ts`
 
 **Interfaces:**
 - Consumes: Supabase-клиент.
 - Produces: `signInWithGoogle(): Promise<void>`; `signInWithApple(): Promise<void>`; обе получают токен у провайдера и вызывают `supabase.auth.signInWithIdToken({ provider, token })`; при отмене пользователем возвращают без ошибки (`void`), не бросают.
 
 - [ ] **Step 1: Write failing tests** (модули провайдеров и Supabase мокаются): `signInWithGoogle` вызывает `signInWithIdToken` с `provider: 'google'` и полученным `idToken`; `signInWithApple` вызывает его с `provider: 'apple'` и `identityToken`; при коде отмены провайдера (`ERR_REQUEST_CANCELED`, `SIGN_IN_CANCELLED`) функции завершаются без исключения и без вызова Supabase; при ответе Apple без `email` и `fullName` вызов всё равно выполняется (повторный вход).
-- [ ] **Step 2: Run** `npm test --prefix app -- socialAuth` — ожидается FAIL.
+- [ ] **Step 2: Run** `npm test --prefix mobile -- socialAuth` — ожидается FAIL.
 - [ ] **Step 3: Implement** функции; в `app.json` добавить плагины `expo-apple-authentication` и `@react-native-google-signin/google-signin`, `ios.usesAppleSignIn: true`, идентификаторы `ios.bundleIdentifier` и `android.package` значением `uz.zaya.app`. Идентификаторы OAuth-клиентов брать из `.env` (`GOOGLE_WEB_CLIENT_ID`, `GOOGLE_IOS_CLIENT_ID`).
 - [ ] **Step 4: Run** тесты — ожидается PASS.
 - [ ] **Step 5: Commit** `feat(app): Google and Apple sign-in`.
@@ -165,17 +166,17 @@ README.md (каталог проекта: docs/zaya-setup.md)
 ### Task 6: Состояние сессии, роутинг по ролям, оболочки, i18n
 
 **Files:**
-- Create: `app/src/auth/useSession.ts`, `app/src/i18n/{index.ts,ru.json,uz.json,en.json}`, `app/app/_layout.tsx`, `app/app/(auth)/{login,register,choose-role}.tsx`, `app/app/(model)/{_layout,development,orders,profile}.tsx`, `app/app/(business)/{_layout,orders,catalog,ideas}.tsx`
-- Test: `app/__tests__/routing.test.ts`, `app/__tests__/i18n.test.ts`
+- Create: `mobile/src/auth/useSession.ts`, `mobile/src/i18n/{index.ts,ru.json,uz.json,en.json}`, `mobile/app/_layout.tsx`, `mobile/app/splash.tsx`, `mobile/app/(auth)/{login,register,choose-role,admin-note}.tsx`, `mobile/app/(model)/{_layout,development,orders,profile}.tsx`, `mobile/app/(business)/{_layout,orders,catalog,ideas}.tsx`
+- Test: `mobile/__tests__/routing.test.ts`, `mobile/__tests__/i18n.test.ts`
 
 **Interfaces:**
 - Consumes: `getMyRole`, `setMyRole`, `signOut` из `authService`.
 - Produces: `type SessionState = { status: 'loading' } | { status: 'signedOut' } | { status: 'needsRole' } | { status: 'ready'; role: Role }`; `useSession(): SessionState`; чистая функция `routeFor(state: SessionState): string` с отображением `loading → '/splash'`, `signedOut → '/(auth)/login'`, `needsRole → '/(auth)/choose-role'`, `ready/model → '/(model)/development'`, `ready/business → '/(business)/orders'`, `ready/admin → '/(auth)/admin-note'`; `t(key: string): string`, `setLanguage(lang: 'ru' | 'uz' | 'en'): void`.
 
 - [ ] **Step 1: Write failing tests:** `routeFor` для всех пяти состояний возвращает значения выше; `useSession` при отсутствии сессии/ошибке обновления токена даёт `signedOut`, при сессии без роли — `needsRole`; `t('slogan')` на RU возвращает «Твоя высота начинается здесь», на EN — «Your heights begin here», на UZ — «Sening cho‘qqing shu yerdan boshlanadi»; во всех трёх файлах переводов одинаковый набор ключей.
-- [ ] **Step 2: Run** `npm test --prefix app -- routing i18n` — ожидается FAIL.
+- [ ] **Step 2: Run** `npm test --prefix mobile -- routing i18n` — ожидается FAIL.
 - [ ] **Step 3: Implement** `useSession` (подписка на `onAuthStateChange`, загрузка роли через `getMyRole`, ошибка/таймаут → `signedOut`), `routeFor`, i18n (i18next; язык по умолчанию — русский), и экраны-оболочки: вкладки модели «Развитие / Заказы / Профиль» и бизнесмена «Заказы / Каталог / Идеи» с заголовками и пустыми состояниями, экран входа с тремя способами (email, Google, Apple; Apple-кнопка только на iOS), регистрацию с выбором роли, экран `choose-role`, переключатель языка. Админ в мобильном приложении видит заметку «Используйте веб-админку» и кнопку выхода. Стиль — по `theme`.
-- [ ] **Step 4: Run** `npm test --prefix app` — ожидается PASS (все тесты).
+- [ ] **Step 4: Run** `npm test --prefix mobile` — ожидается PASS (все тесты).
 - [ ] **Step 5: Commit** `feat(app): session routing, role shells and i18n`.
 
 ---
@@ -194,7 +195,7 @@ README.md (каталог проекта: docs/zaya-setup.md)
 - [ ] **Step 1: Write failing pgTAP tests:** `promote_to_admin('a@x')` под `service_role` делает профиль админом; вызов под `authenticated` бросает исключение (нет прав); вызов для несуществующего email бросает исключение.
 - [ ] **Step 2: Run** `supabase test db` — ожидается FAIL.
 - [ ] **Step 3: Implement** функцию в новой миграции `supabase/migrations/0003_promote_admin.sql`, права `revoke ... from public, anon, authenticated`; `scripts/promote-admin.sql` содержит вызов-пример без реальных адресов; `seed.sql` создаёт по одному тестовому пользователю каждой роли для локальной разработки; в `docs/zaya-setup.md` описать пошагово: создание проекта Supabase, включение провайдеров Google и Apple, привязку переменных окружения, назначение суперадмина.
-- [ ] **Step 4: Run** `supabase test db` и `npm test --prefix app` — оба PASS.
+- [ ] **Step 4: Run** `supabase test db` и `npm test --prefix mobile` — оба PASS.
 - [ ] **Step 5: Commit** `feat: admin promotion function and setup docs`.
 
 ---
