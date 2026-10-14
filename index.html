@@ -364,6 +364,27 @@ body.nogl[data-season="winter"]{background:radial-gradient(120% 90% at 50% 100%,
 .mq .btn{padding:12px 26px}
 @media (max-width:520px){.mq{width:calc(100vw - 24px);justify-content:space-between;padding:10px 10px 10px 18px}.mq p{white-space:normal;font-size:18px}.mq .btn{padding:12px 18px}}
 
+/* ---------- CATALOG DRAWER: pull the ribbon ---------- */
+body.dr-on{overflow:hidden}
+.drawer{position:fixed;inset:0;z-index:75;pointer-events:none}
+.drawer-dim{position:absolute;inset:0;background:rgba(2,6,4,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .7s var(--ease)}
+.drawer.open .drawer-dim{pointer-events:auto}
+.drawer-panel{position:absolute;top:0;right:0;height:100%;width:min(100vw,1180px);transform:translateX(100%);transition:transform .7s var(--ease);background:#030a07;box-shadow:-30px 0 80px rgba(0,0,0,.6);will-change:transform}
+.drawer.open .drawer-panel{pointer-events:auto}
+.drawer.drag .drawer-panel,.drawer.drag .drawer-dim{transition:none}
+.drawer.drag iframe{pointer-events:none}
+.drawer-panel iframe{display:block;width:100%;height:100%;border:0;background:#030a07}
+.pull{appearance:none;border:0;padding:0;cursor:grab;touch-action:none;pointer-events:auto;position:absolute;left:-46px;top:44%;width:46px;height:176px;display:grid;place-items:center;align-content:center;gap:16px;color:#0a140f;background:linear-gradient(90deg,#E8C98F,#DBB577 55%,#B8935A);border-radius:12px 0 0 12px;box-shadow:-6px 8px 24px rgba(0,0,0,.45);opacity:0;transition:opacity 1s var(--ease)}
+body.ready .pull{opacity:1}
+.pull:active{cursor:grabbing}
+.pull:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
+.pull::before{content:"";position:absolute;left:3px;top:10px;bottom:10px;width:1px;background:rgba(10,20,15,.28)}
+.pull .grip{width:14px;height:2px;background:currentColor;box-shadow:0 5px 0 currentColor,0 -5px 0 currentColor;opacity:.7}
+.pull .lbl{writing-mode:vertical-rl;transform:rotate(180deg);font:400 11px/1 var(--sans);letter-spacing:.32em;text-transform:uppercase}
+.pull.hint{animation:tug 1.6s var(--ease) 2}
+@keyframes tug{0%,100%{transform:translateX(0)}30%{transform:translateX(-16px)}60%{transform:translateX(-4px)}80%{transform:translateX(-10px)}}
+@media (max-width:760px){.pull{left:-38px;width:38px;height:150px;top:48%}}
+
 /* ---------- CURSOR ---------- */
 .cursor{position:fixed;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:300;transition:width .5s var(--ease),height .5s var(--ease),margin .5s var(--ease),background .5s;opacity:0}
 .cursor.big{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(219,181,119,.14);border:1px solid var(--gold)}
@@ -571,6 +592,14 @@ body.nogl[data-season="winter"]{background:radial-gradient(120% 90% at 50% 100%,
 
   <div class="cross"><a href="#business"><span class="cap" data-i="x.biz.k">ZAYA Consulting</span><b data-i="x.biz">Бизнес под ключ →</b></a></div>
 </main>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-dim" id="dDim"></div>
+  <aside class="drawer-panel" id="dPanel" aria-label="Catalog">
+    <button class="pull" id="pull" type="button" aria-expanded="false" aria-controls="dPanel"><span class="grip" aria-hidden="true"></span><span class="lbl" data-i="n.cat">Каталог</span></button>
+    <iframe id="dFrame" title="ZAYA MG catalog"></iframe>
+  </aside>
+</div>
 
 <dialog class="dlg" id="dlg" aria-labelledby="dlg-t">
   <button class="x" type="button" data-close aria-label="Close">×</button>
@@ -962,6 +991,40 @@ const MUSIC_SRC="music.mp3";
   });
 })();
 
+/* ---------------- catalog drawer: pull the ribbon on the right edge ---------------- */
+(function(){
+  const dr=$("drawer"),panel=$("dPanel"),pull=$("pull"),dim=$("dDim"),fr=$("dFrame");
+  let isOpen=false,x=0,drag=null;
+  const pw=()=>panel.offsetWidth,clampX=v=>Math.min(pw(),Math.max(0,v));
+  const setX=v=>{x=v;panel.style.transform="translateX("+v+"px)";dim.style.opacity=String(1-v/pw())};
+  const load=()=>{if(!fr.getAttribute("src"))fr.setAttribute("src","catalog.html")};
+  function open(){load();isOpen=true;dr.classList.add("open");pull.setAttribute("aria-expanded","true");document.body.classList.add("dr-on");setX(0);setTimeout(()=>{if(isOpen)try{fr.focus()}catch(e){}},750)}
+  function close(){isOpen=false;dr.classList.remove("open");pull.setAttribute("aria-expanded","false");document.body.classList.remove("dr-on");setX(pw());try{pull.focus({preventScroll:true})}catch(e){}}
+  setX(pw());
+  addEventListener("resize",()=>setX(isOpen?0:pw()));
+  pull.addEventListener("pointerdown",e=>{
+    if(e.button)return;load();pull.classList.remove("hint");
+    drag={sx:e.clientX,x0:x,moved:false,lx:e.clientX,lt:performance.now(),v:0};
+    pull.setPointerCapture(e.pointerId);dr.classList.add("drag");
+  });
+  pull.addEventListener("pointermove",e=>{
+    if(!drag)return;const dx=e.clientX-drag.sx;if(Math.abs(dx)>4)drag.moved=true;
+    setX(clampX(drag.x0+dx));
+    const now=performance.now();drag.v=(e.clientX-drag.lx)/Math.max(1,now-drag.lt);drag.lx=e.clientX;drag.lt=now;
+  });
+  const end=()=>{
+    if(!drag)return;const d=drag;drag=null;dr.classList.remove("drag");
+    if(!d.moved){isOpen?close():open();return}
+    (Math.abs(d.v)>.5?d.v<0:x<pw()*.55)?open():close();
+  };
+  pull.addEventListener("pointerup",end);pull.addEventListener("pointercancel",end);
+  pull.addEventListener("click",e=>{if(e.detail===0)isOpen?close():open()});/* keyboard */
+  dim.addEventListener("click",close);
+  addEventListener("keydown",e=>{if(e.key==="Escape"&&isOpen)close()});
+  addEventListener("message",e=>{if(e.data==="zaya-close"&&e.source===fr.contentWindow&&isOpen)close()});
+  document.addEventListener("zaya:ready",()=>setTimeout(()=>{if(!isOpen)pull.classList.add("hint")},2600),{once:true});
+})();
+
 /* ---------------- reveal ---------------- */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});
 function revealIn(root){if(!root)return;root.querySelectorAll(".rise:not(.in)").forEach(el=>{if(el.getBoundingClientRect().top<innerHeight)el.classList.add("in");else io.observe(el)})}
@@ -1073,7 +1136,7 @@ const fx=(function(){
   function scan(){
     const out=[],B=document.body.classList;
     Y0=scrollY;OFF=0;
-    if(B.contains("intro-on")||B.contains("dlg-on")){surf=out;bucket();return}
+    if(B.contains("intro-on")||B.contains("dlg-on")||B.contains("dr-on")){surf=out;bucket();return}
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(n){
       if(!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
       const p=n.parentElement;
