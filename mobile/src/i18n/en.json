@@ -155,5 +155,9 @@
   "ostatus.open": "Open",
   "ostatus.selected": "Selected",
   "ostatus.completed": "Completed",
-  "ostatus.cancelled": "Cancelled"
+  "ostatus.cancelled": "Cancelled",
+  "catalog.favorites": "Favourites",
+  "ideas.pr": "PR",
+  "ideas.media": "Media",
+  "ideas.motivation": "No stereotypes"
 }

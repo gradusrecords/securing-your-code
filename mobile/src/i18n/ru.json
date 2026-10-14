@@ -155,5 +155,9 @@
   "ostatus.open": "Открыт",
   "ostatus.selected": "Выбор сделан",
   "ostatus.completed": "Выполнен",
-  "ostatus.cancelled": "Отменён"
+  "ostatus.cancelled": "Отменён",
+  "catalog.favorites": "Фавориты",
+  "ideas.pr": "PR",
+  "ideas.media": "Медиа",
+  "ideas.motivation": "Без стереотипов"
 }

@@ -155,5 +155,9 @@
   "ostatus.open": "Ochiq",
   "ostatus.selected": "Tanlov qilingan",
   "ostatus.completed": "Bajarilgan",
-  "ostatus.cancelled": "Bekor qilingan"
+  "ostatus.cancelled": "Bekor qilingan",
+  "catalog.favorites": "Sevimlilar",
+  "ideas.pr": "PR",
+  "ideas.media": "Media",
+  "ideas.motivation": "Stereotiplarsiz"
 }
