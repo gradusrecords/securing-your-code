@@ -126,3 +126,16 @@ test('cancelling needs a second confirming press', async () => {
   await fireEvent.press(screen.getByTestId('cancel-confirm'));
   await waitFor(() => expect(s.cancelOrder).toHaveBeenCalledWith('o1'));
 });
+
+test('the business cannot tick more models than the brief asks for', async () => {
+  mockParams = { id: 'o1' };
+  s.listBusinessOrders.mockResolvedValue([{ ...order, brief: { ...brief, who: { count: 1 } } }]);
+  s.selectModels.mockResolvedValue(undefined);
+  await render(<OrderDetail />);
+  await screen.findByText(/Aziza/);
+  await fireEvent.press(screen.getByTestId('pick-m1'));
+  await fireEvent.press(screen.getByTestId('pick-m2'));
+  expect(await screen.findByText(t('orders.select_limit', { n: 1 }))).toBeTruthy();
+  await fireEvent.press(screen.getByTestId('send-selection'));
+  await waitFor(() => expect(s.selectModels).toHaveBeenCalledWith('o1', ['m1']));
+});

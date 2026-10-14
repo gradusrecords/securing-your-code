@@ -13,7 +13,7 @@ i18next.init({
   initAsync: false,
 });
 
-export const t = (key: string): string => i18next.t(key);
+export const t = (key: string, options?: Record<string, string | number>): string => i18next.t(key, options) as string;
 export const setLanguage = (lang: Language): void => { void i18next.changeLanguage(lang); };
 export default i18next;
 export const currentLanguage = (): Language => ((i18next.language as Language) || 'ru');

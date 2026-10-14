@@ -163,5 +163,6 @@
   "catalog.mode3d": "3D",
   "catalog.modeList": "Ro‘yxat",
   "orders.yes": "Ha",
-  "orders.no": "Yo‘q"
+  "orders.no": "Yo‘q",
+  "orders.select_limit": "Ko‘pi bilan {{n}} tani tanlash mumkin"
 }

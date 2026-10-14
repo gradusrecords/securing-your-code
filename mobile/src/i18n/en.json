@@ -163,5 +163,6 @@
   "catalog.mode3d": "3D",
   "catalog.modeList": "List",
   "orders.yes": "Yes",
-  "orders.no": "No"
+  "orders.no": "No",
+  "orders.select_limit": "You can pick at most {{n}}"
 }

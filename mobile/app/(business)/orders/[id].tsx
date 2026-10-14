@@ -18,6 +18,7 @@ export default function BusinessOrderDetail() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [limitHint, setLimitHint] = useState('');
   const [question, setQuestion] = useState('');
 
   const load = async () => {
@@ -56,7 +57,13 @@ export default function BusinessOrderDetail() {
           const on = picked.includes(m.model_id);
           return (
             <Pressable key={m.model_id} testID={`pick-${m.model_id}`} disabled={!canSelect}
-              onPress={() => setPicked((p) => (on ? p.filter((x) => x !== m.model_id) : [...p, m.model_id]))}
+              onPress={() => {
+                setLimitHint('');
+                if (on) { setPicked((p) => p.filter((x) => x !== m.model_id)); return; }
+                const limit = Number(order.brief.who.count);
+                if (limit >= 1 && picked.length >= limit) { setLimitHint(t('orders.select_limit', { n: limit })); return; }
+                setPicked((p) => [...p, m.model_id]);
+              }}
               style={[s.model, on && s.modelOn]}>
               <Text style={[s.modelName, on && s.modelNameOn]}>{m.display_name}{m.is_favorite ? ' ★' : ''}</Text>
               <Text style={[s.modelMeta, on && s.modelNameOn]}>{m.height_cm} cm</Text>
@@ -64,6 +71,7 @@ export default function BusinessOrderDetail() {
             </Pressable>
           );
         })}
+        {limitHint ? <Text style={s.error}>{limitHint}</Text> : null}
         {canSelect && models.length > 0 ? (
           <Button filled testID="send-selection" label={t('orders.select_send')}
             onPress={() => run(async () => { await selectModels(id, picked); await load(); })} />

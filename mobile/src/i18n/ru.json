@@ -163,5 +163,6 @@
   "catalog.mode3d": "3D",
   "catalog.modeList": "Список",
   "orders.yes": "Да",
-  "orders.no": "Нет"
+  "orders.no": "Нет",
+  "orders.select_limit": "Можно выбрать не больше {{n}}"
 }
