@@ -5,11 +5,7 @@
 
 ## Быстрый путь на iPhone
 1. Supabase: создайте проект, в SQL editor выполните по очереди все файлы из `supabase/migrations/`, затем из `supabase/seed/`. Authentication → Providers → Email включён.
-2. На своём компьютере (Node.js 20+):
-
-        export SUPABASE_URL=https://<project>.supabase.co
-        export SUPABASE_ANON_KEY=<anon public key>
-        bash scripts/release-ios.sh
+2. На своём компьютере (Node.js 20+) запустите установщик двойным щелчком: `ZAYA-iOS-Install.bat` (Windows) или `ZAYA-iOS-Install.command` (macOS). В терминале: `node scripts/install-ios.mjs`. Он сам спросит Project URL и ключ anon.
 3. В App Store Connect → TestFlight добавьте себя как тестировщика и установите приложение через TestFlight.
 4. Установите приложение, зарегистрируйте в нём тестовые аккаунты (две модели и бизнесмена), поправьте e-mail в `scripts/demo-data.sql` и выполните его в SQL editor — в каталоге появятся модели.
 5. Суперадмин: зарегистрируйтесь ещё одним аккаунтом и выполните `scripts/promote-admin.sql` со своим e-mail.

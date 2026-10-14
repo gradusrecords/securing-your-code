@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: node --test "supabase/functions/**/*.test.js"
+      - run: node --test "supabase/functions/**/*.test.js" "scripts/*.test.mjs"
 
   database:
     runs-on: ubuntu-latest

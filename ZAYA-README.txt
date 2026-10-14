@@ -31,7 +31,8 @@
   * mobile/ — Приложение для iPhone и Android (Expo, React Native, TypeScript)
   * admin/ — Веб-админка суперадмина (React, Vite)
   * supabase/ — База данных (миграции SQL, тесты, стартовый контент) и функция отправки push
-  * scripts/ — Сборка для iPhone одной командой, демо-данные, назначение суперадмина
+  * scripts/ — Установщик для iPhone (install-ios.mjs), демо-данные, назначение суперадмина
+  * ZAYA-iOS-Install.* — Запуск установщика двойным щелчком (Windows .bat, macOS .command, Linux .sh)
   * docs/ — Подробные инструкции (zaya-setup.md, zaya-release.md), спецификация и планы
 
 Остальные файлы в корне репозитория относятся к стороннему учебному проекту и приложением ZAYA не используются.
@@ -49,7 +50,7 @@
 
 Для сборки под iPhone Mac не нужен: приложение собирается в облаке Expo.
 
-Windows: команды ниже выполняйте в PowerShell или в Git Bash. Скрипт scripts/release-ios.sh запускается в Git Bash или WSL; в PowerShell можно выполнить его команды вручную (см. раздел 7).
+Windows: установщик запускается двойным щелчком по ZAYA-iOS-Install.bat; остальные команды выполняйте в PowerShell или Git Bash.
 
 5. Проверка, что всё работает
 -----------------------------
@@ -102,15 +103,17 @@ Windows: команды ниже выполняйте в PowerShell или в Gi
 2. В SQL editor выполните по очереди все файлы из supabase/migrations/ (от 0001 до 0016), затем из supabase/seed/.
 3. Authentication → Providers: включите Email.
 
-iPhone (TestFlight):
+iPhone (TestFlight): установщик:
 
-macOS, Linux, Git Bash, WSL:
+Самый простой способ — установщик, который сам спросит всё нужное и выполнит сборку в облаке:
 
-    export SUPABASE_URL=https://<проект>.supabase.co
-    export SUPABASE_ANON_KEY=<публичный anon-ключ>
-    bash scripts/release-ios.sh
+- Windows: дважды щёлкните ZAYA-iOS-Install.bat.
+- macOS: дважды щёлкните ZAYA-iOS-Install.command (в первый раз: правый клик → «Открыть»).
+- Linux, WSL, Git Bash: bash ZAYA-iOS-Install.sh.
 
-Windows PowerShell (то же вручную):
+Он проверит Node.js, спросит Project URL и ключ anon public из Supabase (секретный ключ service_role не примет), установит зависимости, войдёт в Expo, соберёт приложение и отправит его в TestFlight. Пробный запуск без аккаунтов: node scripts/install-ios.mjs --dry-run (команды только показываются).
+
+Если нужно вручную (например, в PowerShell):
 
     cd mobile
     npm ci --legacy-peer-deps
