@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Root .gitignore ignores any "app/" directory (Juice Shop); the Expo routes folder must be tracked.
+!/app/
+!/package-lock.json
+!/assets/
