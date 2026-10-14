@@ -20,6 +20,6 @@ for t in "$ROOT"/supabase/tests/[0-9]*.test.sql; do
   echo "== $(basename "$t")"
   out="$(psql -X -At -h /tmp -p $PORT -U postgres -d postgres -f "$t" 2>&1 || true)"
   echo "$out" | grep -E '^(ok|not ok|#|ERROR|psql:)' || true
-  if echo "$out" | grep -qE '^(not ok|ERROR|psql:.*ERROR)|Looks like you failed'; then fail=1; fi
+  if echo "$out" | grep -qE '^(not ok|ERROR|psql:.*ERROR)|Looks like you (failed|planned)'; then fail=1; fi
 done
 exit $fail
