@@ -106,13 +106,13 @@ const T={
 };
 // [ru name, uz name, height, directions, [eff ru, eff uz], [rec ru, rec uz]]
 const W=[
+ ["Камилла Музраббекова","Kamilla Muzrabbekova",165,["photo","ad","clip","promo"],["Фотосъёмки, реклама, клипы, шоурумы","Fotosuratga olish, reklama, kliplar, shourumlar"],["Больше 3 лет опыта в профессии. Готова к коммерческим проектам разных форматов.","Kasbda 3 yildan ortiq tajriba. Turli formatdagi tijoriy loyihalarga tayyor."]],
  ["Лаура Винникова","Laura Vinnikova",172,["show","photo","ad","clip","promo"],["Показы, fashion-съёмки, контент для брендов и блогов","Podium, fashion-suratga olish, brendlar va bloglar uchun kontent"],["10 лет опыта и аудитория блогера. Готовая модель: можно ставить на заказ с первого дня.","10 yillik tajriba va bloger auditoriyasi. Tayyor model: birinchi kundan buyurtmaga qo‘yish mumkin."]],
+ ["Хумора Мирзакасимова","Xumora Mirzakasimova",170,["show","photo","ad","promo"],["Подиум, каталоги одежды, fashion-съёмки","Podium, kiyim kataloglari, fashion-suratga olish"],["Выпускница Pantera Models, больше 4 лет в профессии. Профессиональная подача на подиуме.","Pantera Models bitiruvchisi, kasbda 4 yildan ortiq. Podiumda professional chiqish."]],
+ ["Шахризода Тураева","Shahrizoda Turayeva",163,["photo","ad","clip","promo"],["Промо, клипы, контент для соцсетей","Promo, kliplar, ijtimoiy tarmoqlar uchun kontent"],["Молодое лицо для промо и клипов.","Promo va kliplar uchun yosh yuz."]],
  ["Нурхаёт Калбаева","Nurhayot Qalbayeva",165,["show","photo","ad","clip"],["Клипы, lifestyle-съёмки","Kliplar, lifestyle-suratga olish"],["Новое лицо, открыта к обучению и разным форматам.","Yangi yuz, o‘rganishga va turli formatlarga ochiq."]],
  ["Ҳаётхон Собирова","Hayotxon Sobirova",161,["photo","ad","clip"],["ТВ-реклама, бренд-проекты, клипы","TV-reklama, brend loyihalar, kliplar"],["Телеведущая S Music и актриса сериалов. Узнаваемое лицо с опытом в рекламе больше 5 лет.","S Music teleboshlovchisi va seriallar aktrisasi. Reklamada 5 yildan ortiq tajribaga ega taniqli yuz."]],
  ["Оминабону Абдурахимова","Ominabonu Abduraximova",175,["show","photo","ad","clip","promo"],["Подиум, проекты с иностранными клиентами","Podium, xorijiy mijozlar bilan loyihalar"],["175 см и свободный английский. Подходит для показов и международных брендов.","Bo‘yi 175 sm va erkin ingliz tili. Namoyishlar va xalqaro brendlar uchun mos."]],
- ["Шахризода Тураева","Shahrizoda Turayeva",163,["photo","ad","clip","promo"],["Промо, клипы, контент для соцсетей","Promo, kliplar, ijtimoiy tarmoqlar uchun kontent"],["Молодое лицо для промо и клипов.","Promo va kliplar uchun yosh yuz."]],
- ["Камилла Музраббекова","Kamilla Muzrabbekova",165,["photo","ad","clip","promo"],["Фотосъёмки, реклама, клипы, шоурумы","Fotosuratga olish, reklama, kliplar, shourumlar"],["Больше 3 лет опыта в профессии. Готова к коммерческим проектам разных форматов.","Kasbda 3 yildan ortiq tajriba. Turli formatdagi tijoriy loyihalarga tayyor."]],
- ["Хумора Мирзакасимова","Xumora Mirzakasimova",170,["show","photo","ad","promo"],["Подиум, каталоги одежды, fashion-съёмки","Podium, kiyim kataloglari, fashion-suratga olish"],["Выпускница Pantera Models, больше 4 лет в профессии. Профессиональная подача на подиуме.","Pantera Models bitiruvchisi, kasbda 4 yildan ortiq. Podiumda professional chiqish."]],
  ["Алсу Габбасова","Alsu Gabbasova",165,["show","photo","ad"],["Каталоги, промо-мероприятия","Kataloglar, promo-tadbirlar"],["Пунктуальная и стрессоустойчивая. Надёжна на длинных сменах.","Punktual va stressga chidamli. Uzoq smenalarda ishonchli."]],
  ["Лазиза Салимова","Laziza Salimova",170,["ad","video"],["Коммерческие съёмки, рекламные ролики","Tijoriy suratga olish, reklama roliklari"],["Опыт коммерческих съёмок. Надёжна для рекламных проектов.","Tijoriy suratga olish tajribasi. Reklama loyihalari uchun ishonchli."]],
  ["Тамила Пазылова","Tamila Pazilova",165,["show","photo","ad","clip","promo"],["Lifestyle, образовательные и семейные бренды","Lifestyle, ta’lim va oilaviy brendlar"],["Педагог по образованию: ответственная, быстро учится.","Ma’lumoti bo‘yicha pedagog: mas’uliyatli, tez o‘rganadi."]],
@@ -175,7 +175,7 @@ const LEAVES=1+PAGES.length/2; // cover + spreads
 function star(ctx,cx,cy,r,on){ctx.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,rr=k%2?r*.45:r;ctx.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr)}ctx.closePath();
   if(on){const g=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,"#f3d9a2");g.addColorStop(1,"#b98d4a");ctx.fillStyle=g;ctx.fill()}else{ctx.strokeStyle="rgba(217,180,119,.45)";ctx.lineWidth=1.6;ctx.stroke()}}
 // agency score out of 10 — draft from experience: more than 3 years 9, 1-3 years or up to 1 year 8, new faces 7
-const RW=[9,7,9,7,7,9,9,7,8,7,7,7];
+const RW=[9,9,9,7,7,9,7,7,8,7,7,7];
 const RM=[7,7,8,7,9,8,8,7,9,8,7,8,8];
 
 let LOGO;
