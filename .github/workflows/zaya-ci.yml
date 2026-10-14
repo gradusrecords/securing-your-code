@@ -1,0 +1,51 @@
+name: zaya-ci
+
+on:
+  push:
+    paths: ['mobile/**', 'admin/**', 'supabase/**', '.github/workflows/zaya-ci.yml']
+  pull_request:
+    paths: ['mobile/**', 'admin/**', 'supabase/**', '.github/workflows/zaya-ci.yml']
+
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: mobile } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: mobile/package-lock.json }
+      - run: npm ci --legacy-peer-deps
+      - run: npx tsc --noEmit
+      - run: npx jest --no-cache
+
+  admin:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: admin } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: admin/package-lock.json }
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npm run build
+
+  functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node --test "supabase/functions/**/*.test.js"
+
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL 16 and pgTAP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 postgresql-16-pgtap
+          sudo systemctl stop postgresql || true
+      - name: Run the database tests (temporary cluster)
+        run: sudo bash supabase/tests/run.sh
