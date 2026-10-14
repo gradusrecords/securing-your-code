@@ -1,5 +1,5 @@
 begin;
-select plan(8);
+select plan(10);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-0000000000a1', 'm1@x', '{"role":"model"}'),
@@ -36,6 +36,14 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000a2', true);
 select lives_ok($$insert into storage.objects (bucket_id, name) values ('model-photos', '00000000-0000-0000-0000-0000000000a2/new.jpg')$$, 'model uploads into own folder');
 select throws_ok($$insert into storage.objects (bucket_id, name) values ('model-photos', '00000000-0000-0000-0000-0000000000a3/evil.jpg')$$, null, null, 'model cannot upload into another folder');
+
+-- PostgREST upsert = INSERT ... ON CONFLICT (id) DO UPDATE SET id = excluded.id, ...
+select lives_ok($$insert into public.model_profiles (id, full_name, birth_date, gender, phone, telegram, height_cm, experience)
+  values ('00000000-0000-0000-0000-0000000000a2', 'New Name', '2000-01-01', 'female', '+998900000002', '@a', 170, '0')
+  on conflict (id) do update set id = excluded.id, full_name = excluded.full_name, birth_date = excluded.birth_date,
+    gender = excluded.gender, phone = excluded.phone, telegram = excluded.telegram, height_cm = excluded.height_cm, experience = excluded.experience$$,
+  'model can upsert own card the way PostgREST does');
+select is((select full_name from public.model_profiles where id = '00000000-0000-0000-0000-0000000000a2'), 'New Name', 'upsert changed the card');
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000b1', true);
 select is((select count(*)::int from storage.objects where name like '%a.jpg'), 1, 'business reads photos of a published approved model');

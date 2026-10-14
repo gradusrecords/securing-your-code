@@ -1,5 +1,5 @@
 begin;
-select plan(22);
+select plan(23);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-0000000000a1', 'm@x', '{"role":"model"}'),
@@ -66,6 +66,13 @@ select is((select my_response from public.model_order_cards), 'needs_reconfirm',
 select is((select updated_flag from public.model_order_cards), true, 'card is flagged as updated');
 select lives_ok($$select public.respond_to_order('00000000-0000-0000-0000-00000000f001', true)$$, 're-confirm the new version');
 select is((select updated_flag from public.model_order_cards), false, 'flag clears after re-confirming');
+
+-- once the business has selected, models can no longer change their answer
+reset role;
+update public.orders set status = 'selected' where id = '00000000-0000-0000-0000-00000000f001';
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000a1', true);
+select throws_ok($$select public.respond_to_order('00000000-0000-0000-0000-00000000f001', false)$$, null, null, 'cannot change the answer after the order is selected');
 
 -- questions
 select throws_ok($$select public.ask_question('00000000-0000-0000-0000-00000000f001', '   ')$$, null, null, 'empty question rejected');

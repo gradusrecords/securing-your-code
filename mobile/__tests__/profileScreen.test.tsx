@@ -4,7 +4,7 @@ jest.mock('../src/services/modelCardService', () => ({
   uploadPhoto: jest.fn(),
 }));
 jest.mock('../src/lib/supabase', () => ({
-  supabase: { storage: { from: () => ({ getPublicUrl: () => ({ data: { publicUrl: 'https://example.test/p.jpg' } }) }) } },
+  supabase: { storage: { from: () => ({ createSignedUrl: async () => ({ data: { signedUrl: 'https://example.test/p.jpg' }, error: null }) }) } },
 }));
 jest.mock('../src/auth/authService', () => ({ signOut: jest.fn() }));
 jest.mock('expo-image-picker', () => ({

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadPhoto } from '../services/modelCardService';
@@ -11,6 +11,18 @@ const MAX_PHOTOS = 6;
 
 export function PhotoPicker({ photos, onChange }: { photos: string[]; onChange: (p: string[]) => void }) {
   const [error, setError] = useState('');
+  const [urls, setUrls] = useState<Record<string, string>>({});
+
+  // The bucket is private: thumbnails need short-lived signed URLs.
+  useEffect(() => {
+    let alive = true;
+    photos.filter((p) => !urls[p]).forEach(async (p) => {
+      const { data } = await supabase.storage.from('model-photos').createSignedUrl(p, 3600);
+      if (alive && data?.signedUrl) setUrls((prev) => ({ ...prev, [p]: data.signedUrl }));
+    });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photos]);
 
   const add = async () => {
     setError('');
@@ -26,15 +38,13 @@ export function PhotoPicker({ photos, onChange }: { photos: string[]; onChange: 
     }
   };
 
-  const urlFor = (path: string) => supabase.storage.from('model-photos').getPublicUrl(path).data.publicUrl;
-
   return (
     <View>
       <Text style={s.label}>{t('profile.photos')}</Text>
       <View style={s.row}>
-        {photos.map((p) => (
+        {photos.map((p, i) => (
           <Pressable key={p} onPress={() => onChange(photos.filter((x) => x !== p))}>
-            <Image source={{ uri: urlFor(p) }} style={s.thumb} />
+            <Image testID={`photo-${i}`} source={{ uri: urls[p] }} style={s.thumb} />
           </Pressable>
         ))}
       </View>
