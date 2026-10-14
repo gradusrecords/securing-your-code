@@ -59,3 +59,12 @@ test('a Supabase error is surfaced as an Error', async () => {
   idTokenCall.mockResolvedValue({ error: { message: 'provider disabled' } });
   await expect(signInWithGoogle()).rejects.toThrow('provider disabled');
 });
+
+test('Google is configured from EXPO_PUBLIC_ env vars (the only ones Expo inlines)', async () => {
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = 'web-id';
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID = 'ios-id';
+  googleSignIn.mockResolvedValue({ data: { idToken: 't' } });
+  idTokenCall.mockResolvedValue({ error: null });
+  await signInWithGoogle();
+  expect(GoogleSignin.configure).toHaveBeenCalledWith({ webClientId: 'web-id', iosClientId: 'ios-id' });
+});

@@ -47,8 +47,8 @@ async function exchangeIdToken(provider: 'google' | 'apple', token: string): Pro
 
 export async function signInWithGoogle(): Promise<void> {
   GoogleSignin.configure({
-    webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
-    iosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   });
   try {
     await GoogleSignin.hasPlayServices();
