@@ -1,41 +1,41 @@
--- Starter content for the "Development" tab. DRAFT: titles and texts are approved by ZAYA.
--- Idempotent: ids are derived from the sequence number.
+-- Starter content for the "Development" tab (RU/UZ/EN). DRAFT: approved by ZAYA.
+-- Idempotent: ids come from the sequence number; texts are refreshed on re-apply.
 insert into public.dev_tasks (id, title, description, points)
 select md5('zaya-dev-task-' || n)::uuid,
-       jsonb_build_object('ru', title, 'uz', '', 'en', ''),
-       jsonb_build_object('ru', descr, 'uz', '', 'en', ''),
+       jsonb_build_object('ru', ru_t, 'uz', uz_t, 'en', en_t),
+       jsonb_build_object('ru', ru_d, 'uz', uz_d, 'en', en_d),
        points
 from (values
-  (1, 'Обновите обложку профиля', 'Выберите одно лучшее фото и поставьте его на аватар в Instagram. Лицо должно быть хорошо видно.', 3),
-  (2, 'Опубликуйте пост о себе', 'Напишите короткий пост: кто вы, чем занимаетесь, какие съёмки вам интересны. 3–4 предложения.', 5),
-  (3, 'Напишите био в одну строку', 'Сформулируйте, чем вы отличаетесь от других моделей, и добавьте это в описание профиля.', 3),
-  (4, 'Пересмотрите портфолио', 'Оставьте в портфолио 5 лучших кадров и уберите слабые. Качество важнее количества.', 6),
-  (5, 'Отработайте позинг у зеркала', '10 минут: 5 разных поз стоя, 5 сидя. Следите за плечами и руками.', 4),
-  (6, 'Тренировка мимики', 'Сделайте 10 выражений лица перед камерой телефона: радость, спокойствие, интерес, уверенность.', 4),
-  (7, 'Запишите видеопредставление', '15–20 секунд: имя, город, рост, направление работы. Хороший свет, ровный фон.', 7),
-  (8, 'Изучите работу известного фотографа', 'Найдите одного фотографа, чьи съёмки вам нравятся, и запишите три приёма, которые заметили.', 3),
-  (9, 'Составьте мудборд', 'Соберите 10 референсов для вашей идеальной съёмки и сохраните в одну папку.', 5),
-  (10, 'Тренировка походки', 'Пройдите по прямой 5 минут: корпус ровно, шаг от бедра, взгляд вперёд. Снимите себя сбоку.', 5),
-  (11, 'Разминка для осанки', '10 минут упражнений на спину и плечи. Осанка — основа любого кадра.', 3),
-  (12, 'Уход за кожей', 'Сегодня: очищение, увлажнение, SPF. Отметьте, как себя чувствует кожа.', 2),
-  (13, 'Подготовьте образ на кастинг', 'Подберите одежду для кастинга: простая, облегающая, нейтральных цветов.', 4),
-  (14, 'Проверьте свои параметры', 'Измерьте рост, грудь, талию, бёдра и обновите анкету, если что-то изменилось.', 3),
-  (15, 'Прочитайте короткий урок: язык тела', 'Прочитайте статью про язык тела на камере и выпишите два совета.', 3),
-  (16, 'Познакомьтесь с профессией', 'Найдите в интернете интервью с моделью, чей путь вам близок, и запишите главную мысль.', 3),
-  (17, 'Ответьте на вопрос: ваша цель', 'Запишите, чего вы хотите достичь как модель за год. Три конкретные цели.', 4),
-  (18, 'Сделайте фото при дневном свете', 'Снимите себя у окна: без фильтров, крупный план и в полный рост.', 6),
-  (19, 'Фото в полный рост', 'Попросите друга снять вас в полный рост на нейтральном фоне. Для анкеты это ключевой кадр.', 7),
-  (20, 'Проверьте контакты', 'Убедитесь, что телефон и Telegram в анкете актуальны и вы отвечаете на сообщения.', 2),
-  (21, 'Изучите правила кастинга', 'Прочитайте, что нужно брать с собой на кастинг и как себя вести. Составьте список из 5 пунктов.', 3),
-  (22, 'Расскажите о себе на камеру', 'Запишите 30-секундное видео «Почему я хочу работать моделью». Говорите спокойно и искренне.', 6),
-  (23, 'Отработайте улыбку и взгляд', 'Снимите три коротких видео: тёплый взгляд, уверенный взгляд, лёгкая улыбка.', 4),
-  (24, 'Составьте список брендов', 'Выпишите 10 брендов, с которыми вы хотели бы работать, и почему.', 3),
-  (25, 'Сходите на мероприятие', 'Посетите показ, выставку или презентацию и познакомьтесь с одним новым человеком из индустрии.', 8),
-  (26, 'Поблагодарите коллегу', 'Напишите тем, с кем работали недавно, короткое сообщение с благодарностью. Репутация — часть бренда.', 3),
-  (27, 'Сделайте цифровую ревизию', 'Проверьте старые публикации в соцсетях: уберите то, что не соответствует вашему образу.', 5),
-  (28, 'Выучите свои сильные стороны', 'Попросите двух людей назвать три ваши лучшие профессиональные черты и запишите ответы.', 4),
-  (29, 'Подготовьте короткий рассказ о себе', 'Отрепетируйте самопрезентацию на 30 секунд для встречи с клиентом или менеджером.', 5),
-  (30, 'Неделя без критики себя', 'Весь день отмечайте только то, что получилось. Вечером запишите три достижения.', 3)
-) as t(n, title, descr, points)
-on conflict (id) do nothing;
+  (1, 'Обновите обложку профиля', 'Profil muqovasini yangilang', 'Update your profile cover', 'Выберите одно лучшее фото и поставьте его на аватар в Instagram. Лицо должно быть хорошо видно.', 'Instagram avatariga bitta eng yaxshi suratni qo‘ying. Yuz yaxshi ko‘rinishi kerak.', 'Choose one best photo and set it as your Instagram avatar. Your face should be clearly visible.', 3),
+  (2, 'Опубликуйте пост о себе', 'O‘zingiz haqingizda post joylang', 'Publish a post about yourself', 'Напишите короткий пост: кто вы, чем занимаетесь, какие съёмки вам интересны. 3–4 предложения.', 'Qisqa post yozing: kimsiz, nima bilan shug‘ullanasiz, qanday suratga olishlar qiziq. 3–4 gap.', 'Write a short post: who you are, what you do, which shoots interest you. 3–4 sentences.', 5),
+  (3, 'Напишите био в одну строку', 'Bir qatorlik bio yozing', 'Write a one-line bio', 'Сформулируйте, чем вы отличаетесь от других моделей, и добавьте это в описание профиля.', 'Boshqa modellardan nimasi bilan farq qilishingizni ifodalang va profil tavsifiga qo‘shing.', 'State what sets you apart from other models and add it to your profile description.', 3),
+  (4, 'Пересмотрите портфолио', 'Portfoliongizni qayta ko‘rib chiqing', 'Review your portfolio', 'Оставьте в портфолио 5 лучших кадров и уберите слабые. Качество важнее количества.', 'Portfolioda 5 ta eng yaxshi kadrni qoldiring, zaiflarini olib tashlang. Miqdordan ko‘ra sifat muhim.', 'Keep your 5 best shots in the portfolio and remove the weaker ones. Quality matters more than quantity.', 6),
+  (5, 'Отработайте позинг у зеркала', 'Ko‘zgu oldida poza mashq qiling', 'Practise posing at the mirror', '10 минут: 5 разных поз стоя, 5 сидя. Следите за плечами и руками.', '10 daqiqa: 5 ta tik turib va 5 ta o‘tirib pozalar. Yelka va qo‘llarga e’tibor bering.', '10 minutes: 5 standing poses and 5 seated poses. Watch your shoulders and hands.', 4),
+  (6, 'Тренировка мимики', 'Mimika mashqi', 'Facial expression practice', 'Сделайте 10 выражений лица перед камерой телефона: радость, спокойствие, интерес, уверенность.', 'Telefon kamerasi oldida 10 ta yuz ifodasini bajaring: quvonch, xotirjamlik, qiziqish, ishonch.', 'Do 10 facial expressions in front of your phone camera: joy, calm, interest, confidence.', 4),
+  (7, 'Запишите видеопредставление', 'Video taqdimot yozing', 'Record a video introduction', '15–20 секунд: имя, город, рост, направление работы. Хороший свет, ровный фон.', '15–20 soniya: ism, shahar, bo‘y, ish yo‘nalishi. Yaxshi yorug‘lik, tekis fon.', '15–20 seconds: name, city, height, field of work. Good light, plain background.', 7),
+  (8, 'Изучите работу известного фотографа', 'Mashhur fotografning ishini o‘rganing', 'Study a well-known photographer', 'Найдите одного фотографа, чьи съёмки вам нравятся, и запишите три приёма, которые заметили.', 'Suratlari yoqadigan bitta fotografni toping va payqagan uchta usulni yozib oling.', 'Find one photographer whose work you like and note three techniques you noticed.', 3),
+  (9, 'Составьте мудборд', 'Mudboard tuzing', 'Build a mood board', 'Соберите 10 референсов для вашей идеальной съёмки и сохраните в одну папку.', 'Ideal suratga olish uchun 10 ta namuna to‘plang va bitta papkaga saqlang.', 'Collect 10 references for your ideal shoot and save them in one folder.', 5),
+  (10, 'Тренировка походки', 'Yurish mashqi', 'Walking practice', 'Пройдите по прямой 5 минут: корпус ровно, шаг от бедра, взгляд вперёд. Снимите себя сбоку.', '5 daqiqa to‘g‘ri chiziq bo‘ylab yuring: tana tik, qadam sondan, nigoh oldinga. O‘zingizni yon tomondan suratga oling.', 'Walk in a straight line for 5 minutes: upright torso, step from the hip, gaze forward. Film yourself from the side.', 5),
+  (11, 'Разминка для осанки', 'Qomat uchun mashq', 'Posture warm-up', '10 минут упражнений на спину и плечи. Осанка — основа любого кадра.', 'Orqa va yelka uchun 10 daqiqalik mashqlar. Qomat har qanday kadrning asosi.', '10 minutes of back and shoulder exercises. Posture is the foundation of every frame.', 3),
+  (12, 'Уход за кожей', 'Teri parvarishi', 'Skin care', 'Сегодня: очищение, увлажнение, SPF. Отметьте, как себя чувствует кожа.', 'Bugun: tozalash, namlash, SPF. Terining qanday his qilishini belgilang.', 'Today: cleanse, moisturise, SPF. Note how your skin feels.', 2),
+  (13, 'Подготовьте образ на кастинг', 'Kastingga obraz tayyorlang', 'Prepare a casting outfit', 'Подберите одежду для кастинга: простая, облегающая, нейтральных цветов.', 'Kasting uchun kiyim tanlang: oddiy, tana shakliga mos, neytral ranglarda.', 'Choose clothes for the casting: simple, fitted, in neutral colours.', 4),
+  (14, 'Проверьте свои параметры', 'Parametrlaringizni tekshiring', 'Check your measurements', 'Измерьте рост, грудь, талию, бёдра и обновите анкету, если что-то изменилось.', 'Bo‘y, ko‘krak, bel, sonni o‘lchang va biror narsa o‘zgargan bo‘lsa, anketani yangilang.', 'Measure your height, bust, waist and hips, and update your profile if anything has changed.', 3),
+  (15, 'Прочитайте короткий урок: язык тела', 'Qisqa dars o‘qing: tana tili', 'Read a short lesson: body language', 'Прочитайте статью про язык тела на камере и выпишите два совета.', 'Kameradagi tana tili haqida maqola o‘qing va ikkita maslahatni yozib oling.', 'Read an article on body language on camera and write down two tips.', 3),
+  (16, 'Познакомьтесь с профессией', 'Kasb bilan tanishing', 'Get to know the profession', 'Найдите в интернете интервью с моделью, чей путь вам близок, и запишите главную мысль.', 'Yo‘li sizga yaqin model bilan intervyuni toping va asosiy fikrni yozib oling.', 'Find an interview with a model whose path is close to yours and note the main idea.', 3),
+  (17, 'Ответьте на вопрос: ваша цель', 'Savolga javob bering: maqsadingiz', 'Answer the question: your goal', 'Запишите, чего вы хотите достичь как модель за год. Три конкретные цели.', 'Model sifatida bir yilda nimaga erishmoqchi ekaningizni yozing. Uchta aniq maqsad.', 'Write what you want to achieve as a model in a year. Three specific goals.', 4),
+  (18, 'Сделайте фото при дневном свете', 'Kunduzgi yorug‘likda suratga tushing', 'Take a photo in daylight', 'Снимите себя у окна: без фильтров, крупный план и в полный рост.', 'Derazaga yaqin o‘zingizni suratga oling: filtrsiz, yaqin plan va to‘liq bo‘yda.', 'Shoot yourself by a window: no filters, a close-up and a full-length shot.', 6),
+  (19, 'Фото в полный рост', 'To‘liq bo‘yda surat', 'Full-length photo', 'Попросите друга снять вас в полный рост на нейтральном фоне. Для анкеты это ключевой кадр.', 'Do‘stingizdan neytral fonda to‘liq bo‘yda suratga olishni so‘rang. Anketa uchun bu asosiy kadr.', 'Ask a friend to take a full-length photo of you on a neutral background. It is the key shot for your profile.', 7),
+  (20, 'Проверьте контакты', 'Kontaktlarni tekshiring', 'Check your contacts', 'Убедитесь, что телефон и Telegram в анкете актуальны и вы отвечаете на сообщения.', 'Anketadagi telefon va Telegram dolzarbligiga va xabarlarga javob berishingizga ishonch hosil qiling.', 'Make sure the phone number and Telegram in your profile are current and that you answer messages.', 2),
+  (21, 'Изучите правила кастинга', 'Kasting qoidalarini o‘rganing', 'Learn the casting rules', 'Прочитайте, что нужно брать с собой на кастинг и как себя вести. Составьте список из 5 пунктов.', 'Kastingga nima olib kelish va o‘zini qanday tutish haqida o‘qing. 5 bandli ro‘yxat tuzing.', 'Read what to bring to a casting and how to behave. Make a list of 5 points.', 3),
+  (22, 'Расскажите о себе на камеру', 'Kameraga o‘zingiz haqingizda gapiring', 'Talk about yourself on camera', 'Запишите 30-секундное видео «Почему я хочу работать моделью». Говорите спокойно и искренне.', '30 soniyalik video yozing: «Nega model bo‘lmoqchiman». Xotirjam va samimiy gapiring.', 'Record a 30-second video, “Why I want to be a model”. Speak calmly and sincerely.', 6),
+  (23, 'Отработайте улыбку и взгляд', 'Tabassum va nigohni mashq qiling', 'Practise your smile and gaze', 'Снимите три коротких видео: тёплый взгляд, уверенный взгляд, лёгкая улыбка.', 'Uchta qisqa video suratga oling: iliq nigoh, ishonchli nigoh, yengil tabassum.', 'Film three short videos: a warm gaze, a confident gaze, a light smile.', 4),
+  (24, 'Составьте список брендов', 'Brendlar ro‘yxatini tuzing', 'Make a list of brands', 'Выпишите 10 брендов, с которыми вы хотели бы работать, и почему.', 'Hamkorlik qilmoqchi bo‘lgan 10 ta brendni va nega ekanini yozing.', 'Write down 10 brands you would like to work with, and why.', 3),
+  (25, 'Сходите на мероприятие', 'Tadbirga boring', 'Go to an event', 'Посетите показ, выставку или презентацию и познакомьтесь с одним новым человеком из индустрии.', 'Namoyish, ko‘rgazma yoki taqdimotga boring va sohadan bitta yangi inson bilan tanishing.', 'Attend a show, exhibition or presentation and meet one new person from the industry.', 8),
+  (26, 'Поблагодарите коллегу', 'Hamkasbingizga rahmat ayting', 'Thank a colleague', 'Напишите тем, с кем работали недавно, короткое сообщение с благодарностью. Репутация — часть бренда.', 'Yaqinda birga ishlaganlarga minnatdorchilik xabarini yozing. Obro‘ — shaxsiy brendning bir qismi.', 'Send a short thank-you message to people you worked with recently. Reputation is part of your brand.', 3),
+  (27, 'Сделайте цифровую ревизию', 'Raqamli audit o‘tkazing', 'Do a digital audit', 'Проверьте старые публикации в соцсетях: уберите то, что не соответствует вашему образу.', 'Ijtimoiy tarmoqlardagi eski postlarni ko‘rib chiqing: obrazingizga mos kelmaganlarini olib tashlang.', 'Review old posts on social media and remove what does not match your image.', 5),
+  (28, 'Выучите свои сильные стороны', 'Kuchli tomonlaringizni o‘rganing', 'Learn your strengths', 'Попросите двух людей назвать три ваши лучшие профессиональные черты и запишите ответы.', 'Ikki kishidan eng yaxshi uchta kasbiy xislatingizni aytishni so‘rang va yozib oling.', 'Ask two people to name your three best professional qualities and write them down.', 4),
+  (29, 'Подготовьте короткий рассказ о себе', 'O‘zingiz haqingizda qisqa hikoya tayyorlang', 'Prepare a short story about yourself', 'Отрепетируйте самопрезентацию на 30 секунд для встречи с клиентом или менеджером.', 'Mijoz yoki menejer bilan uchrashuv uchun 30 soniyalik o‘zini taqdim etishni mashq qiling.', 'Rehearse a 30-second self-introduction for a meeting with a client or manager.', 5),
+  (30, 'Неделя без критики себя', 'O‘zingizni tanqid qilmaydigan kun', 'A day without self-criticism', 'Весь день отмечайте только то, что получилось. Вечером запишите три достижения.', 'Kun davomida faqat nima chiqqanini belgilang. Kechqurun uchta yutuqni yozing.', 'All day, note only what went well. In the evening write down three achievements.', 3)
+) as t(n, ru_t, uz_t, en_t, ru_d, uz_d, en_d, points)
+on conflict (id) do update set title = excluded.title, description = excluded.description;
 -- Ranks and badges are created by migration 0005_development.sql.

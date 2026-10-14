@@ -161,5 +161,7 @@
   "ideas.media": "Media",
   "ideas.motivation": "Stereotiplarsiz",
   "catalog.mode3d": "3D",
-  "catalog.modeList": "Ro‘yxat"
+  "catalog.modeList": "Ro‘yxat",
+  "orders.yes": "Ha",
+  "orders.no": "Yo‘q"
 }

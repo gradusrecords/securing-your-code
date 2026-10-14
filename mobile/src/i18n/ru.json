@@ -161,5 +161,7 @@
   "ideas.media": "Медиа",
   "ideas.motivation": "Без стереотипов",
   "catalog.mode3d": "3D",
-  "catalog.modeList": "Список"
+  "catalog.modeList": "Список",
+  "orders.yes": "Да",
+  "orders.no": "Нет"
 }

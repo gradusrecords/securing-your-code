@@ -23,7 +23,7 @@ const ask = askQuestion as jest.Mock;
 
 const order = {
   order_id: 'o1', version: 2, status: 'open', changes: null, my_response: 'needs_reconfirm', updated_flag: true,
-  brief: { project: { title: 'Summer shoot' }, when_where: { city: 'Tashkent' } },
+  brief: { project: { title: 'Summer shoot' }, when_where: { city: 'Tashkent' }, conditions: { meals: true, transfer: false, custom_key: 'x' } },
 };
 
 beforeEach(() => {
@@ -79,4 +79,18 @@ test('a question is sent to the manager', async () => {
   await fireEvent.press(screen.getByTestId('send-question'));
   await waitFor(() => expect(ask).toHaveBeenCalledWith('o1', 'Is parking available?'));
   expect(await screen.findByText(t('orders.question_sent'))).toBeTruthy();
+});
+
+test('brief labels are translated and booleans are human-readable', async () => {
+  await render(<OrderDetail />);
+  await screen.findByText(/Summer shoot/);
+  expect(screen.getByText(`${t('brief.f.project.title')}: Summer shoot`)).toBeTruthy();
+  expect(screen.getByText(`${t('brief.f.conditions.meals')}: ${t('orders.yes')}`)).toBeTruthy();
+  expect(screen.getByText(`${t('brief.f.conditions.transfer')}: ${t('orders.no')}`)).toBeTruthy();
+});
+
+test('an unknown brief key is shown as is', async () => {
+  await render(<OrderDetail />);
+  await screen.findByText(/Summer shoot/);
+  expect(screen.getByText('custom_key: x')).toBeTruthy();
 });

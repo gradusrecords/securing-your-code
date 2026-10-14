@@ -1,5 +1,5 @@
 begin;
-select plan(9);
+select plan(10);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-0000000000b1', 'b@x', '{"role":"business"}'),
@@ -12,6 +12,10 @@ insert into public.content_items (id, kind, title, body, is_published) values
 select cmp_ok((select count(*)::int from public.content_items where is_published), '>=', 17, 'at least 17 published ideas are seeded');
 select is((select count(distinct kind)::int from public.content_items where is_published), 3, 'all three kinds are present');
 select is((select count(*)::int from public.content_items where is_published and (coalesce(btrim(title->>'ru'), '') = '' or coalesce(btrim(body->>'ru'), '') = '')), 0, 'every published item has Russian text');
+
+select is((select count(*)::int from public.content_items where is_published
+           and (coalesce(btrim(title->>'uz'), '') = '' or coalesce(btrim(title->>'en'), '') = ''
+             or coalesce(btrim(body->>'uz'), '') = '' or coalesce(btrim(body->>'en'), '') = '')), 0, 'every published idea is translated into Uzbek and English');
 
 create temp table c0 as select count(*)::int n from public.content_items;
 \ir ../seed/ideas_content.sql

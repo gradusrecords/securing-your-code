@@ -1,9 +1,12 @@
 begin;
-select plan(6);
+select plan(7);
 
 select cmp_ok((select count(*)::int from public.dev_tasks where is_active), '>=', 30, 'at least 30 active development tasks are seeded');
 select is((select count(*)::int from public.dev_tasks
            where coalesce(btrim(title->>'ru'), '') = '' or points not between 1 and 10), 0, 'every task has a Russian title and 1..10 points');
+select is((select count(*)::int from public.dev_tasks
+           where coalesce(btrim(title->>'uz'), '') = '' or coalesce(btrim(title->>'en'), '') = ''
+              or coalesce(btrim(description->>'uz'), '') = '' or coalesce(btrim(description->>'en'), '') = ''), 0, 'every seeded task is translated into Uzbek and English');
 select is((select count(*)::int from public.ranks), 4, 'four ranks');
 select is((select array_agg(min_points order by id) from public.ranks), array[0, 100, 300, 700], 'rank thresholds ascend 0/100/300/700');
 select is((select array_agg(code order by code) from public.badges),

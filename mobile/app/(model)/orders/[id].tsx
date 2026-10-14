@@ -8,6 +8,13 @@ import { theme } from '../../../src/lib/theme';
 
 const SECTIONS = ['project', 'when_where', 'who', 'conditions', 'requirements'] as const;
 
+const fieldLabel = (sec: string, key: string): string => {
+  const k = `brief.f.${sec}.${key}`;
+  const label = t(k);
+  return label === k ? key : label;
+};
+const fieldValue = (v: unknown): string => (typeof v === 'boolean' ? (v ? t('orders.yes') : t('orders.no')) : String(v));
+
 export default function OrderDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [order, setOrder] = useState<ModelOrder | null>(null);
@@ -60,7 +67,7 @@ export default function OrderDetail() {
             <View key={sec} style={s.section}>
               <Text style={s.sectionTitle}>{t(`brief.${sec}`)}</Text>
               {Object.entries(data).map(([k, v]) => (
-                <Text key={k} style={s.line}>{k}: {String(v)}</Text>
+                <Text key={k} style={s.line}>{`${fieldLabel(sec, k)}: ${fieldValue(v)}`}</Text>
               ))}
             </View>
           );
