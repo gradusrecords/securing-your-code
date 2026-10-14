@@ -87,7 +87,7 @@ const T={
   phone:"Телефон",idxEb:"Состав агентства",idxH:"Наши модели",count:(w,m)=>`${w} девушек · ${m} парней`,
   colW:"Женский отдел",colM:"Мужской отдел",fIndex:"Список",dEb:"Отдел",dW:["Женский","отдел"],dM:["Мужской","отдел"],
   range:(n,a,b)=>`${n} моделей · рост от ${a} до ${b} см`,deptW:"Женский отдел",deptM:"Мужской отдел",
-  tag:"Фото · скоро",hLabel:"рост, см",effW:"Эффективна для",effM:"Эффективен для",rec:"Рекомендация агентства",
+  tag:"Фото · скоро",fav:"Фаворит агентства",hLabel:"рост, см",effW:"Эффективна для",effM:"Эффективен для",rec:"Рекомендация агентства",
   backT:"Букинг моделей и кастинги",city:"г. Ташкент",
   dir:{show:"Показы",photo:"Фото",ad:"Реклама",clip:"Клипы",promo:"Промо",video:"Видео",host:"Ведущий"}},
  uz:{sub:"Modellar katalogi · demo",go:{cover:"Muqova",index:"Ro‘yxat",women:"Qizlar",men:"Yigitlar"},
@@ -100,7 +100,7 @@ const T={
   phone:"Telefon",idxEb:"Agentlik tarkibi",idxH:"Bizning modellar",count:(w,m)=>`${w} qiz · ${m} yigit`,
   colW:"Qizlar bo‘limi",colM:"Yigitlar bo‘limi",fIndex:"Ro‘yxat",dEb:"Bo‘lim",dW:["Qizlar","bo‘limi"],dM:["Yigitlar","bo‘limi"],
   range:(n,a,b)=>`${n} model · bo‘yi ${a} dan ${b} sm gacha`,deptW:"Qizlar bo‘limi",deptM:"Yigitlar bo‘limi",
-  tag:"Surat · tez orada",hLabel:"bo‘yi, sm",effW:"Qaysi ish uchun mos",effM:"Qaysi ish uchun mos",rec:"Agentlik tavsiyasi",
+  tag:"Surat · tez orada",fav:"Agentlik favoriti",hLabel:"bo‘yi, sm",effW:"Qaysi ish uchun mos",effM:"Qaysi ish uchun mos",rec:"Agentlik tavsiyasi",
   backT:"Modellarni bron qilish va kastinglar",city:"Toshkent sh.",
   dir:{show:"Podium",photo:"Foto",ad:"Reklama",clip:"Klip",promo:"Promo",video:"Video",host:"Boshlovchi"}}
 };
@@ -174,9 +174,9 @@ const LEAVES=1+PAGES.length/2; // cover + spreads
 /* ---------------- 2D page painter ---------------- */
 function star(ctx,cx,cy,r,on){ctx.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,rr=k%2?r*.45:r;ctx.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr)}ctx.closePath();
   if(on){const g=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,"#f3d9a2");g.addColorStop(1,"#b98d4a");ctx.fillStyle=g;ctx.fill()}else{ctx.strokeStyle="rgba(217,180,119,.45)";ctx.lineWidth=1.6;ctx.stroke()}}
-// agency score out of 10 — draft from experience: more than 3 years 9, 1-3 years or up to 1 year 8, new faces 7
-const RW=[9,9,9,7,7,7,9,8,7,7,7,7];
-const RM=[7,7,8,7,9,8,8,7,9,8,7,8,8];
+// agency score out of 10 (set by the agency): 10 = favourite of the agency (gets a badge), most models 9, the last few in each list 8
+const RW=[10,10,9,9,9,9,9,9,9,8,8,8];
+const RM=[9,9,9,9,9,9,9,9,9,9,8,8,8];
 
 let LOGO;
 const PW=900,PH=1272,u=PW/100;
@@ -207,7 +207,7 @@ function paint(ctx,idx){
   if(p.t==="index"){ctx.fillStyle="#0d2a1f";ctx.fillRect(0,0,PW,PH);ctx.fillStyle="#d9b477";ctx.font=FB(2.1*u,400);spaced(ctx,t.idxEb.toUpperCase(),PW/2,11*u,.9*u,"center");
     ctx.fillStyle="#efe7d6";ctx.font=FD(7.4*u);ctx.textAlign="center";ctx.fillText(t.idxH,PW/2,19.5*u);ctx.fillStyle="#9fb0a6";ctx.font=FB(2.2*u,400);spaced(ctx,t.count(W.length,M.length).toUpperCase(),PW/2,24.5*u,.7*u,"center");
     const col=(arr,gk,x,title)=>{ctx.fillStyle="#d9b477";ctx.font=FD(4*u,true);ctx.textAlign="left";ctx.fillText(title,x,34*u);ctx.fillStyle="rgba(217,180,119,.45)";ctx.fillRect(x,36*u,40*u,2);
-      arr.forEach((m,i)=>{const y=40.5*u+i*3.55*u;ctx.fillStyle="#efe7d6";ctx.font=FB(2.25*u,400);ctx.textAlign="left";let nm=m[li];while(ctx.measureText(nm).width>29*u)nm=nm.slice(0,-2)+"…";ctx.fillText(nm,x,y);
+      arr.forEach((m,i)=>{const y=40.5*u+i*3.55*u;ctx.fillStyle="#efe7d6";ctx.font=FB(2.25*u,400);ctx.textAlign="left";let nm=m[li];while(ctx.measureText(nm).width>29*u)nm=nm.slice(0,-2)+"…";ctx.fillText(nm,x,y);if((gk==="W"?RW:RM)[i]>=10)star(ctx,x+ctx.measureText(nm).width+2.4*u,y-.8*u,1.35*u,true);
         ctx.fillStyle="#a88a58";ctx.textAlign="right";ctx.fillText((m[2]||"—")+" · "+String(folioOf(gk,i)).padStart(2,"0"),x+40*u,y)})};
     col(W,"W",7*u,t.colW);col(M,"M",53*u,t.colM);folio(ctx,n,t.fIndex);return}
   if(p.t==="div"){const arr=p.g==="W"?W:M,d=p.g==="W"?t.dW:t.dM,ox=p.side?-PW:0;
@@ -231,9 +231,17 @@ function paint(ctx,idx){
     g=ctx.createRadialGradient(PW*.62,PH*.93,5,PW*.62,PH*.93,PW*.42);g.addColorStop(0,"rgba(0,0,0,.45)");g.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=g;ctx.fillRect(0,0,PW,PH);
     ctx.fillStyle="rgba(217,180,119,.10)";ctx.font=FD(60*u,true);ctx.textAlign="center";ctx.fillText(nm.trim()[0],PW*.64,PH*.62);
     ctx.fillStyle="rgba(217,180,119,.55)";ctx.font=FB(1.7*u,400);spaced(ctx,t.tag.toUpperCase(),PW-6*u,6.5*u,.5*u,"right");
+    const fav=rate>=10;
+    if(fav){g=ctx.createRadialGradient(PW*.64,PH*.3,10,PW*.64,PH*.3,PW*.55);g.addColorStop(0,"rgba(243,217,162,.20)");g.addColorStop(1,"rgba(243,217,162,0)");ctx.fillStyle=g;ctx.fillRect(0,0,PW,PH);
+      ctx.strokeStyle="rgba(243,217,162,.6)";ctx.lineWidth=3;ctx.strokeRect(3*u,3*u,PW-6*u,PH-6*u);}
     // legibility wash behind the text column
     g=ctx.createLinearGradient(0,PH*.42,0,PH);g.addColorStop(0,"rgba(4,11,8,0)");g.addColorStop(.45,"rgba(4,11,8,.72)");g.addColorStop(1,"rgba(4,11,8,.92)");ctx.fillStyle=g;ctx.fillRect(0,0,PW,PH);
     const X=7*u;let y=PH*.6;
+    if(fav){const label=t.fav.toUpperCase();ctx.font=FB(1.7*u,400);let tw=0;[...label].forEach(c=>tw+=ctx.measureText(c).width+.5*u);
+      const bx=X,by=10*u,bh=5*u,bw=tw+10.5*u,r0=bh/2;
+      ctx.beginPath();ctx.moveTo(bx+r0,by);ctx.arcTo(bx+bw,by,bx+bw,by+bh,r0);ctx.arcTo(bx+bw,by+bh,bx,by+bh,r0);ctx.arcTo(bx,by+bh,bx,by,r0);ctx.arcTo(bx,by,bx+bw,by,r0);ctx.closePath();
+      const bg=ctx.createLinearGradient(bx,by,bx+bw,by+bh);bg.addColorStop(0,"rgba(243,217,162,.30)");bg.addColorStop(1,"rgba(185,141,74,.22)");ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle="rgba(243,217,162,.85)";ctx.lineWidth=2;ctx.stroke();
+      star(ctx,bx+3.4*u,by+bh/2,1.5*u,true);ctx.fillStyle="#f3d9a2";ctx.font=FB(1.7*u,400);spaced(ctx,label,bx+6.4*u,by+bh/2+.6*u,.5*u,"left");}
     ctx.fillStyle="#d9b477";ctx.font=FB(1.9*u,400);spaced(ctx,(p.g==="W"?t.deptW:t.deptM).toUpperCase(),X,y,.75*u,"left");
     ctx.fillStyle="#efe7d6";ctx.font=FD(8.4*u);ctx.textAlign="left";const nl=wrap(ctx,nm,80*u);y+=9*u;nl.forEach((l,i)=>ctx.fillText(l,X,y+i*8.8*u));y+=(nl.length-1)*8.8*u+9.5*u;
     ctx.fillStyle="#d9b477";ctx.font=FD(8.8*u);ctx.fillText((m[2]?String(m[2]):"—"),X,y);const hw=ctx.measureText((m[2]?String(m[2]):"—")).width;
