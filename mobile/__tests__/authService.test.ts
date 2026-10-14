@@ -1,3 +1,8 @@
+jest.mock('expo-apple-authentication', () => ({ signInAsync: jest.fn(), AppleAuthenticationScope: { FULL_NAME: 0, EMAIL: 1 } }));
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: { configure: jest.fn(), hasPlayServices: jest.fn(), signIn: jest.fn() },
+  statusCodes: { SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED' },
+}));
 jest.mock('../src/lib/supabase', () => {
   const single = jest.fn();
   return {

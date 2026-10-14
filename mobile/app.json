@@ -1,13 +1,15 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "ZAYA",
+    "slug": "zaya",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "uz.zaya.app",
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -16,10 +18,17 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "uz.zaya.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "scheme": "zaya",
+    "plugins": [
+      "expo-apple-authentication",
+      "@react-native-google-signin/google-signin",
+      "expo-router"
+    ]
   }
 }
