@@ -28,3 +28,15 @@
 Страница сгенерирована из `catalog.html` сайта ZAYA без зашитых данных моделей: `node mobile/scripts/build-catalog-html.js <путь к catalog.html>`.
 Проверка в headless-браузере: `THREE_JS=<путь к three.min.js r128> CHROMIUM=<путь к chrome> node mobile/scripts/catalog-smoke.js`
 (`THREE_JS` нужен только если CDN недоступен).
+
+## Push-уведомления
+Тесты логики отправки: `node --test "supabase/functions/**/*.test.js"`.
+1. Развернуть функцию: `supabase functions deploy send-push` (в окружении функции: `EXPO_ACCESS_TOKEN` (необязательно), `SEND_PUSH_SECRET` (любой длинный секрет)).
+2. Расписание (SQL editor, расширение `pg_cron` и `pg_net` включены):
+
+        select cron.schedule('zaya-send-push', '* * * * *', $$
+          select net.http_post(url := 'https://<project>.functions.supabase.co/send-push',
+                               headers := jsonb_build_object('Authorization', 'Bearer <SEND_PUSH_SECRET>')) $$);
+        -- напоминание о заданиях: каждый день в 09:00 по Ташкенту (04:00 UTC)
+        select cron.schedule('zaya-daily-tasks', '0 4 * * *', 'select public.notify_daily_tasks()');
+3. Edge Function в этой среде не запускалась (нет Deno и Supabase): логика покрыта тестами, обработчик проверен только по типам.
