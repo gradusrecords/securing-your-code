@@ -159,5 +159,7 @@
   "catalog.favorites": "Favourites",
   "ideas.pr": "PR",
   "ideas.media": "Media",
-  "ideas.motivation": "No stereotypes"
+  "ideas.motivation": "No stereotypes",
+  "catalog.mode3d": "3D",
+  "catalog.modeList": "List"
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { filterCatalog, listCatalog, type CatalogModel } from '../../src/services/catalogService';
 import { EmptyState, Screen } from '../../src/ui/kit';
+import { Catalog3D } from '../../src/catalog/Catalog3D';
 import { t } from '../../src/i18n';
 import { theme } from '../../src/lib/theme';
 
@@ -10,6 +11,7 @@ export default function Catalog() {
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [gender, setGender] = useState<string | undefined>();
   const [error, setError] = useState('');
+  const [mode, setMode] = useState<'3d' | 'list'>('3d');
 
   useEffect(() => { listCatalog().then(setModels).catch(() => setError(t('error.generic'))); }, []);
 
@@ -17,6 +19,12 @@ export default function Catalog() {
 
   return (
     <Screen title={t('tab.catalog')}>
+      <View style={s.filters}>
+        <Chip testID="mode-3d" label={t('catalog.mode3d')} on={mode === '3d'} onPress={() => setMode('3d')} />
+        <Chip testID="mode-list" label={t('catalog.modeList')} on={mode === 'list'} onPress={() => setMode('list')} />
+      </View>
+      {mode === '3d' ? <Catalog3D /> : null}
+      {mode === 'list' ? (<>
       <View style={s.filters}>
         <Chip testID="filter-favorites" label={t('catalog.favorites')} on={favoriteOnly} onPress={() => setFavoriteOnly((v) => !v)} />
         <Chip testID="filter-female" label={t('gender.female')} on={gender === 'female'} onPress={() => setGender((g) => (g === 'female' ? undefined : 'female'))} />
@@ -32,6 +40,7 @@ export default function Catalog() {
           </View>
         ))}
       </ScrollView>
+      </>) : null}
     </Screen>
   );
 }

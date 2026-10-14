@@ -1,5 +1,6 @@
 jest.mock('../src/lib/supabase', () => ({ supabase: {} }));
 jest.mock('../src/services/catalogService', () => ({ ...jest.requireActual('../src/services/catalogService'), listCatalog: jest.fn() }));
+jest.mock('../src/catalog/Catalog3D', () => ({ Catalog3D: () => { const { Text } = require('react-native'); return <Text>CATALOG-3D</Text>; } }));
 jest.mock('../src/services/contentService', () => ({ listIdeas: jest.fn() }));
 
 import React from 'react';
@@ -16,9 +17,16 @@ beforeEach(() => jest.clearAllMocks());
 
 const m = (id: string, name: string, over = {}) => ({ model_id: id, display_name: name, gender: 'female', height_cm: 170, directions: ['show'], photos: [], agency_rating: 9, is_favorite: false, ...over });
 
+test('the catalog opens in 3D by default', async () => {
+  cat.mockResolvedValue([]);
+  await render(<Catalog />);
+  expect(await screen.findByText('CATALOG-3D')).toBeTruthy();
+});
+
 test('the catalog lists model cards and filters favourites', async () => {
   cat.mockResolvedValue([m('a', 'Aziza', { is_favorite: true }), m('b', 'Dilnoza')]);
   await render(<Catalog />);
+  await fireEvent.press(screen.getByTestId('mode-list'));
   expect(await screen.findByText(/Aziza/)).toBeTruthy();
   expect(screen.getByText(/Dilnoza/)).toBeTruthy();
   await fireEvent.press(screen.getByTestId('filter-favorites'));
@@ -28,12 +36,14 @@ test('the catalog lists model cards and filters favourites', async () => {
 test('an empty catalog shows the empty state', async () => {
   cat.mockResolvedValue([]);
   await render(<Catalog />);
+  await fireEvent.press(screen.getByTestId('mode-list'));
   expect(await screen.findByText(t('empty.catalog'))).toBeTruthy();
 });
 
 test('the catalog shows the generic error when loading fails', async () => {
   cat.mockRejectedValue(new Error('x'));
   await render(<Catalog />);
+  await fireEvent.press(screen.getByTestId('mode-list'));
   expect(await screen.findByText(t('error.generic'))).toBeTruthy();
 });
 
