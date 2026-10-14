@@ -70,5 +70,17 @@
   "error.required": "Required field",
   "error.phone": "Format: +998 and 9 digits",
   "error.range": "Value is out of range",
-  "error.guardian": "Models under 18 must provide a parent or guardian"
+  "error.guardian": "Models under 18 must provide a parent or guardian",
+  "development.points": "Points",
+  "development.streak": "Day streak",
+  "development.next": "To next rank",
+  "development.done": "Done",
+  "development.new_badge": "New badge",
+  "development.today": "Today's tasks",
+  "badge.first_task": "First task",
+  "badge.streak_3": "3-day streak",
+  "badge.streak_7": "7-day streak",
+  "badge.streak_14": "14-day streak",
+  "badge.streak_30": "30-day streak",
+  "badge.full_week": "Full week"
 }

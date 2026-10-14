@@ -16,3 +16,4 @@ i18next.init({
 export const t = (key: string): string => i18next.t(key);
 export const setLanguage = (lang: Language): void => { void i18next.changeLanguage(lang); };
 export default i18next;
+export const currentLanguage = (): Language => ((i18next.language as Language) || 'ru');

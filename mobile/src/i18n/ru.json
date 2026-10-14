@@ -70,5 +70,17 @@
   "error.required": "Обязательное поле",
   "error.phone": "Формат: +998 и 9 цифр",
   "error.range": "Значение вне допустимых пределов",
-  "error.guardian": "Для моделей младше 18 лет укажите родителя или опекуна"
+  "error.guardian": "Для моделей младше 18 лет укажите родителя или опекуна",
+  "development.points": "Очки",
+  "development.streak": "Серия дней",
+  "development.next": "До следующего ранга",
+  "development.done": "Выполнено",
+  "development.new_badge": "Новый значок",
+  "development.today": "Задания на сегодня",
+  "badge.first_task": "Первое задание",
+  "badge.streak_3": "3 дня подряд",
+  "badge.streak_7": "7 дней подряд",
+  "badge.streak_14": "14 дней подряд",
+  "badge.streak_30": "30 дней подряд",
+  "badge.full_week": "Полная неделя"
 }

@@ -70,5 +70,17 @@
   "error.required": "Majburiy maydon",
   "error.phone": "Format: +998 va 9 ta raqam",
   "error.range": "Qiymat ruxsat etilgan chegaradan tashqarida",
-  "error.guardian": "18 yoshgacha bo‘lgan modellar uchun ota-ona yoki vasiyni kiriting"
+  "error.guardian": "18 yoshgacha bo‘lgan modellar uchun ota-ona yoki vasiyni kiriting",
+  "development.points": "Ballar",
+  "development.streak": "Ketma-ket kunlar",
+  "development.next": "Keyingi darajagacha",
+  "development.done": "Bajarildi",
+  "development.new_badge": "Yangi nishon",
+  "development.today": "Bugungi topshiriqlar",
+  "badge.first_task": "Birinchi topshiriq",
+  "badge.streak_3": "Ketma-ket 3 kun",
+  "badge.streak_7": "Ketma-ket 7 kun",
+  "badge.streak_14": "Ketma-ket 14 kun",
+  "badge.streak_30": "Ketma-ket 30 kun",
+  "badge.full_week": "To‘liq hafta"
 }
