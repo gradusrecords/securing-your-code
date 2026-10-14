@@ -3,6 +3,17 @@
 Проверено в разработке: `npx expo prebuild` для iOS и Android проходит без ошибок, тесты и сборка бандла зелёные.
 Не проверено (нужны ваши аккаунты): сами облачные сборки EAS, вход через Google/Apple на устройствах, доставка push.
 
+## Быстрый путь на iPhone
+1. Supabase: создайте проект, в SQL editor выполните по очереди все файлы из `supabase/migrations/`, затем из `supabase/seed/`. Authentication → Providers → Email включён.
+2. На своём компьютере (Node.js 20+):
+
+        export SUPABASE_URL=https://<project>.supabase.co
+        export SUPABASE_ANON_KEY=<anon public key>
+        bash scripts/release-ios.sh
+3. В App Store Connect → TestFlight добавьте себя как тестировщика и установите приложение через TestFlight.
+4. Установите приложение, зарегистрируйте в нём тестовые аккаунты (две модели и бизнесмена), поправьте e-mail в `scripts/demo-data.sql` и выполните его в SQL editor — в каталоге появятся модели.
+5. Суперадмин: зарегистрируйтесь ещё одним аккаунтом и выполните `scripts/promote-admin.sql` со своим e-mail.
+
 ## 0. Что нужно иметь
 - Аккаунт Expo (бесплатный подходит), Apple Developer (99 $ в год), проект Google Cloud (для входа через Google), проект Supabase.
 
