@@ -20,9 +20,9 @@ export function EmptyState({ text }: { text: string }) {
   );
 }
 
-export function Button({ label, onPress, filled = false }: { label: string; onPress: () => void; filled?: boolean }) {
+export function Button({ label, onPress, filled = false, testID }: { label: string; onPress: () => void; filled?: boolean; testID?: string }) {
   return (
-    <Pressable onPress={onPress} style={[s.btn, filled && s.btnFilled]} accessibilityRole="button">
+    <Pressable testID={testID} onPress={onPress} style={[s.btn, filled && s.btnFilled]} accessibilityRole="button">
       <Text style={[s.btnText, filled && s.btnTextFilled]}>{label}</Text>
     </Pressable>
   );
