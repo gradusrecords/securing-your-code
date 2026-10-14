@@ -8,6 +8,7 @@ export default function Layout() {
       <Tabs.Screen name="orders" options={{ title: t('tab.orders') }} />
       <Tabs.Screen name="catalog" options={{ title: t('tab.catalog') }} />
       <Tabs.Screen name="ideas" options={{ title: t('tab.ideas') }} />
+      <Tabs.Screen name="profile" options={{ title: t('tab.profile') }} />
     </Tabs>
   );
 }

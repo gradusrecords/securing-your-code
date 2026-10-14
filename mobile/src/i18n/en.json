@@ -100,5 +100,14 @@
   "brief.when_where": "When and where",
   "brief.who": "Who we are looking for",
   "brief.conditions": "Conditions",
-  "brief.requirements": "Requirements"
+  "brief.requirements": "Requirements",
+  "bprofile.full_name": "Your name",
+  "bprofile.company": "Company / project",
+  "bprofile.position": "Position",
+  "bprofile.phone": "Phone (+998…)",
+  "bprofile.telegram": "Telegram",
+  "bprofile.email": "E-mail",
+  "bprofile.city": "City",
+  "bprofile.industry": "Industry",
+  "error.email": "Enter a valid e-mail"
 }

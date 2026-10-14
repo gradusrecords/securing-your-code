@@ -100,5 +100,14 @@
   "brief.when_where": "Qachon va qayerda",
   "brief.who": "Kimni qidiryapmiz",
   "brief.conditions": "Shartlar",
-  "brief.requirements": "Talablar"
+  "brief.requirements": "Talablar",
+  "bprofile.full_name": "Ismingiz",
+  "bprofile.company": "Kompaniya / loyiha",
+  "bprofile.position": "Lavozim",
+  "bprofile.phone": "Telefon (+998…)",
+  "bprofile.telegram": "Telegram",
+  "bprofile.email": "E-mail",
+  "bprofile.city": "Shahar",
+  "bprofile.industry": "Biznes sohasi",
+  "error.email": "To‘g‘ri e-mail kiriting"
 }

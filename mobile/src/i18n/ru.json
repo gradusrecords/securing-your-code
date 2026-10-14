@@ -100,5 +100,14 @@
   "brief.when_where": "Когда и где",
   "brief.who": "Кого ищем",
   "brief.conditions": "Условия",
-  "brief.requirements": "Требования"
+  "brief.requirements": "Требования",
+  "bprofile.full_name": "Ваше имя",
+  "bprofile.company": "Компания / проект",
+  "bprofile.position": "Должность",
+  "bprofile.phone": "Телефон (+998…)",
+  "bprofile.telegram": "Telegram",
+  "bprofile.email": "E-mail",
+  "bprofile.city": "Город",
+  "bprofile.industry": "Сфера бизнеса",
+  "error.email": "Введите корректный e-mail"
 }
