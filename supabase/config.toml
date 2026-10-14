@@ -1,0 +1,16 @@
+# Minimal Supabase CLI config (hand-written; regenerate with `supabase init` if desired).
+project_id = "zaya"
+
+[auth]
+site_url = "http://localhost:8081"
+enable_signup = true
+
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_WEB_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+
+[auth.external.apple]
+enabled = true
+client_id = "env(APPLE_CLIENT_ID)"
+secret = "env(APPLE_CLIENT_SECRET)"
