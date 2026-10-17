@@ -922,7 +922,7 @@ dlg.addEventListener("close",()=>{document.body.classList.remove("dlg-on");dbody
 
 /* ---------------- music ---------------- */
 /* MUSIC_SRC: path to your own licensed track (e.g. "music.mp3"). Empty = built-in generated ambient pad. */
-const MUSIC_SRC="music.mp3";
+const MUSIC_SRC="music.mp3?v=2";
 (function(){
   const btn=$("snd");let on=false,ctx=null,master=null,audio=null,fadeT=0,offT=0;
   const pref=()=>{try{return localStorage.getItem("zaya-music")}catch(e){return null}};
