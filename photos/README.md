@@ -22,7 +22,7 @@
 
 ## Парни
 
-- Сардор Ешмуродов: `sardor-eshmurodov-1.jpg`, `sardor-eshmurodov-2.jpg`, `sardor-eshmurodov-3.jpg`
+- Салим: `salim-1.jpg`, `salim-2.jpg`, `salim-3.jpg`
 - Бехруз Махмудов: `behruz-maxmudov-1.jpg`, `behruz-maxmudov-2.jpg`, `behruz-maxmudov-3.jpg`
 - Эмиль Садигзаде: `emil-sadigzade-1.jpg`, `emil-sadigzade-2.jpg`, `emil-sadigzade-3.jpg`
 - Зиёвуддин Исакулов: `ziyovuddin-isakulov-1.jpg`, `ziyovuddin-isakulov-2.jpg`, `ziyovuddin-isakulov-3.jpg`
