@@ -190,6 +190,7 @@ function frame(ctx){ctx.strokeStyle="rgba(217,180,119,.38)";ctx.lineWidth=2;ctx.
 const PHOTOS_OK=location.protocol!=="file:"; // WebGL cannot use local-file images (browser security), so photos need a real site
 const slugOf=m=>m[1].toLowerCase().replace(/[‘’'`]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const PHOTO_CACHE={};
+const PHOTO_PAGES=new Set(); // pages with real photos: lit lower so bright backdrops are not blown out
 function photosFor(m,pg){
   if(!PHOTOS_OK)return [null,null,null];
   const k=slugOf(m);let c=PHOTO_CACHE[k];
@@ -254,7 +255,7 @@ function paint(ctx,idx){
     if(!p.side){
       /* left page of the spread: the main photo */
       g=ctx.createRadialGradient(PW*.55,PH*.36,10,PW*.55,PH*.42,PH*.85);g.addColorStop(0,"#21503c");g.addColorStop(.45,"#0d281d");g.addColorStop(1,"#040b08");ctx.fillStyle=g;ctx.fillRect(0,0,PW,PH);
-      if(main)cover(ctx,main,0,0,PW,PH,.5,.15);
+      if(main){PHOTO_PAGES.add(idx);cover(ctx,main,0,0,PW,PH,.5,.15)}
       else{ctx.fillStyle="rgba(217,180,119,.10)";ctx.font=FD(60*u,true);ctx.textAlign="center";ctx.fillText(nm.trim()[0],PW*.5,PH*.62);
         ctx.fillStyle="rgba(217,180,119,.55)";ctx.font=FB(1.7*u,400);spaced(ctx,t.tag.toUpperCase(),PW/2,PH*.66,.5*u,"center")}
       if(fav){g=ctx.createRadialGradient(PW*.5,PH*.3,10,PW*.5,PH*.3,PW*.6);g.addColorStop(0,"rgba(243,217,162,.20)");g.addColorStop(1,"rgba(243,217,162,0)");ctx.fillStyle=g;ctx.fillRect(0,0,PW,PH)}
@@ -277,7 +278,7 @@ function paint(ctx,idx){
     ctx.fillStyle="#d9b477";ctx.font=FB(1.9*u,400);spaced(ctx,dept,X,11*u,.75*u,"left");
     const fw=(PW-2*X-2.4*u)/2,fh=42*u,fy=14.5*u;
     [ph[1],ph[2]].forEach((im,k)=>{const fx=X+k*(fw+2.4*u);
-      if(im){ctx.save();ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=2.5*u;ctx.fillStyle="#06120d";ctx.fillRect(fx,fy,fw,fh);ctx.restore();cover(ctx,im,fx,fy,fw,fh,.5,.2);ctx.strokeStyle="rgba(243,217,162,.8)";ctx.lineWidth=2;ctx.strokeRect(fx,fy,fw,fh)}
+      if(im){PHOTO_PAGES.add(idx);ctx.save();ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=2.5*u;ctx.fillStyle="#06120d";ctx.fillRect(fx,fy,fw,fh);ctx.restore();cover(ctx,im,fx,fy,fw,fh,.5,.2);ctx.strokeStyle="rgba(243,217,162,.8)";ctx.lineWidth=2;ctx.strokeRect(fx,fy,fw,fh)}
       else{ctx.fillStyle="rgba(4,11,8,.45)";ctx.fillRect(fx,fy,fw,fh);ctx.save();ctx.setLineDash([10,8]);ctx.strokeStyle="rgba(217,180,119,.35)";ctx.lineWidth=2;ctx.strokeRect(fx,fy,fw,fh);ctx.restore();
         ctx.fillStyle="rgba(217,180,119,.5)";ctx.font=FB(1.6*u,400);spaced(ctx,t.tag.toUpperCase(),fx+fw/2,fy+fh/2,.45*u,"center")}});
     let y=fy+fh+11*u;
@@ -406,7 +407,7 @@ function texWindow(){const lo=Math.max(1,state-2),hi=Math.min(LEAVES-1,state+2);
   else if(L.loaded&&(i<state-5||i>state+5)){if(L.bm.map)L.bm.map.dispose();L.fm.map=null;L.bm.map=null;L.fm.emissiveMap=null;L.bm.emissiveMap=null;L.fm.emissive.set(0);L.bm.emissive.set(0);L.fm.color.set(0x0d2a1f);L.bm.color.set(0x0d2a1f);L.fm.needsUpdate=L.bm.needsUpdate=true;L.loaded=false;
     [L.fi,L.bi].forEach(k=>{const key=lang+":"+k;const t=texCache.get(key);if(t){t.dispose();texCache.delete(key)}})}}}
 function loadLeaf(i){const L=leaves[i];const ft=pageTexture(L.fi),bt=pageTexture(L.bi).clone();bt.needsUpdate=true;bt.wrapS=THREE.RepeatWrapping;bt.repeat.x=-1;bt.offset.x=1;
-  L.fm.map=ft;L.bm.map=bt;L.fm.emissiveMap=ft;L.bm.emissiveMap=bt;L.fm.emissive.set(0xffffff);L.bm.emissive.set(0xffffff);L.fm.emissiveIntensity=L.bm.emissiveIntensity=.62;L.fm.color.set(0x8a8a8a);L.bm.color.set(0x8a8a8a);L.fm.needsUpdate=L.bm.needsUpdate=true;L.loaded=true}
+  L.fm.map=ft;L.bm.map=bt;L.fm.emissiveMap=ft;L.bm.emissiveMap=bt;L.fm.emissive.set(0xffffff);L.bm.emissive.set(0xffffff);const pf=PHOTO_PAGES.has(L.fi),pb=PHOTO_PAGES.has(L.bi);L.fm.emissiveIntensity=pf?.45:.62;L.bm.emissiveIntensity=pb?.45:.62;L.fm.color.set(pf?0x606060:0x8a8a8a);L.bm.color.set(pb?0x606060:0x8a8a8a);L.fm.needsUpdate=L.bm.needsUpdate=true;L.loaded=true}
 
 function zFor(i,flippedFrac){ // flippedFrac: 0 right stack .. 1 left stack
   const zr=i===0?(LEAVES)*DZ:(LEAVES-i)*DZ, zl=i===0?0:i*DZ;return zr+(zl-zr)*flippedFrac}
