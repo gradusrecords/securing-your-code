@@ -258,14 +258,14 @@ function paint(ctx,idx){
       else{ctx.fillStyle="rgba(217,180,119,.10)";ctx.font=FD(60*u,true);ctx.textAlign="center";ctx.fillText(nm.trim()[0],PW*.5,PH*.62);
         ctx.fillStyle="rgba(217,180,119,.55)";ctx.font=FB(1.7*u,400);spaced(ctx,t.tag.toUpperCase(),PW/2,PH*.66,.5*u,"center")}
       if(fav){g=ctx.createRadialGradient(PW*.5,PH*.3,10,PW*.5,PH*.3,PW*.6);g.addColorStop(0,"rgba(243,217,162,.20)");g.addColorStop(1,"rgba(243,217,162,0)");ctx.fillStyle=g;ctx.fillRect(0,0,PW,PH)}
-      g=ctx.createLinearGradient(0,PH*.68,0,PH);g.addColorStop(0,"rgba(4,11,8,0)");g.addColorStop(1,"rgba(4,11,8,.92)");ctx.fillStyle=g;ctx.fillRect(0,PH*.68,PW,PH*.32);
+      g=ctx.createLinearGradient(0,PH*.64,0,PH);g.addColorStop(0,"rgba(4,11,8,0)");g.addColorStop(.55,"rgba(4,11,8,.78)");g.addColorStop(1,"rgba(4,11,8,.96)");ctx.fillStyle=g;ctx.fillRect(0,PH*.64,PW,PH*.36);
       const X=7*u;ctx.textAlign="left";ctx.font=FD(6.6*u);const nl=wrap(ctx,nm,86*u),y0=PH*.915-(nl.length-1)*7.2*u;
       ctx.fillStyle="#d9b477";ctx.font=FB(1.9*u,400);spaced(ctx,dept,X,y0-8.2*u,.75*u,"left");
       ctx.fillStyle="#efe7d6";ctx.font=FD(6.6*u);ctx.textAlign="left";nl.forEach((l,i)=>ctx.fillText(l,X,y0+i*7.2*u));
       if(fav){const label=t.fav.toUpperCase();ctx.font=FB(1.7*u,400);let tw=0;[...label].forEach(c=>tw+=ctx.measureText(c).width+.5*u);
         const bx=X,by=8*u,bh=5*u,bw=tw+10.5*u,r0=bh/2;
         ctx.beginPath();ctx.moveTo(bx+r0,by);ctx.arcTo(bx+bw,by,bx+bw,by+bh,r0);ctx.arcTo(bx+bw,by+bh,bx,by+bh,r0);ctx.arcTo(bx,by+bh,bx,by,r0);ctx.arcTo(bx,by,bx+bw,by,r0);ctx.closePath();
-        const bg=ctx.createLinearGradient(bx,by,bx+bw,by+bh);bg.addColorStop(0,"rgba(243,217,162,.30)");bg.addColorStop(1,"rgba(185,141,74,.22)");ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle="rgba(243,217,162,.85)";ctx.lineWidth=2;ctx.stroke();
+        ctx.fillStyle="rgba(4,11,8,.82)";ctx.fill();const bg=ctx.createLinearGradient(bx,by,bx+bw,by+bh);bg.addColorStop(0,"rgba(243,217,162,.30)");bg.addColorStop(1,"rgba(185,141,74,.22)");ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle="rgba(243,217,162,.85)";ctx.lineWidth=2;ctx.stroke();
         star(ctx,bx+3.4*u,by+bh/2,1.5*u,true);ctx.fillStyle="#f3d9a2";ctx.font=FB(1.7*u,400);spaced(ctx,label,bx+6.4*u,by+bh/2+.6*u,.5*u,"left");
         ctx.strokeStyle="rgba(243,217,162,.6)";ctx.lineWidth=3;ctx.strokeRect(3*u,3*u,PW-6*u,PH-6*u)}
       folio(ctx,n,"ZAYA MG");return}
