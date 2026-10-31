@@ -1043,6 +1043,7 @@ function show(view,anchor){
 }
 function route(first){
   const h=location.hash.slice(1);
+  if(h==="catalog"){location.replace("catalog.html");return}   // one catalog: shortcut for external links
   if(h==="contact"){$("contact").scrollIntoView({behavior:"smooth"});return}
   let view=VIEWS[h]?h:(ANCHORS[h]||"home"),anchor=ANCHORS[h]?h:null;
   if(view===current){if(anchor)$(anchor).scrollIntoView({behavior:"smooth"});else scrollTo({top:0,behavior:"smooth"});return}
