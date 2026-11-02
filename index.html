@@ -358,6 +358,35 @@ body.nogl[data-season="winter"]{background:radial-gradient(120% 90% at 50% 100%,
 @keyframes eq{0%,100%{height:4px}50%{height:16px}}
 
 /* ---------- MUSIC PROMPT ---------- */
+/* ---------- mini player ---------- */
+.mp{position:fixed;left:var(--gutter);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:58;display:flex;align-items:center;gap:14px;width:min(292px,calc(100vw - 2*var(--gutter)));padding:10px 20px 10px 10px;box-sizing:border-box;background:rgba(5,5,5,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(219,181,119,.28);border-radius:60px;color:var(--cream);opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity 1s var(--ease),transform 1s var(--ease),border-color .5s}
+.mp.on{opacity:1;transform:none;pointer-events:auto}
+.mp:hover,.mp.play{border-color:rgba(219,181,119,.5)}
+body.dlg-on .mp,body.dr-on .mp{opacity:0;pointer-events:none}
+.mp .pb{all:unset;cursor:pointer;flex:none;position:relative;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#EBCB92,#B89455);box-shadow:0 0 0 1px rgba(219,181,119,.4),0 6px 18px rgba(0,0,0,.45)}
+.mp .pb:focus-visible{outline:1px solid var(--gold);outline-offset:3px}
+.mp .pb::before{content:"";position:absolute;left:17px;top:14px;border-left:13px solid #0B2F23;border-block:8px solid transparent}
+.mp.play .pb::before{left:15px;top:14px;width:5px;height:16px;border:0;background:#0B2F23;box-shadow:9px 0 0 #0B2F23}
+.mp .tx{min-width:0;flex:1;display:grid;gap:5px}
+.mp .lb{display:flex;align-items:center;gap:8px;font:400 8.5px/1 Jost,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--gold-dim)}
+.mp .eq{display:flex;gap:2px;align-items:flex-end;height:9px}
+.mp .eq i{display:block;width:2px;height:3px;background:var(--gold-dim)}
+.mp.play .eq i{background:var(--gold);animation:eq 1.1s ease-in-out infinite}
+.mp.play .eq i:nth-child(2){animation-delay:-.4s}.mp.play .eq i:nth-child(3){animation-delay:-.8s}
+.mp .ti{font:italic 300 19px/1.05 var(--serif);color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp .ti small{font:400 9px/1 Jost,sans-serif;font-style:normal;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-left:6px}
+.mp .sk{display:flex;align-items:center;gap:9px}
+.mp .tm{font:400 9px/1 Jost,sans-serif;letter-spacing:.1em;color:#8E887D;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mp input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:12px;margin:0;background:transparent;cursor:pointer;--v:0%}
+.mp input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--gold) var(--v),rgba(239,231,214,.18) var(--v))}
+.mp input[type=range]::-moz-range-track{height:2px;background:rgba(239,231,214,.18)}
+.mp input[type=range]::-moz-range-progress{height:2px;background:var(--gold)}
+.mp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:9px;height:9px;margin-top:-3.5px;border-radius:50%;background:var(--gold);border:0;transform:scale(0);transition:transform .3s}
+.mp input[type=range]::-moz-range-thumb{width:9px;height:9px;border-radius:50%;background:var(--gold);border:0;transform:scale(0);transition:transform .3s}
+.mp:hover input[type=range]::-webkit-slider-thumb,.mp input[type=range]:focus-visible::-webkit-slider-thumb{transform:scale(1)}
+.mp:hover input[type=range]::-moz-range-thumb,.mp input[type=range]:focus-visible::-moz-range-thumb{transform:scale(1)}
+.mp input[type=range]:focus-visible{outline:1px solid var(--gold);outline-offset:2px}
+@media (max-width:520px){.mp{gap:11px;padding:8px 16px 8px 8px}.mp .pb{width:40px;height:40px}.mp .pb::before{left:15px;top:12px}.mp.play .pb::before{left:13px;top:12px}.mp .ti{font-size:17px}}
 .mq{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:center;gap:clamp(14px,3vw,28px);padding:12px 12px 12px 28px;background:rgba(5,5,5,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(219,181,119,.4);color:var(--cream);opacity:0;transform:translate(-50%,20px);pointer-events:none;transition:opacity .9s var(--ease),transform .9s var(--ease)}
 .mq.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .mq p{margin:0;font-family:var(--serif);font-style:italic;font-weight:300;font-size:21px;white-space:nowrap}
@@ -416,6 +445,14 @@ body.ready .pull{opacity:1}
   <button class="skip" id="skip" type="button" data-i="skip">Пропустить</button>
 </div>
 
+<div class="mp" id="mp" role="group" aria-label="Music player">
+  <button class="pb" id="mpb" type="button" aria-label="Play"></button>
+  <div class="tx">
+    <div class="lb"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="mpl">Сейчас играет</span></div>
+    <div class="ti" id="mpt">Maryam — Faqat sen</div>
+    <div class="sk"><input id="mps" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek"><span class="tm" id="mpm">0:00</span></div>
+  </div>
+</div>
 <nav class="nav" id="nav">
   <div class="wrap">
     <div class="nav-l cap">
@@ -922,12 +959,39 @@ dlg.addEventListener("close",()=>{document.body.classList.remove("dlg-on");dbody
 
 /* ---------------- music ---------------- */
 /* MUSIC_SRC: path to your own licensed track (e.g. "music.mp3"). Empty = built-in generated ambient pad. */
-const MUSIC_SRC="music.mp3?v=2";
+const MUSIC_SRC="music.mp3?v=3";
+const TRACK={artist:"Maryam",title:"Faqat sen"};   // shown in the mini player
 (function(){
   const btn=$("snd");let on=false,ctx=null,master=null,audio=null,fadeT=0,offT=0;
+  const mp=$("mp"),mpb=$("mpb"),mps=$("mps"),mpm=$("mpm"),mpl=$("mpl"),mpt=$("mpt");
+  const PL={now:["Сейчас играет","Hozir ijrosida","Now playing"],pause:["Музыка","Musiqa","Music"],play:["Включить","Ijro etish","Play"],stop:["Пауза","To‘xtatish","Pause"],seek:["Перемотка","Surish","Seek"]};
+  const lng=()=>({ru:0,uz:1,en:2})[document.documentElement.lang]||0;
+  const mmss=t=>isFinite(t)?Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0"):"0:00";
+  mpt.textContent=TRACK.artist+" — "+TRACK.title;
+  function getAudio(){return audio=audio||Object.assign(new Audio(MUSIC_SRC),{loop:true,volume:0,preload:"metadata"})}
+  function mpText(){const L=lng();mpl.textContent=(on?PL.now:PL.pause)[L];mpb.setAttribute("aria-label",(on?PL.stop:PL.play)[L]);mps.setAttribute("aria-label",PL.seek[L])}
+  function mpTime(){
+    if(!audio||!isFinite(audio.duration))return;
+    const k=audio.currentTime/audio.duration;mps.value=Math.round(k*1000);mps.style.setProperty("--v",(k*100)+"%");
+    mpm.textContent=mmss(audio.currentTime)+" / "+mmss(audio.duration);
+  }
+  if(MUSIC_SRC){
+    const a=getAudio();a.addEventListener("timeupdate",mpTime);a.addEventListener("loadedmetadata",mpTime);
+    mps.addEventListener("input",()=>{if(isFinite(a.duration)){a.currentTime=mps.value/1000*a.duration;mpTime()}});
+    if("mediaSession" in navigator&&window.MediaMetadata){
+      navigator.mediaSession.metadata=new MediaMetadata({title:TRACK.title,artist:TRACK.artist,album:"ZAYA"});
+      navigator.mediaSession.setActionHandler("play",()=>{if(!on)toggle()});
+      navigator.mediaSession.setActionHandler("pause",()=>{if(on)toggle()});
+    }
+  }else mp.hidden=true;
+  new MutationObserver(mpText).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
+  const showMp=()=>mp.classList.add("on");
+  document.addEventListener("zaya:ready",()=>setTimeout(showMp,600),{once:true});
+  setTimeout(showMp,9000);
+  mpb.addEventListener("click",()=>toggle());
   const pref=()=>{try{return localStorage.getItem("zaya-music")}catch(e){return null}};
   const save=v=>{try{localStorage.setItem("zaya-music",v)}catch(e){}};
-  const ui=()=>btn.setAttribute("aria-pressed",on);
+  const ui=()=>{btn.setAttribute("aria-pressed",on);mp.classList.toggle("play",on);mpText()};
   function fade(a,to,ms,done){clearInterval(fadeT);const from=a.volume,t0=performance.now();
     fadeT=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/ms);a.volume=from+(to-from)*k;if(k>=1){clearInterval(fadeT);done&&done()}},40)}
   function buildSynth(){
@@ -953,7 +1017,7 @@ const MUSIC_SRC="music.mp3?v=2";
   function play(){
     clearTimeout(offT);
     if(MUSIC_SRC){
-      audio=audio||Object.assign(new Audio(MUSIC_SRC),{loop:true,volume:0,preload:"auto"});
+      getAudio().preload="auto";
       audio.play().then(()=>fade(audio,.5,2500)).catch(()=>{on=false;ui()});
     }else{
       if(!ctx&&!buildSynth())return;
@@ -980,7 +1044,8 @@ const MUSIC_SRC="music.mp3?v=2";
     requestAnimationFrame(()=>requestAnimationFrame(()=>ask&&ask.classList.add("on")));
   }
   document.addEventListener("zaya:ready",()=>setTimeout(showAsk,900),{once:true});
-  btn.addEventListener("click",()=>{disarm();hideAsk();if(on){stop();save("0")}else{play();save("1")}});
+  function toggle(){disarm();hideAsk();if(on){stop();save("0")}else{play();save("1")}}
+  btn.addEventListener("click",toggle);
   /* returning visitor who chose "yes": browsers block sound until a gesture, so start on the first one */
   const arm=e=>{if(e.target.closest&&e.target.closest("#snd"))return;disarm();if(pref()==="1"&&!on)play()};
   const disarm=()=>{removeEventListener("pointerdown",arm,true);removeEventListener("keydown",arm,true)};
