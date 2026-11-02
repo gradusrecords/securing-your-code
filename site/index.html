@@ -402,6 +402,17 @@ button.btn{background:none;cursor:pointer}
 }
 @media (prefers-reduced-motion:reduce){.qh-dots button.on::after{animation:none;width:100%}}
 
+/* home: serious centred composition, no photos */
+.qh-solo .qh-in{grid-template-columns:1fr;justify-items:center}
+.qh-solo .qh-copy{justify-items:center;text-align:center;gap:clamp(22px,3vh,38px)}
+.qh-solo .logo3d{width:min(440px,68vw)}
+.qh-solo .qh-q{max-width:min(880px,100%);margin-inline:auto}
+.qh-solo .qh-q::before{left:50%;translate:-50% 0}
+.qh-solo .qh-q p{font-size:clamp(30px,3.9vw,58px);line-height:1.12;max-width:24ch;margin-inline:auto}
+.qh-solo .qh-acts{justify-content:center}
+.qh-solo::before{background:radial-gradient(ellipse 70% 60% at 50% 52%,rgba(5,5,5,.5),rgba(5,5,5,.12) 75%)}
+@media (max-height:780px){.qh-solo .logo3d{width:min(300px,60vw)}.qh-solo .qh-q p{font-size:clamp(26px,3.2vw,44px)}}
+
 /* nav groups per storefront */
 .nav-l{gap:0}
 .ng{display:none;gap:32px;align-items:center}
@@ -594,7 +605,7 @@ body.ready .pull{opacity:1}
 
 <!-- ================= HOME ================= -->
 <main id="v-home" data-view="home">
-  <header class="qh" data-deck="home">
+  <header class="qh qh-solo" data-deck="home">
     <div class="wrap qh-in">
       <div class="qh-copy">
         <h1 class="logo3d" role="img" aria-label="ZAYA"><div class="rot stack" data-rot data-stack="zaya.png" data-n="30" data-step="1"></div></h1>
@@ -603,8 +614,8 @@ body.ready .pull{opacity:1}
           <a class="btn fill mag" href="#business"><span data-i="q.biz">Для бизнеса</span></a>
           <a class="btn mag" href="#models"><span data-i="q.mod">Для моделей</span></a>
         </div>
+        <div class="qh-dots"></div>
       </div>
-      <div class="qh-vis"><div class="qh-arch"></div><div class="qh-dots"></div></div>
     </div>
     <a class="cue cap qh-cue" href="#about"><span data-i="cue">Узнать о нас</span></a>
   </header>
@@ -1285,7 +1296,7 @@ if(!reduce)document.querySelectorAll(".mag").forEach(m=>{
 /* ---------------- mood: calm palette per storefront (no weather) ---------------- */
 /* shader colours: deep, emerald(mid), moss(light), vein(highlight) */
 const VPAL={
-  home:    [.010,.040,.030, .035,.185,.125, .190,.400,.280, .860,.790,.520],
+  home:    [.008,.028,.022, .025,.120,.085, .120,.260,.190, .620,.570,.380],
   business:[.010,.030,.036, .030,.135,.150, .160,.330,.350, .760,.860,.850],
   models:  [.032,.020,.014, .115,.070,.040, .310,.205,.115, .960,.770,.490]
 };
@@ -1302,11 +1313,11 @@ function setMood(v){
 const PH="photos/";
 const DECKS={
   home:[
-    {img:PH+"kamilla-muzrabbekova-1.jpg",q:["Твоя высота начинается здесь.","Sening cho‘qqing shu yerdan boshlanadi.","Your heights begin here."]},
-    {img:PH+"ziyovuddin-isakulov-1.jpg",q:["Стиль — это тихая уверенность.","Uslub — bu sokin ishonch.","Style is quiet confidence."]},
-    {img:PH+"kamilla-muzrabbekova-2.jpg",q:["Тянись выше. Рамки созданы, чтобы их раздвигать.","Yuqoriga intil. Chegaralar surish uchun yaratilgan.","Reach higher. Limits are made to be moved."]},
-    {img:PH+"ziyovuddin-isakulov-2.jpg",q:["Лучший выход — тот, после которого запоминают.","Eng yaxshi chiqish — yodda qoladigani.","The best entrance is the one they remember."]},
-    {img:PH+"kamilla-muzrabbekova-3.jpg",q:["Каждый шаг вперёд — уже победа.","Har bir oldinga qadam — allaqachon g‘alaba.","Every step forward is already a win."]}
+    {q:["Твоя высота начинается здесь.","Sening cho‘qqing shu yerdan boshlanadi.","Your heights begin here."]},
+    {q:["Стиль — это тихая уверенность.","Uslub — bu sokin ishonch.","Style is quiet confidence."]},
+    {q:["Тянись выше. Рамки созданы, чтобы их раздвигать.","Yuqoriga intil. Chegaralar surish uchun yaratilgan.","Reach higher. Limits are made to be moved."]},
+    {q:["Лучший выход — тот, после которого запоминают.","Eng yaxshi chiqish — yodda qoladigani.","The best entrance is the one they remember."]},
+    {q:["Каждый шаг вперёд — уже победа.","Har bir oldinga qadam — allaqachon g‘alaba.","Every step forward is already a win."]}
   ],
   models:[
     {img:PH+"ziyovuddin-isakulov-1.jpg",q:["Камера любит тех, кто верит в себя.","Kamera o‘ziga ishonganlarni yaxshi ko‘radi.","The camera loves those who believe in themselves."]},
@@ -1325,15 +1336,17 @@ const DECKS={
 const DECK_MS=7500,decks=[];
 document.querySelectorAll("[data-deck]").forEach(root=>{
   const data=DECKS[root.dataset.deck],arch=root.querySelector(".qh-arch"),qbox=root.querySelector(".qh-q"),dotbox=root.querySelector(".qh-dots");
-  if(!data||!arch||!qbox)return;
+  if(!data||!qbox)return;
   const typo=data[0].w!==undefined,qs=[],vs=[],ds=[];
   root.style.setProperty("--dt",DECK_MS+"ms");
   data.forEach((sl,i)=>{
     const b=document.createElement("blockquote");b.appendChild(document.createElement("p"));qbox.appendChild(b);qs.push(b);
-    let v;
-    if(typo){v=document.createElement("div");v.className="qw";v.appendChild(document.createElement("span"))}
-    else{v=new Image();v.alt="";v.decoding="async";v.src=sl.img;if(i)v.loading="lazy"}
-    arch.appendChild(v);vs.push(v);
+    let v=null;
+    if(arch){
+      if(typo){v=document.createElement("div");v.className="qw";v.appendChild(document.createElement("span"))}
+      else if(sl.img){v=new Image();v.alt="";v.decoding="async";v.src=sl.img;if(i)v.loading="lazy"}
+      if(v){arch.appendChild(v);vs.push(v)}
+    }
     const d=document.createElement("button");d.type="button";d.setAttribute("aria-label",String(i+1));
     d.addEventListener("click",()=>{go(i);arm()});dotbox.appendChild(d);ds.push(d);
   });
