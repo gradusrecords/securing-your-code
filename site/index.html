@@ -414,7 +414,7 @@ button.btn{background:none;cursor:pointer}
 @media (max-height:780px){.qh-solo .logo3d{width:min(300px,60vw)}.qh-solo .qh-q p{font-size:clamp(26px,3.2vw,44px)}}
 
 /* live frame: optional full-screen video behind the home hero (site/bg.mp4) */
-.bgv{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;opacity:0;transition:opacity 2s var(--ease);pointer-events:none}
+.bgv{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.45);transform-origin:50% 100%;z-index:-1;opacity:0;transition:opacity 2s var(--ease);pointer-events:none}
 body[data-view="home"] .bgv.ready{opacity:1}
 body.has-video[data-view="home"] .qh-solo::before{background:linear-gradient(180deg,rgba(5,5,5,.55),rgba(5,5,5,.38) 45%,rgba(5,5,5,.72))}
 
