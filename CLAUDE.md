@@ -1,6 +1,6 @@
 # ZAYA — сайт zaya.uz
 
-Статичный сайт: index.html (HTML/CSS/JS в одном файле) + catalog.html (3D-каталог) + bar.js (верхняя полоска: часы и курсы) + zaya.png, monogram.png, music.mp3.
+Статичный сайт (все файлы сайта лежат в папке `site/`, она же корень публикации; в корне репозитория также `apps-script/` и этот файл): index.html (HTML/CSS/JS в одном файле) + catalog.html (3D-каталог) + bar.js (верхняя полоска: часы и курсы) + zaya.png, monogram.png, music.mp3.
 
 ## Бренд
 - Цвета: чёрный #050505, золото #DBB577, зелёный #0B2F23 (из логотипа).
@@ -67,3 +67,10 @@
 
 ## Рекомендации агентства (каталог)
 - Решение заказчика: все модели имеют оценку «10/10» (`RW`/`RM`, «первые ласточки»). Значок «Фаворит агентства» (рамка и бейдж) — только у множества `FAVS` (Камилла, Лаура, Салим, Эмиль).
+
+## Публикация на zaya.uz
+- Домен куплен на Ahost (ahost.uz). План: Cloudflare Pages, репозиторий `gradusrecords/securing-your-code`, ветка для публикации — как решит заказчик, **корень публикации (Build output directory) = `site`**, команда сборки пустая. NS-серверы домена у Ahost меняются на выданные Cloudflare; custom domains: `zaya.uz` и `www.zaya.uz` (www → редирект на zaya.uz).
+- В `site/`: `404.html`, `robots.txt`, `sitemap.xml`, `_headers` (кэш фото/музыки, базовые заголовки), иконки (`favicon-32.png`, `apple-touch-icon.png`), превью для ссылок `og.png` (1200×630), canonical и Open Graph в `index.html`.
+- Почта info@zaya.uz (Zoho): MX/SPF/DKIM записи добавляются в DNS Cloudflare.
+- После запуска проверить на реальном домене: формы (Apps Script), курс ЦБ (`cbu.uz`), музыка, каталог.
+- Служебный код чужого проекта (Juice Shop) в корне репозитория на публикацию не попадает — публикуется только `site/`.
