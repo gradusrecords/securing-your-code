@@ -376,6 +376,11 @@ async function saveLinked(env, phone, code, kind, row) {
     const status = (m.raw || '') !== before ? m.status : ex.status;
     await env.DB.prepare('UPDATE apps SET status=?, name=?, payload=?, updated_at=?, synced_at=? WHERE id=?').bind(status, m.name, JSON.stringify(m.payload), NOW(), NOW(), ex.id).run();
   } else {
+    // the same application was already saved from the site form (no code yet): give it the code instead of making a duplicate
+    const own = await env.DB.prepare('SELECT id FROM apps WHERE phone=? AND kind=? AND code IS NULL ORDER BY id DESC LIMIT 1').bind(phone, kind).first();
+    if (own) {
+      await env.DB.prepare('UPDATE apps SET code=?, status=?, name=?, lang=?, payload=?, updated_at=?, synced_at=? WHERE id=?').bind(code, m.status, m.name, m.lang, JSON.stringify(m.payload), NOW(), NOW(), own.id).run();
+    } else
     await env.DB.prepare('INSERT INTO apps(phone,kind,status,name,lang,payload,created_at,updated_at,code,synced_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
       .bind(phone, kind, m.status, m.name, m.lang, JSON.stringify(m.payload), NOW(), NOW(), code, NOW()).run();
   }
@@ -413,6 +418,8 @@ async function linkCode(req, env, user) {
 }
 async function syncMine(env, user) {
   if (!(await hit(env, 'sy:' + user.id, 30, 3600))) return fail(429, 'too many requests');
+  // remove a leftover duplicate: the same application saved from the form (no code) next to its linked copy
+  await env.DB.prepare('DELETE FROM apps WHERE phone=? AND code IS NULL AND EXISTS (SELECT 1 FROM apps b WHERE b.phone=apps.phone AND b.kind=apps.kind AND b.code IS NOT NULL AND b.name=apps.name)').bind(user.phone).run();
   const rows = await env.DB.prepare('SELECT code,kind FROM apps WHERE phone=? AND code IS NOT NULL AND (synced_at IS NULL OR synced_at<?) LIMIT 5').bind(user.phone, NOW() - 120).all();
   let n = 0;
   for (const a of rows.results || []) {
