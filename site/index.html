@@ -450,7 +450,8 @@ body.nogl[data-view="models"]{background:radial-gradient(120% 90% at 50% 100%,#3
 .mp{position:fixed;left:var(--gutter);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:58;display:flex;align-items:center;gap:14px;width:min(292px,calc(100vw - 2*var(--gutter)));padding:10px 20px 10px 10px;box-sizing:border-box;background:rgba(5,5,5,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(219,181,119,.28);border-radius:60px;color:var(--cream);opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity 1s var(--ease),transform 1s var(--ease),border-color .5s}
 .mp.on{opacity:1;transform:none;pointer-events:auto}
 .mp:hover,.mp.play{border-color:rgba(219,181,119,.5)}
-body.dlg-on .mp,body.dr-on .mp,body.dlg-on .mpm,body.dr-on .mpm{opacity:0;pointer-events:none}
+body.dlg-on .mp,body.dlg-on .mpm{opacity:0;pointer-events:none}
+body.dr-on .mp,body.dr-on .mpm{z-index:80}
 .mp{padding-right:52px;transform-origin:32px calc(100% - 32px)}
 .mp.min{display:none}
 .mp.gout{animation:gOut .62s cubic-bezier(.55,0,.8,.35) forwards;pointer-events:none}
@@ -1254,6 +1255,13 @@ const TRACK={artist:"Maryam",title:"Faqat sen"};   // shown in the mini player
   addEventListener("keydown",e=>{if(e.key==="Escape"&&isOpen)close()});
   addEventListener("message",e=>{if(e.data==="zaya-close"&&e.source===fr.contentWindow&&isOpen)close()});
   document.addEventListener("zaya:ready",()=>setTimeout(()=>{if(!isOpen)pull.classList.add("hint")},2600),{once:true});
+  /* the catalog opens over the site (not as a new page), so the music keeps playing */
+  window.zayaOpenCatalog=()=>{if(!isOpen)open()};
+  document.addEventListener("click",e=>{
+    const a=e.target.closest&&e.target.closest('a[href="catalog.html"]');
+    if(!a||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+    e.preventDefault();open();
+  });
 })();
 
 /* ---------------- reveal ---------------- */
@@ -1274,7 +1282,7 @@ function show(view,anchor){
 }
 function route(first){
   const h=location.hash.slice(1);
-  if(h==="catalog"){location.replace("catalog.html");return}   // one catalog: shortcut for external links
+  if(h==="catalog"){history.replaceState(null,"",location.pathname+location.search);if(window.zayaOpenCatalog)window.zayaOpenCatalog();return}   // one catalog: shortcut for external links
   if(h==="contact"){$("contact").scrollIntoView({behavior:"smooth"});return}
   let view=VIEWS[h]?h:(ANCHORS[h]||"home"),anchor=ANCHORS[h]?h:null;
   if(view===current){if(anchor)$(anchor).scrollIntoView({behavior:"smooth"});else scrollTo({top:0,behavior:"smooth"});return}
