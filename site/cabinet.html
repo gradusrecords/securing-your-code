@@ -183,6 +183,17 @@ const I={
   noAppsM:["Заявок нет","Arizalar yo‘q","No applications"],
   noThreads:["Сообщений пока нет","Hozircha xabarlar yo‘q","No messages yet"],
   profilePhotos:["Фото","Suratlar","Photos"],
+  linkTitle:["У вас есть код заявки?","Ariza kodingiz bormi?","Do you have an application code?"],
+  linkHint:["Введите код из заявки (например Z-AB12C): мы подтянем ваши данные и статус.","Arizadagi kodni kiriting (masalan Z-AB12C): ma’lumotlaringiz va holatingiz yuklanadi.","Enter the code from your application (for example Z-AB12C): we will load your data and status."],
+  linkBtn:["Привязать","Bog‘lash","Link"],
+  linkOk:["Готово: данные подтянуты.","Tayyor: ma’lumotlar yuklandi.","Done: your data has been loaded."],
+  linkBad:["Код выглядит неверно. Пример: Z-AB12C.","Kod noto‘g‘ri ko‘rinadi. Misol: Z-AB12C.","The code looks wrong. Example: Z-AB12C."],
+  linkNone:["Заявка с таким кодом не найдена.","Bunday kodli ariza topilmadi.","No application with this code was found."],
+  linkPhone:["Номер в заявке не совпадает с вашим. Напишите менеджеру во вкладке «Чат»: он привяжет заявку вручную.","Arizadagi raqam sizniki bilan mos kelmadi. «Chat» bo‘limida menejerga yozing: u arizani qo‘lda bog‘laydi.","The number in the application does not match yours. Write to the manager in the “Chat” tab and they will link it manually."],
+  linkTaken:["Этот код уже привязан к другому номеру. Напишите менеджеру в чате.","Bu kod boshqa raqamga bog‘langan. Chatda menejerga yozing.","This code is linked to another number. Write to the manager in the chat."],
+  linkSvc:["Привязка по коду пока недоступна. Напишите менеджеру в чате.","Kod bo‘yicha bog‘lash hozircha mavjud emas. Chatda menejerga yozing.","Linking by code is not available yet. Write to the manager in the chat."],
+  codeLbl:["Код заявки","Ariza kodi","Application code"],
+  linkUser:["Привязать код заявки к этому человеку","Ariza kodini shu odamga bog‘lash","Link an application code to this person"],
   hint:["Менеджер ответит в чате и в Telegram.","Menejer chatda va Telegramda javob beradi.","The manager will reply in the chat and in Telegram."],
 };
 const t=k=>I[k][LI];
@@ -206,7 +217,7 @@ const KEYS={
   budget:["Бюджет","Byudjet","Budget"],timing:["Сроки","Muddat","Timing"],birth:["Дата рождения","Tug‘ilgan sana","Date of birth"],gender:["Пол","Jins","Gender"],
   instagram:["Instagram","Instagram","Instagram"],parent:["Родитель / опекун","Ota-ona / vasiy","Parent / guardian"],height:["Рост","Bo‘y","Height"],weight:["Вес","Vazn","Weight"],
   params:["Параметры","Parametrlar","Measurements"],shoe:["Обувь","Poyabzal","Shoes"],hair:["Волосы","Soch","Hair"],eyes:["Глаза","Ko‘z","Eyes"],exp:["Опыт","Tajriba","Experience"],
-  contract:["Контракт","Shartnoma","Contract"],portfolio:["Портфолио","Portfolio","Portfolio"],about:["О себе","O‘zim haqimda","About"],shoes:["Обувь","Poyabzal","Shoes"],
+  contract:["Контракт","Shartnoma","Contract"],sheet_status:["Статус в таблице","Jadvaldagi holat","Status in the sheet"],age:["Возраст","Yosh","Age"],portfolio:["Портфолио","Portfolio","Portfolio"],about:["О себе","O‘zim haqimda","About"],shoes:["Обувь","Poyabzal","Shoes"],
   bust:["Грудь","Ko‘krak","Bust"],waist:["Талия","Bel","Waist"],hips:["Бёдра","Son","Hips"],
 };
 
@@ -322,7 +333,7 @@ function appCard(a){
   const flow=FLOW[a.kind==="apply"?"apply":"brief"],off=a.status==="declined"||a.status==="reserve";
   const idx=flow.indexOf(a.status);
   return h("div",{class:"card app"},
-    h("div",{class:"head"},h("div",null,h("div",{class:"sub"},a.kind==="apply"?t("kApply"):t("kBrief")),h("h3",{class:"t"},a.name||""),h("div",{class:"note"},t("sent")+" "+fmtDate(a.created_at))),statusPill(a.status)),
+    h("div",{class:"head"},h("div",null,h("div",{class:"sub"},a.kind==="apply"?t("kApply"):t("kBrief")),h("h3",{class:"t"},a.name||""),h("div",{class:"note"},t("sent")+" "+fmtDate(a.created_at)+(a.code?" · "+t("codeLbl")+" "+a.code:""))),statusPill(a.status)),
     h("div",{class:"flow"+(off?" dim":"")},flow.map((s,i)=>h("div",{class:idx===-1?"":i<idx?"done":i===idx?"now":""},STATUS[s][LI]))),
     h("details",null,h("summary",null,t("data")),payloadList(a.payload)));
 }
@@ -330,10 +341,25 @@ function openForm(type){
   if(embedded)parent.postMessage({zaya:"form",type},"*");
   else location.href="/#"+(type==="apply"?"models":"business");
 }
+function linkBlock(open){
+  const msg=h("p",{class:"msg",role:"alert"});
+  const inp=h("input",{class:"inp",type:"text",placeholder:"Z-AB12C",maxlength:"12",autocapitalize:"characters",autocomplete:"off","aria-label":t("codeLbl"),style:"text-transform:uppercase;letter-spacing:.2em;max-width:260px"});
+  const btn=h("button",{class:"btn fill",type:"button",onclick:go},t("linkBtn"));
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter")go()});
+  async function go(){
+    const code=inp.value.trim();if(!code)return;
+    btn.disabled=true;msg.className="msg";msg.textContent="";
+    const r=await api("POST","link",{code});btn.disabled=false;
+    if(r.data.ok){msg.className="msg ok";msg.textContent=t("linkOk");await refreshMine();setTimeout(render,700);return}
+    msg.textContent=r.status===400?t("linkBad"):r.status===403?t("linkPhone"):r.status===409?t("linkTaken"):r.status===429?t("tooMany"):r.status===503||r.status===502||r.status===0?t("linkSvc"):t("linkNone");
+  }
+  const body=h("div",{style:"margin-top:12px"},h("p",{class:"note",style:"margin:0 0 12px"},t("linkHint")),h("div",{class:"row",style:"margin:0"},inp,btn),msg);
+  return h("details",{class:"card",style:"margin-bottom:18px",open:open?true:null},h("summary",{style:"margin:0"},t("linkTitle")),body);
+}
 function viewApps(){
   const apps=state.data.apps;
-  if(!apps.length)return h("div",{class:"empty"},t("noApps"),h("div",{class:"acts"},h("button",{class:"btn fill",type:"button",onclick:()=>openForm("apply")},t("fillApply")),h("button",{class:"btn",type:"button",onclick:()=>openForm("brief")},t("fillBrief"))));
-  return h("div",{class:"apps"},apps.map(appCard));
+  if(!apps.length)return h("div",null,linkBlock(true),h("div",{class:"empty"},t("noApps"),h("div",{class:"acts"},h("button",{class:"btn fill",type:"button",onclick:()=>openForm("apply")},t("fillApply")),h("button",{class:"btn",type:"button",onclick:()=>openForm("brief")},t("fillBrief")))));
+  return h("div",null,linkBlock(false),h("div",{class:"apps"},apps.map(appCard)));
 }
 const MODEL_FIELDS=["height","weight","bust","waist","hips","shoes","hair","eyes"];
 function viewProfile(){
@@ -447,7 +473,12 @@ async function viewAdminChats(){
   await loadThreads();timers.push(setInterval(loadThreads,15000));
   if(state.thread){
     const id=state.thread;
-    right.append(h("div",{class:"card"},chatView(async()=>{const r=await api("GET","admin/messages?user="+id);return r.data.ok?r.data.messages:null},v=>api("POST","admin/messages",{user:id,body:v}),"manager")));
+    const cm=h("p",{class:"msg"});
+    const ci=h("input",{class:"inp",type:"text",placeholder:"Z-AB12C","aria-label":t("codeLbl"),style:"text-transform:uppercase;max-width:200px"});
+    const lk=h("div",{class:"row",style:"margin-bottom:14px"},ci,h("button",{class:"btn sm",type:"button",onclick:async()=>{
+      const c=ci.value.trim();if(!c)return;const r=await api("POST","admin/link",{user:id,code:c});
+      cm.className="msg"+(r.data.ok?" ok":"");cm.textContent=r.data.ok?t("linkOk"):(r.status===400?t("linkBad"):r.status===503?t("linkSvc"):t("linkNone"));if(r.data.ok)ci.value=""}},t("linkUser")),cm);
+    right.append(lk,h("div",{class:"card"},chatView(async()=>{const r=await api("GET","admin/messages?user="+id);return r.data.ok?r.data.messages:null},v=>api("POST","admin/messages",{user:id,body:v}),"manager")));
   }else right.append(h("div",{class:"empty"},"←"));
   return wrap;
 }
@@ -470,6 +501,13 @@ async function render(){
   }
   clear(view);view.append(node);
 }
+let lastSync=0;
+async function syncSheet(){
+  if(!state.me||state.me.role==="manager"||!state.data||!state.data.apps.some(a=>a.code))return;
+  if(Date.now()-lastSync<120000)return;lastSync=Date.now();
+  const r=await api("POST","sync");
+  if(r.data.ok&&r.data.synced){await refreshMine();if(state.tab==="apps"&&!state.openApp)render()}
+}
 async function refreshMine(){const r=await api("GET","my");if(r.data.ok)state.data=r.data}
 async function reload(){
   if(state.me.role!=="manager"){const r=await api("GET","my");if(r.data.ok)state.data=r.data}
@@ -482,6 +520,7 @@ async function boot(){
   if(state.me.role==="manager")state.data=null;
   else{const d=await api("GET","my");state.data=d.data.ok?d.data:{apps:[],photos:[],unread:0,user:state.me}}
   state.tab="apps";state.openApp=null;render();
+  syncSheet();
 }
 boot();
 })();

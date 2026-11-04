@@ -2,7 +2,8 @@
    Everything lives under /api/*. See cabinet/README.md for setup.
    Bindings:  DB (D1), BUCKET (R2, optional: without it photos are kept in D1)
    Secrets:   BOT_TOKEN, TG_SECRET, PEPPER
-   Variables: BOT_USERNAME, MANAGER_PHONES (digits, comma separated), FORM_URL (optional Apps Script), TG_API (dev only) */
+   Variables: BOT_USERNAME, MANAGER_PHONES (digits, comma separated), FORM_URL (optional Apps Script), TG_API (dev only)
+   Secret:    SHEET_KEY (same value as the API_KEY script property in the Google Apps Script: lets the server read a sheet row by its application code) */
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
@@ -25,6 +26,10 @@ let schemaReady = false;
 async function ensureSchema(env) {
   if (schemaReady) return;
   await env.DB.batch(SCHEMA.map(s => env.DB.prepare(s)));
+  for (const col of ['code TEXT', 'synced_at INTEGER']) {       // columns added later: ignore "duplicate column"
+    try { await env.DB.prepare(`ALTER TABLE apps ADD COLUMN ${col}`).run(); } catch (e) { /* already there */ }
+  }
+  await env.DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS apps_code ON apps(code) WHERE code IS NOT NULL').run();
   schemaReady = true;
 }
 
@@ -160,6 +165,8 @@ export async function onRequest(ctx) {
 
     if (path === 'my' && method === 'GET') return myData(env, user);
     if (path === 'profile' && method === 'POST') return saveProfile(req, env, user);
+    if (path === 'link' && method === 'POST') return linkCode(req, env, user);
+    if (path === 'sync' && method === 'POST') return syncMine(env, user);
     if (path === 'photos' && method === 'POST') return uploadPhoto(req, env, user);
     let m;
     if ((m = path.match(/^photos\/(\d+)$/))) {
@@ -175,6 +182,7 @@ export async function onRequest(ctx) {
       if ((m = path.match(/^admin\/apps\/(\d+)$/)) && method === 'GET') return adminApp(env, +m[1]);
       if ((m = path.match(/^admin\/apps\/(\d+)\/status$/)) && method === 'POST') return adminStatus(req, env, +m[1], ctx);
       if (path === 'admin/threads' && method === 'GET') return adminThreads(env);
+      if (path === 'admin/link' && method === 'POST') return adminLink(req, env);
       if (path === 'admin/messages' && method === 'GET') return listMessages(env, +url.searchParams.get('user') || 0, 'manager');
       if (path === 'admin/messages' && method === 'POST') return sendManagerMessage(req, env, user, ctx);
     }
@@ -312,9 +320,125 @@ async function tgWebhook(req, env) {
   return json({ ok: true });
 }
 
+/* ---------- application code: pull the person's record from the Google Sheet ---------- */
+const SHEET_MAP = {
+  apply: { 'Имя и фамилия': 'name', 'Дата рождения': 'birth', 'Возраст': 'age', 'Пол': 'gender', 'Телефон': 'phone', 'Instagram': 'instagram', 'Telegram': 'telegram', 'Город': 'city', 'Родитель': 'parent', 'Рост': 'height', 'Вес': 'weight', 'Параметры (Г-Т-Б)': 'params', 'Обувь': 'shoe', 'Волосы': 'hair', 'Глаза': 'eyes', 'Опыт': 'exp', 'Направления': 'dirs', 'Контракт с агентством': 'contract', 'Портфолио': 'portfolio', 'О себе': 'about' },
+  brief: { 'Имя': 'name', 'Компания': 'company', 'Должность': 'position', 'Телефон': 'phone', 'Telegram': 'telegram', 'E-mail': 'email', 'Город': 'city', 'Сфера бизнеса': 'industry', 'Команда': 'team', 'Что нужно': 'dirs', 'Задача': 'task', 'Бюджет': 'budget', 'Сроки': 'timing', 'Как связаться': 'contact' },
+};
+function sheetStatus(kind, raw) {
+  const s = String(raw || '').toLowerCase();
+  if (kind === 'apply') {
+    if (!s) return 'new';
+    if (/нет/.test(s)) return 'declined';
+    if (/контракт/.test(s)) return 'contract';
+    if (/запас|резерв/.test(s)) return 'reserve';
+    if (/вопрос|детск/.test(s)) return 'review';
+    return 'new';
+  }
+  if (!s || /нов/.test(s)) return 'new';
+  if (/готов|заверш|закрыт|выполн/.test(s)) return 'done';
+  if (/работ/.test(s)) return 'work';
+  if (/отказ|нет/.test(s)) return 'declined';
+  return 'review';
+}
+const last9 = v => String(v || '').replace(/\D/g, '').slice(-9);
+/* every phone number written in a text (several numbers may be separated by / , ; spaces) */
+function numbersIn(text) {
+  const out = new Set();
+  for (const part of String(text || '').split(/[\/,;]|\sи\s|\s{2,}/)) { const d = part.replace(/\D/g, ''); if (d.length >= 9) out.add(d.slice(-9)); }
+  const all = String(text || '').replace(/[^\d]/g, ' ').match(/\d{9,12}/g) || [];
+  all.forEach(d => out.add(d.slice(-9)));
+  return out;
+}
+async function fetchSheet(env, code) {
+  if (!env.SHEET_KEY) return { ok: false, error: 'sheet is not configured' };
+  const u = new URL(env.FORM_URL || DEFAULT_FORM_URL);
+  u.searchParams.set('action', 'lookup'); u.searchParams.set('code', code); u.searchParams.set('key', env.SHEET_KEY);
+  try {
+    const r = await fetch(u.toString(), { redirect: 'follow', signal: AbortSignal.timeout(9000) });
+    return await r.json();
+  } catch { return { ok: false, error: 'sheet unavailable' }; }
+}
+function rowToApp(kind, row) {
+  const payload = {};
+  for (const [h, k] of Object.entries(SHEET_MAP[kind])) { const v = clip(row[h], 2000); if (v) payload[k] = v; }
+  const raw = clip(kind === 'apply' ? row['Отбор'] : row['Статус'], 100);
+  if (raw) payload.sheet_status = raw;
+  return { payload, raw, status: sheetStatus(kind, raw), name: clip(payload.name, 120), lang: lang3(String(row['Язык'] || '').trim().toLowerCase()) };
+}
+/* create or refresh the cabinet record of a sheet row; the sheet is the source of truth for linked applications */
+async function saveLinked(env, phone, code, kind, row) {
+  const m = rowToApp(kind, row);
+  const ex = await env.DB.prepare('SELECT id,status,payload FROM apps WHERE code=?').bind(code).first();
+  if (ex) {
+    const before = safeJson(ex.payload).sheet_status || '';
+    // keep a status set in the cabinet unless the sheet's own status changed since the last sync
+    const status = (m.raw || '') !== before ? m.status : ex.status;
+    await env.DB.prepare('UPDATE apps SET status=?, name=?, payload=?, updated_at=?, synced_at=? WHERE id=?').bind(status, m.name, JSON.stringify(m.payload), NOW(), NOW(), ex.id).run();
+  } else {
+    await env.DB.prepare('INSERT INTO apps(phone,kind,status,name,lang,payload,created_at,updated_at,code,synced_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
+      .bind(phone, kind, m.status, m.name, m.lang, JSON.stringify(m.payload), NOW(), NOW(), code, NOW()).run();
+  }
+  // fill the (still empty) profile fields from the sheet
+  const u = await env.DB.prepare('SELECT id,name,profile FROM users WHERE phone=?').bind(phone).first();
+  if (u) {
+    const prof = safeJson(u.profile), p = m.payload, put = (k, v) => { if (v && !prof[k]) prof[k] = clip(v, k === 'about' ? 1500 : 200); };
+    put('city', p.city); put('instagram', p.instagram); put('telegram', p.telegram); put('height', p.height); put('weight', p.weight);
+    put('shoes', p.shoe); put('hair', p.hair); put('eyes', p.eyes); put('company', p.company); put('position', p.position); put('email', p.email); put('about', p.about);
+    if (p.params) { const g = String(p.params).split(/[-–\/ ]+/).filter(Boolean); put('bust', g[0]); put('waist', g[1]); put('hips', g[2]); }
+    // the real name from the application wins over the Telegram name, unless the person has typed their own name in the profile
+    let name = u.name;
+    if (!prof.name_set && !prof.name_app && m.name) { name = m.name; prof.name_app = '1'; }   // only the first linked application names the person
+    await env.DB.prepare('UPDATE users SET name=?, profile=? WHERE id=?').bind(name || m.name, JSON.stringify(prof), u.id).run();
+  }
+}
+const CODE_RE = /^[ZB]-[A-Z0-9]{4,8}$/;
+async function linkCode(req, env, user) {
+  const d = await body(req, 1000);
+  const code = String(d.code || '').trim().toUpperCase().replace(/[\u2010-\u2015\u2212\s]+/g, '-');
+  if (!CODE_RE.test(code)) return fail(400, 'bad code');
+  if (!(await hit(env, 'lk:' + user.id, 10, 3600)) || !(await hit(env, 'lk:ip:' + ip(req), 40, 3600))) return fail(429, 'too many requests');
+  const taken = await env.DB.prepare('SELECT phone FROM apps WHERE code=?').bind(code).first();
+  if (taken && taken.phone !== user.phone) return fail(409, 'already linked');
+  const r = await fetchSheet(env, code);
+  if (!r || !r.ok) return fail(r && r.error === 'not found' ? 404 : r && r.error === 'sheet is not configured' ? 503 : r && r.error === 'sheet unavailable' ? 502 : 404, (r && r.error) || 'not found');
+  const kind = r.kind === 'brief' ? 'brief' : 'apply';
+  // the number from the application must be the number that logged in (or the parent's number written in the application)
+  const row = r.row || {};
+  const mine = last9(user.phone);
+  const allowed = new Set([...numbersIn(row['Телефон']), ...numbersIn(row['Родитель'])]);
+  if (!allowed.has(mine)) return fail(403, 'phone mismatch');
+  await saveLinked(env, user.phone, code, kind, row);
+  return json({ ok: true });
+}
+async function syncMine(env, user) {
+  if (!(await hit(env, 'sy:' + user.id, 30, 3600))) return fail(429, 'too many requests');
+  const rows = await env.DB.prepare('SELECT code,kind FROM apps WHERE phone=? AND code IS NOT NULL AND (synced_at IS NULL OR synced_at<?) LIMIT 5').bind(user.phone, NOW() - 120).all();
+  let n = 0;
+  for (const a of rows.results || []) {
+    const r = await fetchSheet(env, a.code);
+    if (r && r.ok) { await saveLinked(env, user.phone, a.code, r.kind === 'brief' ? 'brief' : 'apply', r.row || {}); n++; }
+  }
+  return json({ ok: true, synced: n });
+}
+/* manager links a code to a person by hand (phone may differ) */
+async function adminLink(req, env) {
+  const d = await body(req, 1000);
+  const code = String(d.code || '').trim().toUpperCase().replace(/[\u2010-\u2015\u2212\s]+/g, '-');
+  if (!CODE_RE.test(code) || !+d.user) return fail(400, 'bad request');
+  const target = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(+d.user).first();
+  if (!target) return fail(404, 'not found');
+  const r = await fetchSheet(env, code);
+  if (!r || !r.ok) return fail(r && r.error === 'sheet is not configured' ? 503 : 404, (r && r.error) || 'not found');
+  const taken = await env.DB.prepare('SELECT id FROM apps WHERE code=?').bind(code).first();
+  if (taken) await env.DB.prepare('UPDATE apps SET phone=? WHERE id=?').bind(target.phone, taken.id).run();
+  await saveLinked(env, target.phone, code, r.kind === 'brief' ? 'brief' : 'apply', r.row || {});
+  return json({ ok: true });
+}
+
 /* ---------- user data ---------- */
 async function myData(env, user) {
-  const apps = await env.DB.prepare('SELECT id,kind,status,name,lang,payload,created_at,updated_at FROM apps WHERE phone=? ORDER BY id DESC').bind(user.phone).all();
+  const apps = await env.DB.prepare('SELECT id,kind,status,name,lang,payload,created_at,updated_at,code FROM apps WHERE phone=? ORDER BY id DESC').bind(user.phone).all();
   const photos = await env.DB.prepare('SELECT id,created_at FROM photos WHERE user_id=? ORDER BY id').bind(user.id).all();
   const unread = await env.DB.prepare("SELECT COUNT(*) c FROM messages WHERE thread=? AND from_role='manager' AND seen=0").bind(user.id).first();
   return json({
@@ -330,6 +454,7 @@ async function saveProfile(req, env, user) {
   const prof = safeJson(user.profile);
   for (const k of PROFILE_KEYS) if (k in d) prof[k] = clip(d[k], k === 'about' ? 1500 : 200);
   const name = d.name != null ? clip(d.name, 120) : user.name;
+  if (d.name != null && name && name !== user.name) prof.name_set = '1';
   await env.DB.prepare('UPDATE users SET name=?, profile=? WHERE id=?').bind(name, JSON.stringify(prof), user.id).run();
   return json({ ok: true, user: pubUser({ ...user, name, profile: JSON.stringify(prof) }) });
 }

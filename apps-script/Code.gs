@@ -16,8 +16,37 @@ const BUSINESS_HEADERS = ['Заявка №', 'Отправлено', 'Стат�
   'Telegram', 'E-mail', 'Город', 'Сфера бизнеса', 'Команда', 'Что нужно', 'Задача', 'Бюджет', 'Сроки',
   'Как связаться', 'Язык', 'Менеджер', 'Комментарий'];
 
-function doGet() {
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  if (p.action === 'lookup') return json_(lookup_(p));
   return json_({ ok: true, service: 'zaya-forms' });
+}
+
+/**
+ * Поиск строки по коду заявки (для личного кабинета на zaya.uz).
+ * Вызывается только сервером сайта: нужен ключ из «Свойств скрипта» (API_KEY), который совпадает с SHEET_KEY в Cloudflare.
+ *   Z-XXXXX -> лист Info (модели), B-XXXXX -> лист «Бизнес»
+ */
+function lookup_(p) {
+  const key = PropertiesService.getScriptProperties().getProperty('API_KEY');
+  if (!key || String(p.key || '') !== key) return { ok: false, error: 'forbidden' };
+  const code = String(p.code || '').trim().toUpperCase();
+  if (!/^[ZB]-[A-Z0-9]{4,8}$/.test(code)) return { ok: false, error: 'bad code' };
+  const kind = code.charAt(0) === 'Z' ? 'apply' : 'brief';
+  const sh = SpreadsheetApp.openById(SHEET_ID).getSheetByName(kind === 'apply' ? MODELS_SHEET : BUSINESS_SHEET);
+  if (!sh) return { ok: false, error: 'sheet not found' };
+  const values = sh.getDataRange().getDisplayValues();
+  let h = 0; // строка заголовков: первая из первых пяти, где в колонке A написано «Заявка №»
+  for (let i = 0; i < Math.min(5, values.length); i++) if (String(values[i][0]).trim() === 'Заявка №') { h = i; break; }
+  const head = values[h];
+  for (let i = h + 1; i < values.length; i++) {
+    if (String(values[i][0]).trim().toUpperCase() === code) {
+      const row = {};
+      head.forEach((name, j) => { if (name) row[String(name).trim()] = String(values[i][j] == null ? '' : values[i][j]).trim(); });
+      return { ok: true, kind: kind, row: row };
+    }
+  }
+  return { ok: false, error: 'not found' };
 }
 
 function doPost(e) {
