@@ -1333,11 +1333,11 @@ const DECKS={
     {q:["Каждый шаг вперёд — уже победа.","Har bir oldinga qadam — allaqachon g‘alaba.","Every step forward is already a win."]}
   ],
   models:[
-    {img:PH+"ziyovuddin-isakulov-1.jpg",q:["Камера любит тех, кто верит в себя.","Kamera o‘ziga ishonganlarni yaxshi ko‘radi.","The camera loves those who believe in themselves."]},
-    {img:PH+"kamilla-muzrabbekova-1.jpg",q:["Талант открывает дверь, дисциплина помогает в ней остаться.","Iste’dod eshikni ochadi, intizom unda qolishga yordam beradi.","Talent opens the door; discipline keeps you in the room."]},
-    {img:PH+"kamilla-muzrabbekova-3.jpg",q:["Твоё лицо — начало истории. Продолжение за тобой.","Yuzing — hikoyaning boshlanishi. Davomi o‘zingdan.","Your face is where the story begins. The rest is up to you."]},
-    {img:PH+"ziyovuddin-isakulov-2.jpg",q:["Опыт не нужен. Нужна смелость прийти.","Tajriba shart emas. Kelishga jasorat kerak.","You don’t need experience. You need the courage to show up."]},
-    {img:PH+"kamilla-muzrabbekova-2.jpg",q:["Покажи, какой ты есть. Остальное мы раскроем.","O‘zingni ko‘rsat. Qolganini biz ochamiz.","Show who you are. We’ll bring out the rest."]}
+    {q:["Камера любит тех, кто верит в себя.","Kamera o‘ziga ishonganlarni yaxshi ko‘radi.","The camera loves those who believe in themselves."]},
+    {q:["Талант открывает дверь, дисциплина помогает в ней остаться.","Iste’dod eshikni ochadi, intizom unda qolishga yordam beradi.","Talent opens the door; discipline keeps you in the room."]},
+    {q:["Твоё лицо — начало истории. Продолжение за тобой.","Yuzing — hikoyaning boshlanishi. Davomi o‘zingdan.","Your face is where the story begins. The rest is up to you."]},
+    {q:["Опыт не нужен. Нужна смелость прийти.","Tajriba shart emas. Kelishga jasorat kerak.","You don’t need experience. You need the courage to show up."]},
+    {q:["Покажи, какой ты есть. Остальное мы раскроем.","O‘zingni ko‘rsat. Qolganini biz ochamiz.","Show who you are. We’ll bring out the rest."]}
   ],
   business:[
     {w:["Система","Tizim","System"],q:["Бизнес растёт там, где есть система.","Biznes tizim bor joyda o‘sadi.","A business grows where there is a system."]},
@@ -1346,12 +1346,14 @@ const DECKS={
     {w:["Результат","Natija","Result"],q:["Решение по данным обходится дешевле ошибки.","Ma’lumotga tayangan qaror xatodan arzonroq.","A decision backed by data costs less than a mistake."]}
   ]
 };
+DECKS.models.img=PH+"kamilla-muzrabbekova-1.jpg";   // one fixed photo, only the quotes rotate
 const DECK_MS=7500,decks=[];
 document.querySelectorAll("[data-deck]").forEach(root=>{
   const data=DECKS[root.dataset.deck],arch=root.querySelector(".qh-arch"),qbox=root.querySelector(".qh-q"),dotbox=root.querySelector(".qh-dots");
   if(!data||!qbox)return;
   const typo=data[0].w!==undefined,qs=[],vs=[],ds=[];
   root.style.setProperty("--dt",DECK_MS+"ms");
+  if(arch&&data.img){const im=new Image();im.alt="";im.decoding="async";im.src=data.img;im.className="on";arch.appendChild(im)}
   data.forEach((sl,i)=>{
     const b=document.createElement("blockquote");b.appendChild(document.createElement("p"));qbox.appendChild(b);qs.push(b);
     let v=null;
