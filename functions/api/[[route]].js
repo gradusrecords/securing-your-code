@@ -230,10 +230,11 @@ async function authStart(req, env) {
     const sent = await sendCode(env, phone, user.tg_chat);
     if (sent) return json({ ok: true, mode: 'telegram' });
   }
-  if (!env.BOT_USERNAME) return fail(503, 'bot is not configured');
+  const bot = String(env.BOT_USERNAME || '').trim().replace(/^@/, '');
+  if (!bot) return fail(503, 'bot is not configured');
   const token = rnd(12);
   await env.DB.prepare('INSERT INTO links(token,phone,expires) VALUES(?,?,?)').bind(token, phone, NOW() + 900).run();
-  return json({ ok: true, mode: 'link', url: `https://t.me/${env.BOT_USERNAME}?start=${token}` });
+  return json({ ok: true, mode: 'link', url: `https://t.me/${bot}?start=${token}` });
 }
 
 async function sendCode(env, phone, chat) {
