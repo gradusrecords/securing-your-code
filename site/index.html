@@ -448,6 +448,9 @@ body.nogl[data-view="models"]{background:radial-gradient(120% 90% at 50% 100%,#3
 .cab-panel{position:absolute;top:0;right:0;height:100%;width:min(100vw,1180px);background:#030a07;box-shadow:-30px 0 80px rgba(0,0,0,.6);transform:translateX(102%);transition:transform .7s var(--ease)}
 .cab.open .cab-panel{transform:none}
 .cab-panel iframe{display:block;width:100%;height:100%;border:0;background:#030a07}
+.cab-x{all:unset;cursor:pointer;position:absolute;z-index:3;top:calc(20px + env(safe-area-inset-top,0px));right:clamp(14px,3vw,28px);width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(219,181,119,.4);background:rgba(5,5,5,.6);color:var(--gold);font-size:24px;line-height:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.cab-x:hover{background:rgba(219,181,119,.16)}
+.cab-x:focus-visible{outline:1px solid var(--gold);outline-offset:3px}
 body.cab-on{overflow:hidden}
 .snd{all:unset;cursor:pointer;display:flex;gap:3px;align-items:flex-end;height:18px;padding:6px 4px;box-sizing:content-box}
 .snd:focus-visible{outline:1px solid var(--gold);outline-offset:2px}
@@ -798,7 +801,7 @@ body.ready .pull{opacity:1}
 
 <div class="cab" id="cab" aria-hidden="true">
   <div class="cab-dim" id="cabDim"></div>
-  <div class="cab-panel" role="dialog" aria-modal="true" aria-label="ZAYA"><iframe id="cabFrame" title="ZAYA cabinet"></iframe></div>
+  <div class="cab-panel" role="dialog" aria-modal="true" aria-label="ZAYA"><button class="cab-x" id="cabX" type="button" aria-label="Закрыть">×</button><iframe id="cabFrame" title="ZAYA cabinet"></iframe></div>
 </div>
 
 <dialog class="dlg" id="dlg" aria-labelledby="dlg-t">
@@ -1309,6 +1312,7 @@ const TRACK={artist:"Maryam",title:"Faqat sen"};   // shown in the mini player
     me();
   }
   btn.addEventListener("click",open);
+  $("cabX").addEventListener("click",close);
   dim.addEventListener("click",close);
   addEventListener("keydown",e=>{if(e.key==="Escape"&&isOpen)close()});
   addEventListener("message",e=>{

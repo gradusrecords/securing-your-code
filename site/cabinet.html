@@ -20,6 +20,7 @@ a{color:var(--gold)}
 .brand img{height:34px;width:auto}
 .brand b{font:italic 300 24px/1 var(--serif);color:var(--gold)}
 .brand small{display:block;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute)}
+.emb .top{padding-right:56px}
 .who{display:flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.12em;color:var(--mute)}
 .who b{color:var(--cream);font-weight:400}
 .lnk{all:unset;cursor:pointer;color:var(--gold);font-size:11px;letter-spacing:.22em;text-transform:uppercase;border-bottom:1px solid rgba(219,181,119,.4);padding-bottom:2px}
@@ -121,6 +122,7 @@ details summary{cursor:pointer;color:var(--gold);font-size:11px;letter-spacing:.
 "use strict";
 const $app=document.getElementById("app");
 const embedded=self!==top;
+if(embedded)document.documentElement.classList.add("emb");
 let LANG="ru";try{LANG=localStorage.getItem("zaya-lang")||"ru"}catch(e){}
 if(!["ru","uz","en"].includes(LANG))LANG="ru";
 document.documentElement.lang=LANG;
@@ -242,7 +244,7 @@ function shell(...content){
   $app.append(
     h("div",{class:"top"},
       h("div",{class:"brand"},h("img",{src:"monogram.png",alt:"ZA"}),h("div",null,h("b",null,"ZAYA"),h("small",null,t("title")))),
-      h("div",{class:"who",id:"who"},embedded?h("button",{class:"x",type:"button","aria-label":t("close"),onclick:()=>parent.postMessage("zaya-close","*")},"×"):null)
+      h("div",{class:"who",id:"who"},null)
     ),
     ...content
   );
