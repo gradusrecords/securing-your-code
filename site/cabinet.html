@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ZAYA — личный кабинет</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap">
+<style>
+:root{color-scheme:dark;--black:#050505;--gold:#DBB577;--gold-dim:#9C8157;--green:#0B2F23;--cream:#EEE7DA;--mute:#8E887D;--line:rgba(219,181,119,.22);--serif:"Cormorant Garamond",Garamond,Georgia,serif;--sans:"Jost","Avenir Next",Arial,sans-serif;--ease:cubic-bezier(.16,1,.3,1)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--black);color:var(--cream);font:300 15px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(ellipse 90% 70% at 50% 0%,#0E3829 0%,#071a13 45%,#050505 100%) fixed}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--gold)}
+.shell{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 60px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{height:34px;width:auto}
+.brand b{font:italic 300 24px/1 var(--serif);color:var(--gold)}
+.brand small{display:block;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute)}
+.who{display:flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.12em;color:var(--mute)}
+.who b{color:var(--cream);font-weight:400}
+.lnk{all:unset;cursor:pointer;color:var(--gold);font-size:11px;letter-spacing:.22em;text-transform:uppercase;border-bottom:1px solid rgba(219,181,119,.4);padding-bottom:2px}
+.lnk:hover{border-color:var(--gold)}
+.lnk:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:1px solid var(--gold);outline-offset:3px}
+.x{all:unset;cursor:pointer;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);font-size:20px;color:var(--gold);line-height:1}
+.x:hover{background:rgba(219,181,119,.12)}
+.card{border:1px solid var(--line);background:rgba(5,5,5,.55);backdrop-filter:blur(10px);padding:clamp(22px,3vw,36px)}
+.login{max-width:520px;margin:clamp(40px,10vh,110px) auto 0;text-align:center}
+.login h1{margin:0 0 10px;font:300 clamp(34px,5vw,48px)/1.05 var(--serif)}
+.login h1 em{color:var(--gold)}
+.login p{margin:0 0 26px;color:#B3AC9E}
+.field{display:grid;gap:8px;text-align:left;margin-bottom:16px}
+.field label{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold-dim)}
+.inp,select.inp,textarea.inp{width:100%;background:rgba(255,255,255,.035);border:1px solid var(--line);padding:13px 14px;border-radius:0;font-size:16px}
+.inp:focus{border-color:var(--gold);outline:none}
+textarea.inp{min-height:110px;resize:vertical}
+select.inp option{background:#0b1a14}
+.phone{display:flex;align-items:stretch}
+.phone span{display:grid;place-items:center;padding:0 14px;border:1px solid var(--line);border-right:0;color:var(--gold);letter-spacing:.08em;background:rgba(255,255,255,.02)}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 28px;border:1px solid var(--gold);color:var(--gold);font-size:11px;letter-spacing:.26em;text-transform:uppercase;transition:background .4s,color .4s}
+.btn:hover{background:rgba(219,181,119,.14)}
+.btn.fill{background:var(--gold);color:#0a0a09}
+.btn.fill:hover{background:#E7C58A}
+.btn[disabled]{opacity:.45;cursor:default;pointer-events:none}
+.btn.sm{padding:9px 16px;font-size:10px}
+.full{width:100%}
+.msg{min-height:22px;margin:12px 0 0;font-size:13px;color:#d9a3a3}
+.msg.ok{color:#9fd1b4}
+.steps{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:12px;text-align:left;counter-reset:s}
+.steps li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;color:#C9C2B3;font-size:14px}
+.steps li::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--gold);border-radius:50%;color:var(--gold);font-size:12px}
+.code{letter-spacing:.7em;text-align:center;font-size:24px;padding-left:.7em}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:26px 0 24px}
+.tab{all:unset;cursor:pointer;padding:11px 20px;border:1px solid var(--line);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);position:relative}
+.tab[aria-selected="true"]{color:#0a0a09;background:var(--gold);border-color:var(--gold)}
+.tab:not([aria-selected="true"]):hover{color:var(--cream);border-color:var(--gold-dim)}
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:8px;border-radius:9px;background:#C8563C;color:#fff;font-size:10px;letter-spacing:0}
+h2.t{margin:0 0 18px;font:300 clamp(26px,3.4vw,38px)/1.1 var(--serif)}
+h3.t{margin:0 0 6px;font:400 22px/1.2 var(--serif)}
+.sub{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dim)}
+.empty{padding:30px;text-align:center;color:#B3AC9E;border:1px dashed var(--line)}
+.empty .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.apps{display:grid;gap:18px}
+.app .head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline;margin-bottom:20px}
+.pill{display:inline-block;padding:4px 12px;border:1px solid var(--gold);color:var(--gold);font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+.pill.warn{border-color:#C8563C;color:#E58E78}
+.pill.mute{border-color:var(--mute);color:var(--mute)}
+.flow{display:flex;gap:0;margin:6px 0 20px}
+.flow div{flex:1;position:relative;padding-top:20px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);text-align:center;min-width:0}
+.flow div::before{content:"";position:absolute;left:0;right:0;top:6px;height:1px;background:var(--line)}
+.flow div::after{content:"";position:absolute;left:50%;top:1px;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;background:#071a13;border:1px solid var(--mute)}
+.flow div.done{color:#C9C2B3}.flow div.done::before{background:var(--gold)}.flow div.done::after{background:var(--gold);border-color:var(--gold)}
+.flow div.now{color:var(--gold)}.flow div.now::before{background:var(--gold)}.flow div.now::after{background:var(--black);border-color:var(--gold);box-shadow:0 0 0 4px rgba(219,181,119,.18)}
+.flow.dim{opacity:.4}
+dl.kv{display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:8px 18px;margin:0;font-size:14px}
+dl.kv dt{color:var(--gold-dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding-top:3px}
+dl.kv dd{margin:0;color:#D9D2C4;word-break:break-word;white-space:pre-wrap}
+details summary{cursor:pointer;color:var(--gold);font-size:11px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 18px}
+@media (max-width:720px){.grid2,.grid3{grid-template-columns:1fr}dl.kv{grid-template-columns:1fr;gap:2px}.flow div{font-size:9px;letter-spacing:.06em}}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin:14px 0}
+.ph{position:relative;aspect-ratio:3/4;background:#0b1a14;border:1px solid var(--line);overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph button{all:unset;cursor:pointer;position:absolute;right:6px;top:6px;width:26px;height:26px;display:grid;place-items:center;background:rgba(5,5,5,.75);border:1px solid var(--line);color:var(--cream)}
+.ph button:hover{border-color:#C8563C;color:#E58E78}
+.note{font-size:12px;color:var(--mute);margin:8px 0 0}
+.chat{display:grid;grid-template-rows:1fr auto;height:min(64vh,560px);min-height:360px}
+.log{overflow-y:auto;padding:6px 4px 14px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:78%;padding:10px 14px;border:1px solid var(--line);background:rgba(255,255,255,.03);white-space:pre-wrap;word-break:break-word}
+.m.me{align-self:flex-end;background:rgba(219,181,119,.12);border-color:rgba(219,181,119,.4)}
+.m small{display:block;margin-top:4px;font-size:10px;letter-spacing:.1em;color:var(--mute)}
+.compose{display:flex;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+.compose textarea{flex:1;min-height:48px;max-height:120px;resize:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.row .inp{width:auto;min-width:150px;flex:1}
+.list{display:grid;gap:0;border-top:1px solid var(--line)}
+.li{display:grid;grid-template-columns:1.4fr 1fr 1fr .9fr;gap:12px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer;text-align:left;background:none;border-left:0;border-right:0;border-top:0;width:100%}
+.li:hover{background:rgba(219,181,119,.06)}
+.li small{display:block;color:var(--mute)}
+@media (max-width:720px){.li{grid-template-columns:1fr 1fr}}
+.split{display:grid;grid-template-columns:280px 1fr;gap:20px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+.th{display:block;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);background:none;margin-bottom:8px;cursor:pointer}
+.th.on{border-color:var(--gold);background:rgba(219,181,119,.08)}
+.th b{display:block;font-weight:400}
+.th small{display:block;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.back{margin-bottom:16px}
+.spin{display:grid;place-items:center;padding:80px;color:var(--mute);letter-spacing:.3em;text-transform:uppercase;font-size:11px}
+.ov{position:fixed;inset:0;z-index:20;background:rgba(2,6,4,.92);display:grid;place-items:center;padding:20px}
+.ov img{max-width:100%;max-height:100%;object-fit:contain}
+</style>
+</head>
+<body>
+<div class="shell" id="app"><div class="spin">ZAYA</div></div>
+<script>
+(function(){
+"use strict";
+const $app=document.getElementById("app");
+const embedded=self!==top;
+let LANG="ru";try{LANG=localStorage.getItem("zaya-lang")||"ru"}catch(e){}
+if(!["ru","uz","en"].includes(LANG))LANG="ru";
+document.documentElement.lang=LANG;
+const LI={ru:0,uz:1,en:2}[LANG];
+
+/* ---------- strings ---------- */
+const I={
+  title:["Личный кабинет","Shaxsiy kabinet","Personal account"],
+  sub:["Вход по номеру телефона","Telefon raqami orqali kirish","Sign in with your phone number"],
+  phone:["Номер телефона","Telefon raqami","Phone number"],
+  getcode:["Получить код","Kodni olish","Get the code"],
+  code:["Код из Telegram","Telegramdagi kod","Code from Telegram"],
+  enter:["Войти","Kirish","Sign in"],
+  sentTg:["Код отправлен вам в Telegram.","Kod Telegramga yuborildi.","The code was sent to your Telegram."],
+  st1:["Нажмите кнопку ниже: откроется Telegram-бот ZAYA.","Quyidagi tugmani bosing: ZAYA Telegram-boti ochiladi.","Tap the button below to open the ZAYA Telegram bot."],
+  st2:["В боте нажмите «Start» и поделитесь номером телефона.","Botda «Start» ni bosing va telefon raqamingizni ulashing.","In the bot press “Start” and share your phone number."],
+  st3:["Бот пришлёт код. Введите его здесь.","Bot kod yuboradi. Uni shu yerga kiriting.","The bot will send you a code. Enter it here."],
+  openBot:["Открыть Telegram-бот","Telegram-botni ochish","Open the Telegram bot"],
+  resend:["Отправить код ещё раз","Kodni qayta yuborish","Send the code again"],
+  wait:["Повторно через","Qayta yuborish","Resend in"],
+  badPhone:["Введите номер полностью: 9 цифр после +998.","Raqamni to‘liq kiriting: +998 dan keyin 9 ta raqam.","Enter the full number: 9 digits after +998."],
+  tooMany:["Слишком много попыток. Попробуйте позже.","Juda ko‘p urinish. Keyinroq urinib ko‘ring.","Too many attempts. Try again later."],
+  wrong:["Неверный или просроченный код.","Kod noto‘g‘ri yoki muddati o‘tgan.","The code is wrong or expired."],
+  noSvc:["Вход временно недоступен. Напишите нам: @zaya_booking","Kirish vaqtincha mavjud emas. Bizga yozing: @zaya_booking","Sign-in is temporarily unavailable. Write to us: @zaya_booking"],
+  err:["Что-то пошло не так. Попробуйте ещё раз.","Xatolik yuz berdi. Qayta urinib ko‘ring.","Something went wrong. Please try again."],
+  logout:["Выйти","Chiqish","Sign out"],
+  close:["Закрыть","Yopish","Close"],
+  tApps:["Заявки","Arizalar","Applications"],
+  tProfile:["Профиль","Profil","Profile"],
+  tChat:["Чат","Chat","Chat"],
+  tChats:["Чаты","Chatlar","Chats"],
+  kApply:["Анкета модели","Model anketasi","Model application"],
+  kBrief:["Бриф бизнеса","Biznes brifi","Business brief"],
+  sent:["Отправлена","Yuborilgan","Submitted"],
+  data:["Данные заявки","Ariza ma’lumotlari","Application details"],
+  noApps:["Заявок пока нет. Заполните анкету или бриф, и менеджер свяжется с вами.","Hozircha arizalar yo‘q. Anketa yoki brifni to‘ldiring, menejer siz bilan bog‘lanadi.","No applications yet. Fill in the application or the brief and a manager will contact you."],
+  fillApply:["Анкета модели","Model anketasi","Model application"],
+  fillBrief:["Бриф для бизнеса","Biznes brifi","Business brief"],
+  save:["Сохранить","Saqlash","Save"],
+  saved:["Сохранено","Saqlandi","Saved"],
+  name:["Имя и фамилия","Ism va familiya","Full name"],
+  photos:["Мои фото","Mening suratlarim","My photos"],
+  addPhoto:["Добавить фото","Surat qo‘shish","Add photos"],
+  photoNote:["Фото видит только менеджер ZAYA. До 10 фото, JPG, PNG или WebP.","Suratlarni faqat ZAYA menejeri ko‘radi. 10 tagacha, JPG, PNG yoki WebP.","Only a ZAYA manager can see your photos. Up to 10 photos, JPG, PNG or WebP."],
+  del:["Удалить","O‘chirish","Delete"],
+  typeMsg:["Напишите сообщение менеджеру…","Menejerga xabar yozing…","Write a message to the manager…"],
+  sendMsg:["Отправить","Yuborish","Send"],
+  noMsg:["Сообщений пока нет. Задайте вопрос менеджеру.","Hozircha xabarlar yo‘q. Menejerga savol bering.","No messages yet. Ask the manager a question."],
+  you:["Вы","Siz","You"],
+  mgr:["Менеджер ZAYA","ZAYA menejeri","ZAYA manager"],
+  all:["Все","Hammasi","All"],
+  search:["Поиск: имя или телефон","Qidiruv: ism yoki telefon","Search: name or phone"],
+  status:["Статус","Holat","Status"],
+  open:["Открыть","Ochish","Open"],
+  back:["← Назад","← Orqaga","← Back"],
+  contact:["Написать","Yozish","Message"],
+  noUser:["Этот человек ещё не входил в кабинет: чат будет доступен после входа.","Bu odam hali kabinetga kirmagan: chat kirgandan keyin ochiladi.","This person has not signed in yet: chat becomes available after sign-in."],
+  noAppsM:["Заявок нет","Arizalar yo‘q","No applications"],
+  noThreads:["Сообщений пока нет","Hozircha xabarlar yo‘q","No messages yet"],
+  profilePhotos:["Фото","Suratlar","Photos"],
+  hint:["Менеджер ответит в чате и в Telegram.","Menejer chatda va Telegramda javob beradi.","The manager will reply in the chat and in Telegram."],
+};
+const t=k=>I[k][LI];
+
+const STATUS={
+  new:["Заявка получена","Ariza qabul qilindi","Received"],
+  review:["На рассмотрении","Ko‘rib chiqilmoqda","In review"],
+  casting:["Кастинг","Kasting","Casting"],
+  contract:["Договор","Shartnoma","Contract"],
+  portfolio:["Портфолио","Portfolio","Portfolio"],
+  reserve:["В резерве","Zaxirada","In reserve"],
+  work:["В работе","Ishda","In progress"],
+  done:["Завершено","Yakunlandi","Completed"],
+  declined:["Отклонена","Rad etildi","Declined"],
+};
+const FLOW={apply:["new","review","casting","contract","portfolio"],brief:["new","review","work","done"]};
+const KEYS={
+  name:["Имя","Ism","Name"],company:["Компания","Kompaniya","Company"],position:["Должность","Lavozim","Position"],phone:["Телефон","Telefon","Phone"],
+  telegram:["Telegram","Telegram","Telegram"],email:["E-mail","E-mail","E-mail"],city:["Город","Shahar","City"],industry:["Сфера бизнеса","Biznes sohasi","Industry"],
+  team:["Команда","Jamoa","Team"],contact:["Способ связи","Aloqa usuli","Contact method"],dirs:["Направления","Yo‘nalishlar","Directions"],task:["Задача","Vazifa","Task"],
+  budget:["Бюджет","Byudjet","Budget"],timing:["Сроки","Muddat","Timing"],birth:["Дата рождения","Tug‘ilgan sana","Date of birth"],gender:["Пол","Jins","Gender"],
+  instagram:["Instagram","Instagram","Instagram"],parent:["Родитель / опекун","Ota-ona / vasiy","Parent / guardian"],height:["Рост","Bo‘y","Height"],weight:["Вес","Vazn","Weight"],
+  params:["Параметры","Parametrlar","Measurements"],shoe:["Обувь","Poyabzal","Shoes"],hair:["Волосы","Soch","Hair"],eyes:["Глаза","Ko‘z","Eyes"],exp:["Опыт","Tajriba","Experience"],
+  contract:["Контракт","Shartnoma","Contract"],portfolio:["Портфолио","Portfolio","Portfolio"],about:["О себе","O‘zim haqimda","About"],shoes:["Обувь","Poyabzal","Shoes"],
+  bust:["Грудь","Ko‘krak","Bust"],waist:["Талия","Bel","Waist"],hips:["Бёдра","Son","Hips"],
+};
+
+/* ---------- tiny DOM helper (text only, never innerHTML with data) ---------- */
+function h(tag,attrs,...kids){
+  const e=document.createElement(tag);
+  if(attrs)for(const[k,v]of Object.entries(attrs)){
+    if(v==null||v===false)continue;
+    if(k==="class")e.className=v;
+    else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);
+    else if(k==="value")e.value=v;
+    else e.setAttribute(k,v===true?"":v);
+  }
+  for(const c of kids.flat(Infinity))if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(String(c)));
+  return e;
+}
+const clear=n=>{while(n.firstChild)n.removeChild(n.firstChild)};
+const fmtDate=ts=>new Date(ts*1000).toLocaleDateString(LANG==="en"?"en-GB":"ru-RU",{day:"2-digit",month:"2-digit",year:"numeric"});
+const fmtTime=ts=>new Date(ts*1000).toLocaleString(LANG==="en"?"en-GB":"ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+
+/* ---------- API ---------- */
+async function api(method,path,body,form){
+  const opt={method,headers:{"x-zaya":"1"},credentials:"same-origin"};
+  if(form)opt.body=form;
+  else if(body){opt.headers["content-type"]="application/json";opt.body=JSON.stringify(body)}
+  let res;try{res=await fetch("/api/"+path,opt)}catch(e){return{status:0,data:{ok:false,error:"net"}}}
+  let data=null;try{data=await res.json()}catch(e){}
+  return{status:res.status,data:data||{ok:false}};
+}
+
+let timers=[];
+const stopTimers=()=>{timers.forEach(clearInterval);timers=[]};
+function shell(...content){
+  stopTimers();clear($app);
+  $app.append(
+    h("div",{class:"top"},
+      h("div",{class:"brand"},h("img",{src:"monogram.png",alt:"ZA"}),h("div",null,h("b",null,"ZAYA"),h("small",null,t("title")))),
+      h("div",{class:"who",id:"who"},embedded?h("button",{class:"x",type:"button","aria-label":t("close"),onclick:()=>parent.postMessage("zaya-close","*")},"×"):null)
+    ),
+    ...content
+  );
+}
+function setWho(user){
+  const w=document.getElementById("who");if(!w)return;
+  const close=w.querySelector(".x");clear(w);
+  w.append(h("span",null,h("b",null,user.name||("+"+user.phone))),h("button",{class:"lnk",type:"button",onclick:logout},t("logout")));
+  if(close)w.append(close);
+}
+async function logout(){await api("POST","auth/logout");boot()}
+window.addEventListener("keydown",e=>{if(e.key==="Escape"&&embedded)parent.postMessage("zaya-close","*")});
+
+/* ---------- login ---------- */
+function loginScreen(){
+  let phoneDigits="",mode=null,botUrl="",timer=0,cooldown=0;
+  const msg=h("p",{class:"msg",role:"alert"});
+  const phoneInp=h("input",{class:"inp",type:"tel",inputmode:"numeric",autocomplete:"tel-national",placeholder:"90 123 45 67",maxlength:"12","aria-label":t("phone"),
+    oninput:e=>{const d=e.target.value.replace(/\D/g,"").replace(/^998/,"").slice(0,9);e.target.value=d.replace(/(\d{2})(\d{0,3})(\d{0,2})(\d{0,2})/,(m,a,b,c,d2)=>[a,b,c,d2].filter(Boolean).join(" "))}});
+  const getBtn=h("button",{class:"btn fill full",type:"button",onclick:start},t("getcode"));
+  const stage=h("div");
+  const card=h("div",{class:"card login"},
+    h("h1",null,t("title")),h("p",null,t("sub")),
+    h("div",{class:"field"},h("label",null,t("phone")),h("div",{class:"phone"},h("span",null,"+998"),phoneInp)),
+    getBtn,msg,stage);
+  shell(card);
+  phoneInp.focus();
+  phoneInp.addEventListener("keydown",e=>{if(e.key==="Enter")start()});
+  const show=(text,ok)=>{msg.textContent=text||"";msg.className="msg"+(ok?" ok":"")};
+  async function start(){
+    const d=phoneInp.value.replace(/\D/g,"");
+    if(d.length!==9){show(t("badPhone"));return}
+    phoneDigits="998"+d;show("");getBtn.disabled=true;
+    const r=await api("POST","auth/start",{phone:phoneDigits});
+    getBtn.disabled=false;
+    if(!r.data.ok){show(r.status===429?t("tooMany"):r.status===503||r.status===0||r.status===404?t("noSvc"):r.status===400?t("badPhone"):t("err"));return}
+    mode=r.data.mode;botUrl=r.data.url||"";
+    codeStage();
+  }
+  function codeStage(){
+    clear(stage);
+    const codeInp=h("input",{class:"inp code",type:"text",inputmode:"numeric",autocomplete:"one-time-code",maxlength:"6","aria-label":t("code"),placeholder:"······",
+      oninput:e=>{e.target.value=e.target.value.replace(/\D/g,"").slice(0,6);if(e.target.value.length===6)verify(e.target.value)}});
+    const resend=h("button",{class:"lnk",type:"button",onclick:async()=>{if(cooldown>0)return;await start()}},t("resend"));
+    stage.append(h("div",{style:"margin-top:26px;text-align:left"},
+      mode==="link"
+        ?[h("ol",{class:"steps"},h("li",null,t("st1")),h("li",null,t("st2")),h("li",null,t("st3"))),
+          h("a",{class:"btn full",href:botUrl,target:"_blank",rel:"noopener",style:"margin-bottom:22px"},t("openBot"))]
+        :h("p",{style:"color:#9fd1b4;margin:0 0 16px"},t("sentTg")),
+      h("div",{class:"field"},h("label",null,t("code")),codeInp),
+      h("div",{style:"text-align:center;margin-top:4px"},resend)));
+    codeInp.focus();
+    cooldown=60;clearInterval(timer);
+    const tick=()=>{resend.disabled=cooldown>0;resend.style.opacity=cooldown>0?".5":"1";resend.textContent=cooldown>0?t("wait")+" "+cooldown+" c":t("resend");if(cooldown>0)cooldown--};
+    tick();timer=setInterval(tick,1000);timers.push(timer);
+    async function verify(code){
+      show("");const r=await api("POST","auth/verify",{phone:phoneDigits,code});
+      if(r.data.ok)boot();
+      else{show(r.status===429?t("tooMany"):t("wrong"));codeInp.value="";codeInp.focus()}
+    }
+  }
+}
+
+/* ---------- user cabinet ---------- */
+const state={tab:"apps",me:null,data:null,thread:0,filters:{kind:"",status:"",q:""}};
+function tabs(list){
+  return h("div",{class:"tabs",role:"tablist"},list.map(([id,label,badge])=>h("button",{class:"tab",role:"tab","aria-selected":String(state.tab===id),type:"button",onclick:async()=>{state.tab=id;if(state.me.role!=="manager"&&(id==="apps"||id==="chat"))await refreshMine();render()}},label,badge?h("span",{class:"badge"},badge):null)));
+}
+function statusPill(s){return h("span",{class:"pill"+(s==="declined"?" warn":s==="reserve"?" mute":"")},STATUS[s]?STATUS[s][LI]:s)}
+function payloadList(p){
+  const rows=Object.entries(p).filter(([k,v])=>v!==""&&!(Array.isArray(v)&&!v.length));
+  return h("dl",{class:"kv"},rows.map(([k,v])=>[h("dt",null,KEYS[k]?KEYS[k][LI]:k),h("dd",null,Array.isArray(v)?v.join(", "):String(v))]));
+}
+function appCard(a){
+  const flow=FLOW[a.kind==="apply"?"apply":"brief"],off=a.status==="declined"||a.status==="reserve";
+  const idx=flow.indexOf(a.status);
+  return h("div",{class:"card app"},
+    h("div",{class:"head"},h("div",null,h("div",{class:"sub"},a.kind==="apply"?t("kApply"):t("kBrief")),h("h3",{class:"t"},a.name||""),h("div",{class:"note"},t("sent")+" "+fmtDate(a.created_at))),statusPill(a.status)),
+    h("div",{class:"flow"+(off?" dim":"")},flow.map((s,i)=>h("div",{class:idx===-1?"":i<idx?"done":i===idx?"now":""},STATUS[s][LI]))),
+    h("details",null,h("summary",null,t("data")),payloadList(a.payload)));
+}
+function openForm(type){
+  if(embedded)parent.postMessage({zaya:"form",type},"*");
+  else location.href="/#"+(type==="apply"?"models":"business");
+}
+function viewApps(){
+  const apps=state.data.apps;
+  if(!apps.length)return h("div",{class:"empty"},t("noApps"),h("div",{class:"acts"},h("button",{class:"btn fill",type:"button",onclick:()=>openForm("apply")},t("fillApply")),h("button",{class:"btn",type:"button",onclick:()=>openForm("brief")},t("fillBrief"))));
+  return h("div",{class:"apps"},apps.map(appCard));
+}
+const MODEL_FIELDS=["height","weight","bust","waist","hips","shoes","hair","eyes"];
+function viewProfile(){
+  const u=state.data.user,p=u.profile||{};
+  const isModel=state.data.apps.some(a=>a.kind==="apply")||!state.data.apps.length;
+  const isBiz=state.data.apps.some(a=>a.kind==="brief");
+  const f={};
+  const inp=(k,label,tag="input")=>{const e=h(tag,{class:"inp",value:k==="name"?u.name||"":p[k]||"",maxlength:k==="about"?"1500":"200","aria-label":label});f[k]=e;return h("div",{class:"field"},h("label",null,label),e)};
+  const msg=h("p",{class:"msg"});
+  const grid=h("div",{class:"photos"});
+  const drawPhotos=()=>{clear(grid);state.data.photos.forEach(ph=>grid.append(h("div",{class:"ph"},h("img",{src:"/api/photos/"+ph.id,alt:"",loading:"lazy"}),h("button",{type:"button","aria-label":t("del"),title:t("del"),onclick:async()=>{await api("DELETE","photos/"+ph.id);await reload();}},"×"))))};
+  drawPhotos();
+  const file=h("input",{type:"file",accept:"image/jpeg,image/png,image/webp",multiple:true,hidden:true,onchange:async e=>{
+    for(const fl of e.target.files){const blob=await shrink(fl);const fd=new FormData();fd.append("photo",blob,"photo.jpg");const r=await api("POST","photos",null,fd);if(!r.data.ok){msg.className="msg";msg.textContent=r.status===413?"≤ 6 MB":t("err");break}}
+    e.target.value="";await reload();}});
+  return h("div",{class:"card"},
+    h("h2",{class:"t"},t("tProfile")),
+    h("div",{class:"grid2"},inp("name",t("name")),inp("city",KEYS.city[LI])),
+    h("div",{class:"grid3"},inp("telegram",KEYS.telegram[LI]),inp("instagram",KEYS.instagram[LI]),inp("email",KEYS.email[LI])),
+    isBiz?h("div",{class:"grid2"},inp("company",KEYS.company[LI]),inp("position",KEYS.position[LI])):null,
+    isModel?h("div",{class:"grid3"},MODEL_FIELDS.map(k=>inp(k,KEYS[k][LI]))):null,
+    inp("about",KEYS.about[LI],"textarea"),
+    h("button",{class:"btn fill",type:"button",onclick:async()=>{
+      const body={};for(const[k,e]of Object.entries(f))body[k]=e.value;
+      const r=await api("POST","profile",body);msg.className="msg"+(r.data.ok?" ok":"");msg.textContent=r.data.ok?t("saved"):t("err");
+      if(r.data.ok){state.data.user=r.data.user;state.me=r.data.user;setWho(r.data.user)}}},t("save")),
+    msg,
+    h("h2",{class:"t",style:"margin-top:34px"},t("photos")),
+    grid,
+    h("button",{class:"btn",type:"button",onclick:()=>file.click()},t("addPhoto")),file,
+    h("p",{class:"note"},t("photoNote")));
+}
+/* shrink photos in the browser: smaller upload and no EXIF */
+function shrink(file){
+  return new Promise(res=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{const m=1800,k=Math.min(1,m/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);c.toBlob(b=>res(b||file),"image/jpeg",.88)};
+    img.onerror=()=>{URL.revokeObjectURL(url);res(file)};img.src=url;
+  });
+}
+function chatView(load,send,mine){
+  const log=h("div",{class:"log"}),ta=h("textarea",{class:"inp",placeholder:t("typeMsg"),maxlength:"2000","aria-label":t("typeMsg"),rows:"1"});
+  let lastId=-1;
+  const draw=list=>{
+    if(list.length&&list[list.length-1].id===lastId)return;lastId=list.length?list[list.length-1].id:0;
+    const stick=log.scrollTop+log.clientHeight>=log.scrollHeight-40;clear(log);
+    if(!list.length)log.append(h("div",{class:"empty"},t("noMsg")));
+    list.forEach(m=>log.append(h("div",{class:"m"+(m.from_role===mine?" me":"")},m.body,h("small",null,(m.from_role===mine?t("you"):m.from_role==="manager"?t("mgr"):"")+" "+fmtTime(m.created_at)))));
+    if(stick||list.length===1)log.scrollTop=log.scrollHeight;
+  };
+  const refresh=async()=>{const l=await load();if(l)draw(l)};
+  const doSend=async()=>{const v=ta.value.trim();if(!v)return;ta.value="";await send(v);await refresh();log.scrollTop=log.scrollHeight};
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();doSend()}});
+  const box=h("div",{class:"chat"},log,h("div",{class:"compose"},ta,h("button",{class:"btn fill",type:"button",onclick:doSend},t("sendMsg"))));
+  refresh();const iv=setInterval(refresh,10000);timers.push(iv);
+  return box;
+}
+function viewChat(){
+  return h("div",{class:"card"},h("h2",{class:"t"},t("tChat")),h("p",{class:"note",style:"margin:-8px 0 14px"},t("hint")),
+    chatView(async()=>{const r=await api("GET","messages");return r.data.ok?r.data.messages:null},v=>api("POST","messages",{body:v}),"user"));
+}
+
+/* ---------- manager ---------- */
+async function viewAdminApps(){
+  const f=state.filters;
+  const wrap=h("div");
+  const list=h("div",{class:"list"});
+  const kind=h("select",{class:"inp",onchange:e=>{f.kind=e.target.value;load()}},h("option",{value:""},t("all")),h("option",{value:"apply"},t("kApply")),h("option",{value:"brief"},t("kBrief")));
+  const st=h("select",{class:"inp",onchange:e=>{f.status=e.target.value;load()}},h("option",{value:""},t("status")+": "+t("all")),Object.keys(STATUS).map(s=>h("option",{value:s},STATUS[s][LI])));
+  const q=h("input",{class:"inp",type:"search",placeholder:t("search"),"aria-label":t("search"),value:f.q,oninput:e=>{f.q=e.target.value;clearTimeout(q._t);q._t=setTimeout(load,300)}});
+  kind.value=f.kind;st.value=f.status;
+  wrap.append(h("h2",{class:"t"},t("tApps")),h("div",{class:"row"},kind,st,q),list);
+  async function load(){
+    const p=new URLSearchParams();if(f.kind)p.set("kind",f.kind);if(f.status)p.set("status",f.status);if(f.q)p.set("q",f.q);
+    const r=await api("GET","admin/apps?"+p);clear(list);
+    const apps=r.data.apps||[];
+    if(!apps.length)list.append(h("div",{class:"empty"},t("noAppsM")));
+    apps.forEach(a=>list.append(h("button",{class:"li",type:"button",onclick:()=>{state.openApp=a.id;render()}},
+      h("div",null,h("b",{style:"font-weight:400"},a.name||"—"),h("small",null,"+"+a.phone)),h("div",null,a.kind==="apply"?t("kApply"):t("kBrief")),statusPill(a.status),h("small",null,fmtDate(a.created_at)))));
+  }
+  load();return wrap;
+}
+async function viewAdminApp(id){
+  const r=await api("GET","admin/apps/"+id);
+  if(!r.data.ok){state.openApp=null;return viewAdminApps()}
+  const{app,user,photos}=r.data;
+  const sel=h("select",{class:"inp",style:"max-width:260px"},app.statuses.map(s=>h("option",{value:s},STATUS[s][LI])));sel.value=app.status;
+  const msg=h("p",{class:"msg"});
+  return h("div",null,
+    h("button",{class:"lnk back",type:"button",onclick:()=>{state.openApp=null;render()}},t("back")),
+    h("div",{class:"card"},
+      h("div",{class:"sub"},app.kind==="apply"?t("kApply"):t("kBrief")),h("h2",{class:"t"},app.name||"—"),
+      h("div",{class:"row"},sel,h("button",{class:"btn fill sm",type:"button",onclick:async()=>{const x=await api("POST","admin/apps/"+id+"/status",{status:sel.value});msg.className="msg"+(x.data.ok?" ok":"");msg.textContent=x.data.ok?t("saved"):t("err")}},t("save")),
+        user?h("button",{class:"btn sm",type:"button",onclick:()=>{state.thread=user.id;state.tab="chats";state.openApp=null;render()}},t("contact")):h("span",{class:"note"},t("noUser"))),
+      msg,payloadList({phone:"+"+app.phone,...app.payload}),
+      user&&Object.keys(user.profile||{}).length?h("details",{style:"margin-top:18px"},h("summary",null,t("tProfile")),payloadList(user.profile)):null,
+      photos.length?h("div",null,h("h3",{class:"t",style:"margin-top:22px"},t("profilePhotos")),h("div",{class:"photos"},photos.map(p=>h("div",{class:"ph",style:"cursor:zoom-in",onclick:()=>zoom(p.id)},h("img",{src:"/api/photos/"+p.id,alt:"",loading:"lazy"}))))):null));
+}
+function zoom(id){const o=h("div",{class:"ov",onclick:()=>o.remove()},h("img",{src:"/api/photos/"+id,alt:""}));document.body.append(o)}
+async function viewAdminChats(){
+  const wrap=h("div",{class:"split"});
+  const left=h("div"),right=h("div");
+  wrap.append(left,right);
+  async function loadThreads(){
+    const r=await api("GET","admin/threads");const th=r.data.threads||[];clear(left);
+    if(!th.length&&!state.thread)left.append(h("div",{class:"empty"},t("noThreads")));
+    th.forEach(x=>left.append(h("button",{class:"th"+(state.thread===x.id?" on":""),type:"button",onclick:()=>{state.thread=x.id;render()}},
+      h("b",null,x.name||"+"+x.phone,x.unread?h("span",{class:"badge"},x.unread):null),h("small",null,x.last_body||""))));
+  }
+  await loadThreads();timers.push(setInterval(loadThreads,15000));
+  if(state.thread){
+    const id=state.thread;
+    right.append(h("div",{class:"card"},chatView(async()=>{const r=await api("GET","admin/messages?user="+id);return r.data.ok?r.data.messages:null},v=>api("POST","admin/messages",{user:id,body:v}),"manager")));
+  }else right.append(h("div",{class:"empty"},"←"));
+  return wrap;
+}
+
+/* ---------- render ---------- */
+async function render(){
+  const me=state.me;
+  const isMgr=me.role==="manager";
+  const unread=state.data?state.data.unread:0;
+  const list=isMgr?[["apps",t("tApps")],["chats",t("tChats")]]:[["apps",t("tApps")],["profile",t("tProfile")],["chat",t("tChat"),unread||""]];
+  if(!list.some(x=>x[0]===state.tab))state.tab="apps";
+  shell(tabs(list),h("div",{id:"view"},h("div",{class:"spin"},"…")));
+  setWho(me);
+  const view=document.getElementById("view");let node;
+  if(isMgr){
+    if(state.tab==="apps")node=state.openApp?await viewAdminApp(state.openApp):await viewAdminApps();
+    else node=await viewAdminChats();
+  }else{
+    node=state.tab==="apps"?viewApps():state.tab==="profile"?viewProfile():viewChat();
+  }
+  clear(view);view.append(node);
+}
+async function refreshMine(){const r=await api("GET","my");if(r.data.ok)state.data=r.data}
+async function reload(){
+  if(state.me.role!=="manager"){const r=await api("GET","my");if(r.data.ok)state.data=r.data}
+  render();
+}
+async function boot(){
+  const me=await api("GET","me");
+  if(!me.data.ok){state.me=null;loginScreen();return}
+  state.me=me.data.user;
+  if(state.me.role==="manager")state.data=null;
+  else{const d=await api("GET","my");state.data=d.data.ok?d.data:{apps:[],photos:[],unread:0,user:state.me}}
+  state.tab="apps";state.openApp=null;render();
+}
+boot();
+})();
+</script>
+</body>
+</html>

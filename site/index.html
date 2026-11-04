@@ -436,6 +436,19 @@ body.nogl[data-view="business"]{background:radial-gradient(120% 90% at 50% 100%,
 body.nogl[data-view="models"]{background:radial-gradient(120% 90% at 50% 100%,#33200F,#150d07 55%,#050505)}
 
 /* ---------- MUSIC TOGGLE ---------- */
+.cabbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border:1px solid rgba(219,181,119,.5);color:var(--gold);font-size:10px;letter-spacing:.24em;text-transform:uppercase;white-space:nowrap;transition:background .4s,color .4s}
+.cabbtn:hover{background:var(--gold);color:#0a0a09}
+.cabbtn:focus-visible{outline:1px solid var(--gold);outline-offset:3px}
+.cabbtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:760px){.cabbtn{padding:7px 11px}.cabbtn span{display:none}.cabbtn svg{width:16px;height:16px}}
+.cab{position:fixed;inset:0;z-index:90;pointer-events:none;visibility:hidden;transition:visibility 0s .7s}
+.cab.open{pointer-events:auto;visibility:visible;transition:none}
+.cab-dim{position:absolute;inset:0;background:rgba(2,6,4,.78);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .6s var(--ease)}
+.cab.open .cab-dim{opacity:1}
+.cab-panel{position:absolute;top:0;right:0;height:100%;width:min(100vw,1180px);background:#030a07;box-shadow:-30px 0 80px rgba(0,0,0,.6);transform:translateX(102%);transition:transform .7s var(--ease)}
+.cab.open .cab-panel{transform:none}
+.cab-panel iframe{display:block;width:100%;height:100%;border:0;background:#030a07}
+body.cab-on{overflow:hidden}
 .snd{all:unset;cursor:pointer;display:flex;gap:3px;align-items:flex-end;height:18px;padding:6px 4px;box-sizing:content-box}
 .snd:focus-visible{outline:1px solid var(--gold);outline-offset:2px}
 .snd i{display:block;width:2px;height:4px;background:#8E887D;transition:background .4s,height .6s var(--ease)}
@@ -599,6 +612,7 @@ body.ready .pull{opacity:1}
         <a href="#home" class="brand" aria-label="ZAYA"><img src="monogram.png" alt="ZA" width="360" height="339"></a>
     <div class="nav-r cap">
       <a href="#contact" class="contact-link ul" data-i="n.contact">Контакты</a>
+      <button class="cabbtn" id="cabbtn" type="button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.6-4 3.5-6 7.2-6s6.6 2 7.2 6"/></svg><span data-i="n.login">Войти</span></button>
       <button class="snd" id="snd" type="button" aria-pressed="false" aria-label="Music" title="Music"><i></i><i></i><i></i><i></i></button>
       <div class="lang" role="group" aria-label="Language">
         <button type="button" data-lang="ru" aria-pressed="true">RU</button>
@@ -782,6 +796,11 @@ body.ready .pull{opacity:1}
   </aside>
 </div>
 
+<div class="cab" id="cab" aria-hidden="true">
+  <div class="cab-dim" id="cabDim"></div>
+  <div class="cab-panel" role="dialog" aria-modal="true" aria-label="ZAYA"><iframe id="cabFrame" title="ZAYA cabinet"></iframe></div>
+</div>
+
 <dialog class="dlg" id="dlg" aria-labelledby="dlg-t">
   <button class="x" type="button" data-close aria-label="Close">×</button>
   <div class="dlg-in" id="dlg-body"></div>
@@ -890,6 +909,8 @@ Object.assign(T.en,{"cue":"Get to know us",
 "fk.k":"Your path","fk.h":"Are you a business owner <em>or a model?</em>","fk.p":"Choose your path and we’ll show you where to start."});
 Object.assign(T.uz,{"n.cat":"Katalog","m.cat":"Modellar katalogi","m.cat2":"3D-katalogni ochish"});
 Object.assign(T.en,{"n.cat":"Catalog","m.cat":"Model catalog","m.cat2":"Open the 3D catalog"});
+Object.assign(T.uz,{"n.login":"Kirish","n.cab":"Kabinet"});Object.assign(T.en,{"n.login":"Sign in","n.cab":"Account"});
+T.ru["n.cab"]="Кабинет";
 Object.assign(T.uz,{"q.biz":"Biznes uchun","q.mod":"Modellar uchun","n.dir":"Yo‘nalishlar","n.proc":"Qanday ishlaymiz","n.whom":"Kim uchun","n.cast":"Kasting","n.faces":"Yuzlar"});
 Object.assign(T.en,{"q.biz":"For business","q.mod":"For models","n.dir":"Directions","n.proc":"How we work","n.whom":"Who it’s for","n.cast":"Casting","n.faces":"Faces"});
 
@@ -1079,7 +1100,13 @@ async function submitForm(form,type,F){
     if(!FORM_URL)throw new Error("FORM_URL is not set");
     const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),25000);
     const body=JSON.stringify({type,lang:document.documentElement.lang,consent:true,...data});
+    let viaApi=false;
     try{
+      const r0=await fetch("/api/submit",{method:"POST",headers:{"Content-Type":"application/json","x-zaya":"1"},body,signal:ctl.signal});
+      if(r0.ok){const j0=await r0.json();viaApi=!!j0.ok}
+      else if(r0.status>=400&&r0.status<500&&r0.status!==404&&r0.status!==405){const j0=await r0.json().catch(()=>({}));throw new Error(j0.error||("HTTP "+r0.status))}
+    }catch(e){if(!(e instanceof TypeError))throw e}
+    if(!viaApi)try{
       const r=await fetch(FORM_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body,signal:ctl.signal});
       const j=await r.json();
       if(!j.ok)throw new Error(j.error||"error");
@@ -1264,6 +1291,45 @@ const TRACK={artist:"Maryam",title:"Faqat sen"};   // shown in the mini player
   });
 })();
 
+/* ---------------- personal cabinet: opens over the site (music keeps playing) ---------------- */
+(function(){
+  const ov=$("cab"),fr=$("cabFrame"),btn=$("cabbtn"),dim=$("cabDim");
+  let isOpen=false;
+  function open(){
+    if(isOpen)return;isOpen=true;
+    fr.src="cabinet.html";               /* fresh load: current language and session */
+    ov.classList.add("open");ov.setAttribute("aria-hidden","false");document.body.classList.add("cab-on");
+    setTimeout(()=>{if(isOpen)try{fr.focus()}catch(e){}},700);
+  }
+  function close(){
+    if(!isOpen)return;isOpen=false;
+    ov.classList.remove("open");ov.setAttribute("aria-hidden","true");document.body.classList.remove("cab-on");
+    setTimeout(()=>{if(!isOpen)fr.src="about:blank"},750);
+    try{btn.focus({preventScroll:true})}catch(e){}
+    me();
+  }
+  btn.addEventListener("click",open);
+  dim.addEventListener("click",close);
+  addEventListener("keydown",e=>{if(e.key==="Escape"&&isOpen)close()});
+  addEventListener("message",e=>{
+    if(e.source!==fr.contentWindow)return;
+    if(e.data==="zaya-close")close();
+    else if(e.data&&e.data.zaya==="form"&&(e.data.type==="apply"||e.data.type==="brief")){close();setTimeout(()=>openForm(e.data.type),500)}
+  });
+  window.zayaOpenCabinet=open;
+  /* label: "Sign in" or "Account" depending on the session */
+  const lab=btn.querySelector("span");
+  function me(){
+    fetch("/api/me",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(j=>{
+      const on=!!(j&&j.ok);lab.dataset.i=on?"n.cab":"n.login";
+      const l=document.documentElement.lang,v=(T[l]||{})[lab.dataset.i]??T.ru[lab.dataset.i];if(v!=null)lab.innerHTML=v;
+    }).catch(()=>{});
+  }
+  me();
+  new MutationObserver(()=>{const l=document.documentElement.lang,v=(T[l]||{})[lab.dataset.i]??T.ru[lab.dataset.i];if(v!=null)lab.innerHTML=v}).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
+  document.addEventListener("zaya:ready",()=>{if(location.hash==="#cabinet"){history.replaceState(null,"",location.pathname+location.search);open()}},{once:true});
+})();
+
 /* ---------------- reveal ---------------- */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});
 function revealIn(root){if(!root)return;root.querySelectorAll(".rise:not(.in)").forEach(el=>{if(el.getBoundingClientRect().top<innerHeight)el.classList.add("in");else io.observe(el)})}
@@ -1282,6 +1348,7 @@ function show(view,anchor){
 }
 function route(first){
   const h=location.hash.slice(1);
+  if(h==="cabinet"){history.replaceState(null,"",location.pathname+location.search);if(window.zayaOpenCabinet)window.zayaOpenCabinet();return}
   if(h==="catalog"){history.replaceState(null,"",location.pathname+location.search);if(window.zayaOpenCatalog)window.zayaOpenCatalog();return}   // one catalog: shortcut for external links
   if(h==="contact"){$("contact").scrollIntoView({behavior:"smooth"});return}
   let view=VIEWS[h]?h:(ANCHORS[h]||"home"),anchor=ANCHORS[h]?h:null;
