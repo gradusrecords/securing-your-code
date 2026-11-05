@@ -29,7 +29,6 @@
 - Бегзод Расулов: `begzod-rasulov-1.jpg`, `begzod-rasulov-2.jpg`, `begzod-rasulov-3.jpg`
 - Улугбек Олимов: `ulugbek-olimov-1.jpg`, `ulugbek-olimov-2.jpg`, `ulugbek-olimov-3.jpg`
 - Жамолиддин Абдужалилов: `jamoliddin-abdujalilov-1.jpg`, `jamoliddin-abdujalilov-2.jpg`, `jamoliddin-abdujalilov-3.jpg`
-- Сабир Тахиров: `sabir-taxirov-1.jpg`, `sabir-taxirov-2.jpg`, `sabir-taxirov-3.jpg`
 - Мансур Абдукаюмов: `mansur-abdukayumov-1.jpg`, `mansur-abdukayumov-2.jpg`, `mansur-abdukayumov-3.jpg`
 - Мухаммаджон Мадаминов: `muhammadjon-madaminov-1.jpg`, `muhammadjon-madaminov-2.jpg`, `muhammadjon-madaminov-3.jpg`
 - Тимур Вахидов: `timur-vohidov-1.jpg`, `timur-vohidov-2.jpg`, `timur-vohidov-3.jpg`
