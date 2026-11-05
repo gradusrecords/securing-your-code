@@ -641,7 +641,7 @@ const profilePct = p => Math.round(PCT_KEYS.filter(k => p && p[k]).length / PCT_
 const dayStartTs = () => Math.floor(Date.parse(todayYmd() + 'T00:00:00Z') / 1000) - 5 * 3600;
 async function ownerOverview(env) {
   const rows = (await env.DB.prepare(`SELECT a.id app_id,a.code,a.status app_status,a.name,a.phone,a.created_at app_created,
-      u.id uid,u.last_seen,u.tg_chat,u.profile,u.created_at user_created,q.start qstart,q.status qstatus,
+      u.id uid,u.last_seen,u.tg_chat,u.profile,u.created_at user_created,q.start qstart,q.status qstatus,q.lang qlang,
       (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=u.id) done,
       (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=u.id) last_done,
       (SELECT COUNT(*) FROM photos p WHERE p.user_id=u.id) photos,
@@ -660,7 +660,7 @@ async function ownerOverview(env) {
       code: r.code || '', name: r.name || '', phone: r.phone, appStatus: r.app_status, sheetStatus: '', uid: r.uid || 0, inCabinet: !!r.uid, tg: !!r.tg_chat,
       lastSeen: r.last_seen || 0, joined: r.user_created || 0, photos: r.photos || 0, unread: r.unread || 0, lastMsg: r.last_msg || 0,
       profilePct: r.uid ? profilePct(safeJson(r.profile)) : 0,
-      quest: r.qstart ? { status: r.qstatus, day, lastDone: r.last_done || 0, ...progressOf(done, day) } : null,
+      quest: r.qstart ? { status: r.qstatus, day, lastDone: r.last_done || 0, todayTitle: (taskFor(day, { dirs: [], level: 'new', gender: '', minor: false, noInsta: false, noPortfolio: false }, normLang(r.qlang)) || {}).title || '', todayDone: done.includes(day), ...progressOf(done, day) } : null,
     };
     mine.push(item); if (r.code) byCode.set(r.code, item);
   }

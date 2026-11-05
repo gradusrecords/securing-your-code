@@ -658,7 +658,7 @@ async function viewDash(){
       h("div",null,i.name||"—",h("small",null,(i.code||"")+(i.phone?" · +"+i.phone:""))),
       h("div",null,i.inCabinet?h("span",null,h("span",{class:"dot "+dotOf(i)}),ago(i.lastSeen)):h("span",{style:"color:var(--mute)"},t("never"))),
       h("div",null,i.sheetStatus||"—",i.appStatus&&i.inCabinet&&STATUS[i.appStatus]?h("small",null,STATUS[i.appStatus][LI]):null),
-      h("div",null,i.quest?h("span",null,t("qDay")+" "+i.quest.day+"/30 · ✓"+i.quest.doneCount,h("small",null,i.quest.points+" · "+t("lv"+i.quest.levelIdx)+(quiet(i)?" ⚠":"")),h("div",{class:"bar"},h("i",{style:"width:"+Math.round(i.quest.doneCount/30*100)+"%"}))):h("span",{style:"color:var(--mute)"},"—")),
+      h("div",null,i.quest?h("span",null,t("qDay")+" "+i.quest.day+"/30 · ✓"+i.quest.doneCount,h("small",null,(i.quest.status==="done"?"":(i.quest.todayDone?"✓ ":"")+i.quest.todayTitle+" · ")+i.quest.points+" · "+t("lv"+i.quest.levelIdx)+(quiet(i)?" ⚠":"")),h("div",{class:"bar"},h("i",{style:"width:"+Math.round(i.quest.doneCount/30*100)+"%"}))):h("span",{style:"color:var(--mute)"},"—")),
       h("div",null,i.unread?h("span",{class:"badge",style:"margin-left:0"},i.unread):i.lastMsg?ago(i.lastMsg):"—"),
       h("div",null,i.inCabinet?i.profilePct+"%":"—",i.inCabinet?h("small",null,"📷 "+i.photos):null)));
     wrap.append(
