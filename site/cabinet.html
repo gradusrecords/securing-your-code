@@ -225,6 +225,8 @@ const I={
   fTitle:["Лента активности","Faollik lentasi","Activity feed"],
   evDone:["{name}: день {d} выполнен","{name}: {d}-kun bajarildi","{name}: day {d} done"],evMsg:["{name} пишет: {note}","{name} yozdi: {note}","{name} wrote: {note}"],
   evApp:["Новая заявка: {name}","Yangi ariza: {name}","New application: {name}"],evSeen:["{name} в кабинете","{name} kabinetda","{name} is in the cabinet"],
+  dSent:["Отправлено модели в Telegram","Modelga Telegram’da yuborilgan","Sent to the model in Telegram"],dNoSent:["Пока ничего не отправлялось.","Hozircha hech narsa yuborilmagan.","Nothing has been sent yet."],dFailed:["не доставлено","yetkazilmadi","not delivered"],
+  evSent:["{name}: отправлено задание дня {d}","{name}: {d}-kun topshirig‘i yuborildi","{name}: day {d} task sent"],
   rfsh:["Обновить","Yangilash","Refresh"],noItems:["Никого не найдено.","Hech kim topilmadi.","Nobody found."],
   ownerRole:["Владелец","Egasi","Owner"],
   pDays:["дн.","kun","d"],
@@ -667,7 +669,7 @@ async function viewDash(){
         h("div",{class:"dtools"},chip("all",t("fAll")+" "+data.items.length),chip("nocab",t("fNoCab")),chip("idle",t("fIdle")),chip("unread",t("fUnread"))),
         items.length?h("div",null,head,rows):h("div",{class:"empty"},t("noItems"))),
       h("div",{class:"card"},h("h3",{class:"t"},t("fTitle")),h("div",{class:"feed"},feed.map(e=>{
-        const txt=fill(t({done:"evDone",msg:"evMsg",app:"evApp",seen:"evSeen"}[e.k]),{name:e.name||"—",d:e.d,note:e.note});
+        const txt=fill(t({done:"evDone",msg:"evMsg",app:"evApp",seen:"evSeen",sent:"evSent"}[e.k]),{name:e.name||"—",d:e.d,note:e.note});
         return h("div",{style:e.uid?"cursor:pointer":"",onclick:()=>{if(e.uid){ds.open=e.uid;draw()}}},txt,h("small",null,ago(e.t)))}))));
   };
   const openDetail=async()=>{
@@ -690,6 +692,9 @@ async function viewDash(){
       h("div",{class:"card"},h("h3",{class:"t"},t("dQuest")),
         q?h("div",null,h("div",{class:"qstats"},h("span",null,h("b",null,String(q.day)),t("qDay")+" "+t("qOf")+" 30"),h("span",null,h("b",null,String(q.points)),t("qPts")),h("span",null,h("b",null,String(q.streak)),t("qStreak")+" 🔥"),h("span",null,t("qLvl")+": ",h("b",{style:"font-size:18px"},t("lv"+q.levelIdx)))),dots,
           notes.length?h("dl",{class:"kv"},notes.flatMap(l=>[h("dt",null,t("qDay")+" "+l.day),h("dd",null,l.note)])):null):h("div",{class:"empty"},t("dNoQuest"))),
+      h("div",{class:"card"},h("h3",{class:"t"},t("dSent")),d.sent&&d.sent.length?d.sent.map(m=>h("details",{style:"border-bottom:1px solid var(--line);padding:10px 0"},
+        h("summary",{style:"margin:0;text-transform:none;letter-spacing:.04em;font-size:14px;color:#D9D2C4"},new Date(m.sent_at*1000).toLocaleString(CODE==="uz"?"uz-UZ":CODE==="en"?"en-GB":"ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" · "+t("qDay")+" "+m.day+(m.ok?"":" · ⚠ "+t("dFailed"))),
+        h("div",{class:"m",style:"max-width:none;margin-top:12px"},m.body))):h("div",{class:"empty"},t("dNoSent"))),
       q&&q.tasks&&q.tasks.length?h("div",{class:"card"},h("h3",{class:"t"},t("dTasks")),q.tasks.slice().reverse().map(x=>h("details",{style:"border-bottom:1px solid var(--line);padding:10px 0"},
         h("summary",{style:"margin:0;text-transform:none;letter-spacing:.04em;font-size:14px;color:#D9D2C4"},(x.done?"✓ ":x.day<q.day?"⚠ ":"")+t("qDay")+" "+x.day+" · "+x.title),
         h("ol",{class:"steps",style:"margin-top:14px"},x.steps.map(z=>h("li",null,z))),

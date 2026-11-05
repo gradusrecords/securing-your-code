@@ -26,6 +26,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS hits(k TEXT PRIMARY KEY, n INTEGER NOT NULL, reset_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS photo_data(photo_id INTEGER PRIMARY KEY, b64 TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS quest(user_id INTEGER PRIMARY KEY, start TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'on', last_sent INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS quest_msgs(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, day INTEGER NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, sent_at INTEGER NOT NULL, ok INTEGER NOT NULL DEFAULT 0)`,
   `CREATE TABLE IF NOT EXISTS quest_log(user_id INTEGER NOT NULL, day INTEGER NOT NULL, done_at INTEGER NOT NULL, note TEXT, PRIMARY KEY(user_id, day))`,
 ];
 let schemaReady = false;
@@ -520,6 +521,12 @@ async function questSubject(env, user) {
   return profileOf({ name: user.name, profile: safeJson(user.profile) }, payload);
 }
 const doneDays = async (env, uid) => ((await env.DB.prepare('SELECT day FROM quest_log WHERE user_id=?').bind(uid).all()).results || []).map(r => r.day);
+/* sends a quest message and keeps a copy: the owner dashboard shows exactly what each model received */
+async function questSay(env, uid, chat, day, kind, text) {
+  const res = await say(env, chat, text);
+  try { await env.DB.prepare('INSERT INTO quest_msgs(user_id,day,kind,body,sent_at,ok) VALUES(?,?,?,?,?,?)').bind(uid, day, kind, text, NOW(), res && res.ok ? 1 : 0).run(); } catch { /* the log must never block the delivery */ }
+  return res;
+}
 async function questEnroll(env, user) {
   if (isStaff(user)) return null;
   let q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
@@ -529,7 +536,7 @@ async function questEnroll(env, user) {
   const lang = normLang((await env.DB.prepare("SELECT lang FROM apps WHERE phone=? AND kind='apply' ORDER BY id DESC LIMIT 1").bind(user.phone).first() || {}).lang);
   await env.DB.prepare('INSERT OR IGNORE INTO quest(user_id,start,status,last_sent,created_at,lang) VALUES(?,?,?,?,?,?)').bind(user.id, todayYmd(), 'on', 1, NOW(), lang).run();
   q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
-  if (user.tg_chat) await say(env, user.tg_chat, msgs(lang).enroll + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang }));
+  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang }));
   return q;
 }
 async function questMe(env, user, wantLang) {
@@ -581,12 +588,12 @@ async function questTick(env, limit = 20) {
     const done = String(r.done || '').split(',').filter(Boolean).map(Number);
     if (day > TOTAL) {
       const pr = progressOf(done, TOTAL);
-      await say(env, r.tg_chat, finalText(pf, pr, normLang(r.lang)));
+      await questSay(env, r.user_id, r.tg_chat, day, 'final', finalText(pf, pr, normLang(r.lang)));
       await env.DB.prepare("UPDATE quest SET status='done' WHERE user_id=?").bind(r.user_id).run();
     } else {
       const missed = day - 1 - done.filter(x => x < day).length;
       const lg = normLang(r.lang);
-      await say(env, r.tg_chat, taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg }));
+      await questSay(env, r.user_id, r.tg_chat, day, 'task', taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg }));
     }
     sent++;
   }
@@ -686,6 +693,7 @@ async function ownerUser(env, id) {
   const q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(id).first();
   const log = (await env.DB.prepare('SELECT day,done_at,note FROM quest_log WHERE user_id=? ORDER BY day').bind(id).all()).results || [];
   const msgs2 = ((await env.DB.prepare('SELECT from_role,body,created_at FROM messages WHERE thread=? ORDER BY id DESC LIMIT 30').bind(id).all()).results || []).reverse();
+  const sent = (await env.DB.prepare('SELECT day,kind,body,sent_at,ok FROM quest_msgs WHERE user_id=? ORDER BY id DESC LIMIT 40').bind(id).all()).results || [];
   const photos = ((await env.DB.prepare('SELECT id FROM photos WHERE user_id=? ORDER BY id DESC LIMIT 12').bind(id).all()).results || []).map(r => r.id);
   const day = q ? Math.min(Math.max(dayNumber(q.start), 1), TOTAL) : 0;
   const pf = q ? await questSubject(env, u) : null, ql = q ? normLang(q.lang) : 'ru', byDay = Object.fromEntries(log.map(l => [l.day, l]));
@@ -696,7 +704,7 @@ async function ownerUser(env, id) {
     profile: safeJson(u.profile),
     apps: apps.map(a => ({ id: a.id, kind: a.kind, code: a.code || '', status: a.status, created: a.created_at, payload: safeJson(a.payload) })),
     quest: q ? { status: q.status, start: q.start, day, lang: normLang(q.lang), log, titles, tasks, ...progressOf(log.map(l => l.day), day) } : null,
-    messages: msgs2, photos });
+    messages: msgs2, photos, sent });
 }
 async function ownerFeed(env) {
   const ev = [];
@@ -704,6 +712,7 @@ async function ownerFeed(env) {
   add('done', await env.DB.prepare('SELECT l.done_at t,u.name,u.id uid,l.day d,l.note FROM quest_log l JOIN users u ON u.id=l.user_id ORDER BY l.done_at DESC LIMIT 40').all());
   add('msg', await env.DB.prepare("SELECT m.created_at t,u.name,u.id uid,substr(m.body,1,140) note FROM messages m JOIN users u ON u.id=m.thread WHERE m.from_role='user' ORDER BY m.id DESC LIMIT 40").all());
   add('app', await env.DB.prepare('SELECT a.created_at t,a.name,u.id uid,a.kind note FROM apps a LEFT JOIN users u ON u.phone=a.phone ORDER BY a.id DESC LIMIT 30').all());
+  add('sent', await env.DB.prepare('SELECT m.sent_at t,u.name,u.id uid,m.day d,m.kind note FROM quest_msgs m JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 40').all());
   add('seen', await env.DB.prepare("SELECT u.last_seen t,u.name,u.id uid FROM users u WHERE u.last_seen IS NOT NULL AND u.role='user' ORDER BY u.last_seen DESC LIMIT 25").all());
   ev.sort((a, b) => b.t - a.t);
   return json({ ok: true, events: ev.slice(0, 70) });
