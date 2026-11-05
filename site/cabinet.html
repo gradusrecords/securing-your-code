@@ -62,6 +62,18 @@ select.inp option{background:#0b1a14}
 h2.t{margin:0 0 18px;font:300 clamp(26px,3.4vw,38px)/1.1 var(--serif)}
 h3.t{margin:0 0 6px;font:400 22px/1.2 var(--serif)}
 .sub{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dim)}
+.qstats{display:flex;gap:10px 22px;flex-wrap:wrap;margin:6px 0 18px;color:#D9D2C4;font-size:14px}
+.qstats b{font:400 24px/1 var(--serif);color:var(--gold);margin-right:6px;font-variant-numeric:lining-nums}
+.qbar{height:4px;background:rgba(219,181,119,.15);margin:0 0 18px}.qbar i{display:block;height:100%;background:var(--gold)}
+.qdots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+.qd{all:unset;cursor:pointer;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);font-size:12px;color:var(--mute)}
+.qd.done{background:var(--gold);border-color:var(--gold);color:#0a0a09}
+.qd.miss{border-color:#C8563C;color:#E58E78}
+.qd.sel{box-shadow:0 0 0 2px rgba(219,181,119,.45)}
+.qd.lock{opacity:.3;cursor:default}
+.qfor{margin:18px 0 0;padding:14px 16px;border-left:2px solid var(--gold);background:rgba(219,181,119,.07)}
+.qfor ul{margin:8px 0 0;padding-left:18px;color:#D9D2C4;font-size:14px;line-height:1.6}
+.qfor .sub{margin:0}
 .empty{padding:30px;text-align:center;color:#B3AC9E;border:1px dashed var(--line)}
 .empty .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
 .apps{display:grid;gap:18px}
@@ -154,6 +166,27 @@ const I={
   tProfile:["Профиль","Profil","Profile"],
   tChat:["Чат","Chat","Chat"],
   tChats:["Чаты","Chatlar","Chats"],
+  tQuest:["Квест","Kvest","Quest"],
+  qTitle:["Квест «30 дней»","«30 kun» kvesti","“30 days” quest"],
+  qDay:["День","Kun","Day"],qOf:["из","/","of"],qPts:["Очки","Ball","Points"],qLvl:["Уровень","Daraja","Level"],qStreak:["Серия","Seriya","Streak"],
+  qNext:["до следующего уровня","keyingi darajagacha","to next level"],
+  lv0:["Новичок","Boshlovchi","Rookie"],lv1:["Стартер","Starter","Starter"],lv2:["Практик","Amaliyotchi","Practitioner"],lv3:["Профи","Pro","Pro"],lv4:["Звезда ZAYA","ZAYA yulduzi","ZAYA Star"],
+  qFor:["Для тебя","Siz uchun","For you"],
+  qNote:["Заметка (необязательно)","Eslatma (ixtiyoriy)","Note (optional)"],
+  qDone:["Выполнено ✓","Bajarildi ✓","Done ✓"],qUndo:["Снять отметку","Belgini olib tashlash","Undo"],
+  qLocked:["Это задание откроется позже","Bu topshiriq keyinroq ochiladi","This task unlocks later"],
+  qCatch:["Можно догнать в любой день","Istalgan kuni yetib olish mumkin","You can catch up any day"],
+  qRu:["Тексты заданий пока на русском языке.","Topshiriqlar matni hozircha rus tilida.","Task texts are in Russian for now."],
+  qStop:["Остановить задания","Topshiriqlarni to‘xtatish","Pause the tasks"],qGo:["Продолжить квест","Kvestni davom ettirish","Resume the quest"],
+  qPaused:["Задания на паузе: утренние сообщения не приходят.","Topshiriqlar to‘xtatilgan: ertalabki xabarlar kelmaydi.","Tasks are paused: no morning messages."],
+  qFin:["Квест завершён! Напишите менеджеру во вкладке «Чат».","Kvest yakunlandi! «Chat» bo‘limida menejerga yozing.","The quest is finished! Write to the manager in the “Chat” tab."],
+  qNone:["Квест откроется после заявки модели.","Kvest model arizasidan keyin ochiladi.","The quest opens after a model application."],
+  qTg:["Задания приходят и в Telegram каждое утро в 08:00. Остановить: /stop","Topshiriqlar har kuni ertalab 08:00 da Telegram’ga ham keladi. To‘xtatish: /stop","Tasks also arrive in Telegram every morning at 08:00. Stop: /stop"],
+  qPeople:["Участники квеста","Kvest ishtirokchilari","Quest participants"],
+  qSendNow:["Отправить сегодняшние задания сейчас","Bugungi topshiriqlarni hozir yuborish","Send today’s tasks now"],
+  qSent:["Отправлено","Yuborildi","Sent"],qLeft:["осталось","qoldi","left"],
+  qEmpty:["Участников пока нет.","Ishtirokchilar hali yo‘q.","No participants yet."],
+  qDone2:["Выполнено","Bajarilgan","Done"],
   kApply:["Анкета модели","Model anketasi","Model application"],
   kBrief:["Бриф бизнеса","Biznes brifi","Business brief"],
   sent:["Отправлена","Yuborilgan","Submitted"],
@@ -483,21 +516,78 @@ async function viewAdminChats(){
   return wrap;
 }
 
+/* ---------- quest ---------- */
+async function viewQuest(){
+  const r=await api("GET","quest");
+  if(!r.data.ok||!r.data.enabled)return h("div",{class:"empty"},t("qNone"));
+  let q=r.data,sel=q.day;
+  const wrap=h("div",null);
+  const stats=()=>{const p=q.progress,nx=p.nextAt!=null?p.nextAt-p.points:null;
+    return h("div",null,h("div",{class:"qstats"},
+      h("span",null,h("b",null,String(q.day)),t("qDay")+" "+t("qOf")+" "+q.total),
+      h("span",null,h("b",null,String(p.points)),t("qPts")),
+      h("span",null,h("b",null,String(p.streak)),t("qStreak")+" 🔥"),
+      h("span",null,t("qLvl")+": ",h("b",{style:"font-size:18px"},t("lv"+p.levelIdx)),nx?h("small",{class:"note",style:"display:block"},nx+" "+t("qNext")):null)),
+      h("div",{class:"qbar"},h("i",{style:"width:"+Math.round(p.doneCount/q.total*100)+"%"})))};
+  const draw=()=>{
+    clear(wrap);
+    const byDay={};q.tasks.forEach(x=>byDay[x.day]=x);
+    const dots=h("div",{class:"qdots"});
+    for(let d=1;d<=q.total;d++){
+      const x=byDay[d];
+      const cls="qd"+(!x?" lock":x.done?" done":d<q.day?" miss":"")+(d===sel?" sel":"");
+      dots.append(h("button",{class:cls,type:"button",title:x?x.title:t("qLocked"),onclick:()=>{if(x){sel=d;draw()}}},x&&x.done?"✓":String(d)));
+    }
+    const x=byDay[sel];
+    const note=h("textarea",{class:"inp",maxlength:"500",placeholder:t("qNote"),"aria-label":t("qNote")},x.note||"");
+    const msg=h("p",{class:"msg"});
+    const go=async undo=>{const rr=await api("POST","quest/done",{day:sel,note:note.value,undo:!!undo});if(rr.data.ok){q=rr.data;draw()}else{msg.className="msg";msg.textContent=t("err")}};
+    const card=h("div",{class:"card"},
+      h("div",{class:"sub"},t("qDay")+" "+x.day+" · "+x.theme),
+      h("h3",{class:"t",style:"margin:6px 0 16px"},x.title),
+      h("ol",{class:"steps"},x.steps.map(s=>h("li",null,s))),
+      x.extras.length?h("div",{class:"qfor"},h("p",{class:"sub"},t("qFor")),h("ul",null,x.extras.map(e=>h("li",null,e)))):null,
+      h("div",{style:"margin-top:18px"},note),
+      h("div",{class:"row",style:"margin:14px 0 0"},
+        x.done?h("button",{class:"btn",type:"button",onclick:()=>go(true)},t("qUndo")):h("button",{class:"btn fill",type:"button",onclick:()=>go(false)},t("qDone")),
+        !x.done&&x.day<q.day?h("span",{class:"note"},t("qCatch")):null),msg);
+    const stopBtn=h("button",{class:"btn sm",type:"button",onclick:async()=>{const rr=await api("POST","quest/"+(q.status==="on"?"stop":"start"));if(rr.data.ok){q.status=rr.data.status;draw()}}},q.status==="on"?t("qStop"):t("qGo"));
+    wrap.append(h("div",{class:"card"},h("h2",{class:"t"},t("qTitle")),stats(),dots,q.finished?h("p",{class:"msg ok"},t("qFin")):null,LI!==0?h("p",{class:"note"},t("qRu")):null),
+      card,
+      h("div",{class:"row",style:"margin-top:18px"},stopBtn,h("span",{class:"note"},q.status==="on"?t("qTg"):t("qPaused"))));
+  };
+  draw();return wrap;
+}
+async function viewAdminQuest(){
+  const r=await api("GET","admin/quest");
+  const msg=h("p",{class:"msg"});
+  const btn=h("button",{class:"btn sm",type:"button",onclick:async()=>{btn.disabled=true;let sent=0,left=0;for(let i=0;i<10;i++){const rr=await api("POST","admin/quest/tick");if(!rr.data.ok)break;sent+=rr.data.sent;left=rr.data.remaining;if(!left)break}btn.disabled=false;msg.className="msg ok";msg.textContent=t("qSent")+": "+sent+(left?" · "+t("qLeft")+" "+left:"");render()}},t("qSendNow"));
+  const items=r.data.ok?r.data.items:[];
+  const list=h("div",{class:"list"},items.map(x=>h("div",{class:"li",style:"cursor:default"},
+    h("div",null,x.name||"+"+x.phone,h("small",null,"+"+x.phone)),
+    h("div",null,t("qDay")+" "+x.day+" / 30",h("small",null,x.status==="on"?"":x.status==="off"?"⏸":"✓")),
+    h("div",null,t("qDone2")+": "+x.doneCount,h("small",null,t("qStreak")+": "+x.streak)),
+    h("div",null,x.points+" · "+t("lv"+x.levelIdx)))));
+  return h("div",null,h("div",{class:"card"},h("h2",{class:"t"},t("qPeople")),h("div",{class:"row"},btn),msg,items.length?list:h("div",{class:"empty"},t("qEmpty"))));
+}
+
 /* ---------- render ---------- */
 async function render(){
   const me=state.me;
   const isMgr=me.role==="manager";
   const unread=state.data?state.data.unread:0;
-  const list=isMgr?[["apps",t("tApps")],["chats",t("tChats")]]:[["apps",t("tApps")],["profile",t("tProfile")],["chat",t("tChat"),unread||""]];
+  const hasQuest=!isMgr&&state.data&&state.data.apps.some(a=>a.kind==="apply");
+  const list=isMgr?[["apps",t("tApps")],["chats",t("tChats")],["quest",t("tQuest")]]:[["apps",t("tApps")],...(hasQuest?[["quest",t("tQuest")]]:[]),["profile",t("tProfile")],["chat",t("tChat"),unread||""]];
   if(!list.some(x=>x[0]===state.tab))state.tab="apps";
   shell(tabs(list),h("div",{id:"view"},h("div",{class:"spin"},"…")));
   setWho(me);
   const view=document.getElementById("view");let node;
   if(isMgr){
     if(state.tab==="apps")node=state.openApp?await viewAdminApp(state.openApp):await viewAdminApps();
+    else if(state.tab==="quest")node=await viewAdminQuest();
     else node=await viewAdminChats();
   }else{
-    node=state.tab==="apps"?viewApps():state.tab==="profile"?viewProfile():viewChat();
+    node=state.tab==="apps"?viewApps():state.tab==="quest"?await viewQuest():state.tab==="profile"?viewProfile():viewChat();
   }
   clear(view);view.append(node);
 }
