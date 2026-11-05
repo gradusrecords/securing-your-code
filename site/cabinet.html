@@ -191,6 +191,7 @@ const I={
   qNext:["до следующего уровня","keyingi darajagacha","to next level"],
   lv0:["Новичок","Boshlovchi","Rookie"],lv1:["Стартер","Starter","Starter"],lv2:["Практик","Amaliyotchi","Practitioner"],lv3:["Профи","Pro","Pro"],lv4:["Звезда ZAYA","ZAYA yulduzi","ZAYA Star"],
   qFor:["Для тебя","Siz uchun","For you"],
+  qRules:["10 баллов за задание · +20 за неделю · +50 за 5 дней подряд · +50 за все 30 дней","Topshiriq uchun 10 ball · hafta uchun +20 · ketma-ket 5 kun uchun +50 · 30 kun uchun +50","10 points per task · +20 per week · +50 for 5 days in a row · +50 for all 30 days"],
   qNote:["Заметка (необязательно)","Eslatma (ixtiyoriy)","Note (optional)"],
   qDone:["Выполнено ✓","Bajarildi ✓","Done ✓"],qUndo:["Снять отметку","Belgini olib tashlash","Undo"],
   qLocked:["Это задание откроется позже","Bu topshiriq keyinroq ochiladi","This task unlocks later"],
@@ -602,6 +603,7 @@ async function viewQuest(){
     const stopBtn=h("button",{class:"btn sm",type:"button",onclick:async()=>{const rr=await api("POST","quest/"+(q.status==="on"?"stop":"start"));if(rr.data.ok){q.status=rr.data.status;draw()}}},q.status==="on"?t("qStop"):t("qGo"));
     wrap.append(h("div",{class:"card"},h("h2",{class:"t"},t("qTitle")),stats(),dots,q.finished?h("p",{class:"msg ok"},t("qFin")):null,null),
       card,
+      h("p",{class:"note",style:"margin-top:14px"},"⭐ "+t("qRules")),
       h("div",{class:"row",style:"margin-top:18px"},stopBtn,h("span",{class:"note"},q.status==="on"?t("qTg"):t("qPaused"))));
   };
   draw();return wrap;

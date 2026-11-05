@@ -263,6 +263,12 @@ export function pointsOf(done) {
   let pts = s.size * 10;
   for (let w = 1; w <= 4; w++) { let all = true; for (let d = 7 * w - 6; d <= 7 * w; d++) if (!s.has(d)) all = false; if (all) pts += 20; }
   if (s.size >= TOTAL) pts += 50;
+  // streak bonus: +50 for every 5 days in a row (a run of 10 gives 100, a run of 5 + a break + 5 gives 100)
+  let run = 0;
+  for (let d = 1; d <= TOTAL + 1; d++) {
+    if (s.has(d)) run++;
+    else { pts += Math.floor(run / 5) * 50; run = 0; }
+  }
   return pts;
 }
 export function levelOf(pts) { let i = 0; LEVELS.forEach((l, k) => { if (pts >= l[1]) i = k; }); return i; }
