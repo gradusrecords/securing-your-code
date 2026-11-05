@@ -7,7 +7,7 @@
    Secret:    QUEST_KEY (the GitHub Action that sends the morning quest tasks calls POST /api/quest/tick with it)
    Secret:    SHEET_KEY (same value as the API_KEY script property in the Google Apps Script: lets the server read a sheet row by its application code) */
 
-import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs } from '../_quest/quest.js';
+import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText } from '../_quest/quest.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
@@ -348,6 +348,16 @@ async function tgWebhook(req, env) {
     }
     return json({ ok: true });
   }
+  if (/^\/(rules|progress)\b/.test(text)) {
+    const u3 = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
+    const q3 = u3 && await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(u3.id).first();
+    if (q3) {
+      const ql = normLang(q3.lang);
+      if (/^\/rules\b/.test(text)) await say(env, chat, rulesText(ql));
+      else { const cur = Math.min(Math.max(dayNumber(q3.start), 1), TOTAL); await say(env, chat, progressText({}, progressOf(await doneDays(env, u3.id), cur), cur, ql)); }
+    } else await say(env, chat, msgs('ru').noQuest);
+    return json({ ok: true });
+  }
   if (/^\/(stop|quest)\b/.test(text)) {
     const u2 = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
     if (u2) {
@@ -536,7 +546,7 @@ async function questEnroll(env, user) {
   const lang = normLang((await env.DB.prepare("SELECT lang FROM apps WHERE phone=? AND kind='apply' ORDER BY id DESC LIMIT 1").bind(user.phone).first() || {}).lang);
   await env.DB.prepare('INSERT OR IGNORE INTO quest(user_id,start,status,last_sent,created_at,lang) VALUES(?,?,?,?,?,?)').bind(user.id, todayYmd(), 'on', 1, NOW(), lang).run();
   q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
-  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang }));
+  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n' + msgs(lang).principle + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang }));
   return q;
 }
 async function questMe(env, user, wantLang) {
@@ -554,7 +564,7 @@ async function questMe(env, user, wantLang) {
   const tasks = [];
   for (let d = 1; d <= cur; d++) tasks.push({ ...taskFor(d, pf, lang), done: !!byDay[d], doneAt: byDay[d] ? byDay[d].done_at : null, note: byDay[d] ? byDay[d].note || '' : '' });
   const prog = progressOf(log.map(l => l.day), cur);
-  return json({ ok: true, enabled: true, lang, status: q.status, day: cur, total: TOTAL, finished: day > TOTAL, tasks, progress: prog, levels: LEVELS.map(l => l[1]) });
+  return json({ ok: true, enabled: true, lang, rules: rulesOf(lang), status: q.status, day: cur, total: TOTAL, finished: day > TOTAL, tasks, progress: prog, levels: LEVELS.map(l => l[1]) });
 }
 async function questDone(req, env, user) {
   const d = await body(req, 2000);
@@ -597,8 +607,33 @@ async function questTick(env, limit = 20) {
     }
     sent++;
   }
-  return { sent, remaining: Math.max(0, due.length - sent) };
+  let remaining = Math.max(0, due.length - sent);
+  if (!remaining) { const w = await questWarn(env, Math.max(0, limit - sent)); sent += w.sent; remaining = w.remaining; }
+  return { sent, remaining };
 }
+/* inactivity warnings to the model (after 3, 7 and 14 days) and an alert to the managers; the team decides about cooperation, nothing is automatic */
+async function questWarn(env, limit) {
+  const rows = (await env.DB.prepare(`SELECT q.user_id,q.lang,q.created_at,u.name,u.phone,u.tg_chat,
+      (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=q.user_id) last_done
+    FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND u.tg_chat IS NOT NULL`).all()).results || [];
+  const cand = [];
+  for (const r of rows) {
+    const base = r.last_done || r.created_at, idle = Math.floor((NOW() - base) / 86400);
+    const days = [...WARN_DAYS].reverse().find(d => idle >= d);
+    if (days) cand.push({ ...r, base, idle, days });
+  }
+  let sent = 0, left = 0;
+  for (const r of cand) {
+    const done = await env.DB.prepare("SELECT 1 x FROM quest_msgs WHERE user_id=? AND kind=? AND sent_at>?").bind(r.user_id, 'warn' + r.days, r.base).first();
+    if (done) continue;
+    if (sent >= limit) { left++; continue; }
+    await questSay(env, r.user_id, r.tg_chat, 0, 'warn' + r.days, warnText(r.days, firstNameOf(r.name), normLang(r.lang)));
+    if (r.days >= 7) await notifyManagers(env, staffRiskText(r.name, r.phone, r.idle, r.days));
+    sent++;
+  }
+  return { sent, remaining: left };
+}
+const firstNameOf = full => (profileOf({ name: full, profile: {} }, {}).name) || '';
 async function questTickKey(req, env) {
   if (!env.QUEST_KEY || !same(req.headers.get('x-quest-key') || '', env.QUEST_KEY)) return fail(403, 'forbidden');
   return json({ ok: true, ...(await questTick(env)) });
@@ -641,7 +676,7 @@ const profilePct = p => Math.round(PCT_KEYS.filter(k => p && p[k]).length / PCT_
 const dayStartTs = () => Math.floor(Date.parse(todayYmd() + 'T00:00:00Z') / 1000) - 5 * 3600;
 async function ownerOverview(env) {
   const rows = (await env.DB.prepare(`SELECT a.id app_id,a.code,a.status app_status,a.name,a.phone,a.created_at app_created,
-      u.id uid,u.last_seen,u.tg_chat,u.profile,u.created_at user_created,q.start qstart,q.status qstatus,q.lang qlang,
+      u.id uid,u.last_seen,u.tg_chat,u.profile,u.created_at user_created,q.start qstart,q.status qstatus,q.lang qlang,q.created_at qcreated,
       (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=u.id) done,
       (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=u.id) last_done,
       (SELECT COUNT(*) FROM photos p WHERE p.user_id=u.id) photos,
@@ -660,7 +695,7 @@ async function ownerOverview(env) {
       code: r.code || '', name: r.name || '', phone: r.phone, appStatus: r.app_status, sheetStatus: '', uid: r.uid || 0, inCabinet: !!r.uid, tg: !!r.tg_chat,
       lastSeen: r.last_seen || 0, joined: r.user_created || 0, photos: r.photos || 0, unread: r.unread || 0, lastMsg: r.last_msg || 0,
       profilePct: r.uid ? profilePct(safeJson(r.profile)) : 0,
-      quest: r.qstart ? { status: r.qstatus, day, lastDone: r.last_done || 0, todayTitle: (taskFor(day, { dirs: [], level: 'new', gender: '', minor: false, noInsta: false, noPortfolio: false }, normLang(r.qlang)) || {}).title || '', todayDone: done.includes(day), ...progressOf(done, day) } : null,
+      quest: r.qstart ? { status: r.qstatus, day, lastDone: r.last_done || 0, todayTitle: (taskFor(day, { dirs: [], level: 'new', gender: '', minor: false, noInsta: false, noPortfolio: false }, normLang(r.qlang)) || {}).title || '', todayDone: done.includes(day), idle: r.qstatus === 'on' ? Math.floor((NOW() - (r.last_done || r.qcreated || NOW())) / 86400) : 0, ...progressOf(done, day) } : null,
     };
     mine.push(item); if (r.code) byCode.set(r.code, item);
   }
@@ -683,6 +718,7 @@ async function ownerOverview(env) {
     models: items.length, inCabinet: new Set(items.filter(i => i.uid).map(i => i.uid)).size, active7d: new Set(items.filter(i => i.lastSeen > now - 7 * 86400).map(i => i.uid)).size,
     questActive: new Set(inQuest.filter(i => i.quest.status === 'on').map(i => i.uid)).size, questDone: new Set(inQuest.filter(i => i.quest.status === 'done').map(i => i.uid)).size,
     tasksToday: doneToday ? doneToday.c : 0, peopleToday: doneToday ? doneToday.u : 0, avgProgress: tot ? Math.round(dn / tot * 100) : 0,
+    risk: new Set(inQuest.filter(i => i.quest.idle >= 7).map(i => i.uid)).size,
     unread: [...new Map(items.filter(i => i.uid).map(i => [i.uid, i.unread])).values()].reduce((a, n) => a + n, 0), newToday: newToday ? newToday.c : 0, bySheet,
   }, items });
 }

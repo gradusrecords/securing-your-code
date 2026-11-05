@@ -211,6 +211,7 @@ const I={
   dTitle:["Дашборд владельца","Egasi dashbordi","Owner dashboard"],
   kModels:["Моделей","Modellar","Models"],kCab:["В кабинете","Kabinetda","In the cabinet"],kActive:["Заходили за 7 дней","7 kunda kirgan","Active in 7 days"],
   kQuest:["В квесте","Kvestda","In the quest"],kToday:["Заданий сегодня","Bugungi topshiriqlar","Tasks today"],kAvg:["Средний прогресс","O‘rtacha progress","Average progress"],
+  kRisk:["Зона риска (7+ дней)","Xavf zonasi (7+ kun)","At risk (7+ days)"],fRisk:["Зона риска","Xavf zonasi","At risk"],qRulesT:["Правила игры","O‘yin qoidalari","Rules of the game"],qMeaning:["Что значат уровни","Darajalar nimani anglatadi","What the levels mean"],
   kUnread:["Непрочитанных","O‘qilmagan","Unread"],kNew:["Новых заявок сегодня","Bugungi yangi arizalar","New applications today"],
   fSearch:["Поиск: имя, код, телефон","Qidiruv: ism, kod, telefon","Search: name, code, phone"],fAll:["Все","Hammasi","All"],fNoCab:["Не заходили","Kirmaganlar","Not logged in"],
   fIdle:["Нет заданий 3+ дня","3+ kun topshiriq yo‘q","No tasks for 3+ days"],fUnread:["Есть непрочитанное","O‘qilmagani bor","Has unread"],fStatus:["Статус в таблице","Jadvaldagi status","Sheet status"],
@@ -604,6 +605,10 @@ async function viewQuest(){
     wrap.append(h("div",{class:"card"},h("h2",{class:"t"},t("qTitle")),stats(),dots,q.finished?h("p",{class:"msg ok"},t("qFin")):null,null),
       card,
       h("p",{class:"note",style:"margin-top:14px"},"⭐ "+t("qRules")),
+      q.rules?h("details",{class:"card",style:"margin-top:14px"},h("summary",null,t("qRulesT")),
+        q.rules.blocks.map(b=>h("div",{style:"margin-bottom:14px"},h("div",{class:"sub"},b.h),h("p",{style:"margin:6px 0 0;color:#D9D2C4;font-size:14px;line-height:1.6"},b.t))),
+        h("div",{class:"sub",style:"margin-top:8px"},t("qMeaning")),
+        h("ul",{style:"margin:8px 0 0;padding-left:18px;color:#D9D2C4;font-size:14px;line-height:1.7"},q.rules.meaning.map((m,i)=>h("li",null,t("lv"+i)+": "+m)))):null,
       h("div",{class:"row",style:"margin-top:18px"},stopBtn,h("span",{class:"note"},q.status==="on"?t("qTg"):t("qPaused"))));
   };
   draw();return wrap;
@@ -631,7 +636,8 @@ async function viewDash(){
     const [a,b]=await Promise.all([api("GET","owner/overview"),api("GET","owner/feed")]);
     if(a.data.ok)data=a.data;if(b.data.ok)feed=b.data.events;
   };
-  const quiet=i=>i.quest&&i.quest.status==="on"&&(Date.now()/1000-(i.quest.lastDone||i.joined||0))>3*86400;
+  const quiet=i=>i.quest&&i.quest.status==="on"&&i.quest.idle>=3;
+  const risk=i=>i.quest&&i.quest.status==="on"&&i.quest.idle>=7;
   const dotOf=i=>!i.inCabinet?"":(Date.now()/1000-i.lastSeen<86400*2?"g":Date.now()/1000-i.lastSeen<86400*7?"y":"r");
   const draw=()=>{
     clear(wrap);
@@ -647,6 +653,7 @@ async function viewDash(){
       if(ds.status&&(i.sheetStatus||"—")!==ds.status)return false;
       if(ds.f==="nocab")return !i.inCabinet;
       if(ds.f==="idle")return quiet(i);
+      if(ds.f==="risk")return risk(i);
       if(ds.f==="unread")return i.unread>0;
       return true;
     });
@@ -660,15 +667,15 @@ async function viewDash(){
       h("div",null,i.name||"—",h("small",null,(i.code||"")+(i.phone?" · +"+i.phone:""))),
       h("div",null,i.inCabinet?h("span",null,h("span",{class:"dot "+dotOf(i)}),ago(i.lastSeen)):h("span",{style:"color:var(--mute)"},t("never"))),
       h("div",null,i.sheetStatus||"—",i.appStatus&&i.inCabinet&&STATUS[i.appStatus]?h("small",null,STATUS[i.appStatus][LI]):null),
-      h("div",null,i.quest?h("span",null,t("qDay")+" "+i.quest.day+"/30 · ✓"+i.quest.doneCount,h("small",null,(i.quest.status==="done"?"":(i.quest.todayDone?"✓ ":"")+i.quest.todayTitle+" · ")+i.quest.points+" · "+t("lv"+i.quest.levelIdx)+(quiet(i)?" ⚠":"")),h("div",{class:"bar"},h("i",{style:"width:"+Math.round(i.quest.doneCount/30*100)+"%"}))):h("span",{style:"color:var(--mute)"},"—")),
+      h("div",null,i.quest?h("span",null,t("qDay")+" "+i.quest.day+"/30 · ✓"+i.quest.doneCount,h("small",null,(i.quest.status==="done"?"":(i.quest.todayDone?"✓ ":"")+i.quest.todayTitle+" · ")+i.quest.points+" · "+t("lv"+i.quest.levelIdx)+(risk(i)?" 🔴 "+i.quest.idle+" "+t("pDays"):quiet(i)?" ⚠ "+i.quest.idle+" "+t("pDays"):"")),h("div",{class:"bar"},h("i",{style:"width:"+Math.round(i.quest.doneCount/30*100)+"%"}))):h("span",{style:"color:var(--mute)"},"—")),
       h("div",null,i.unread?h("span",{class:"badge",style:"margin-left:0"},i.unread):i.lastMsg?ago(i.lastMsg):"—"),
       h("div",null,i.inCabinet?i.profilePct+"%":"—",i.inCabinet?h("small",null,"📷 "+i.photos):null)));
     wrap.append(
       h("div",{class:"card"},h("div",{class:"row",style:"justify-content:space-between;margin-bottom:6px"},h("h2",{class:"t",style:"margin:0"},t("dTitle")),h("button",{class:"btn sm",type:"button",onclick:async()=>{await load();draw()}},t("rfsh"))),
-        h("div",{class:"kpis"},kp(k.models,t("kModels")),kp(k.inCabinet,t("kCab")),kp(k.active7d,t("kActive")),kp(k.questActive,t("kQuest")),kp(k.tasksToday,t("kToday")),kp(k.avgProgress+"%",t("kAvg")),kp(k.unread,t("kUnread")),kp(k.newToday,t("kNew")))),
+        h("div",{class:"kpis"},kp(k.models,t("kModels")),kp(k.inCabinet,t("kCab")),kp(k.active7d,t("kActive")),kp(k.questActive,t("kQuest")),kp(k.tasksToday,t("kToday")),kp(k.avgProgress+"%",t("kAvg")),kp(k.risk,t("kRisk")),kp(k.unread,t("kUnread")),kp(k.newToday,t("kNew")))),
       h("div",{class:"card"},
         h("div",{class:"dtools"},search,sel([["act",t("sAct")],["name",t("sName")],["prog",t("sProg")]],ds.sort,v=>ds.sort=v,t("sSort")),sel([["",t("fStatus")+": "+t("fAll")],...statuses.map(x=>[x,x+" ("+k.bySheet[x]+")"])],ds.status,v=>ds.status=v,t("fStatus"))),
-        h("div",{class:"dtools"},chip("all",t("fAll")+" "+data.items.length),chip("nocab",t("fNoCab")),chip("idle",t("fIdle")),chip("unread",t("fUnread"))),
+        h("div",{class:"dtools"},chip("all",t("fAll")+" "+data.items.length),chip("nocab",t("fNoCab")),chip("idle",t("fIdle")),chip("risk",t("fRisk")),chip("unread",t("fUnread"))),
         items.length?h("div",null,head,rows):h("div",{class:"empty"},t("noItems"))),
       h("div",{class:"card"},h("h3",{class:"t"},t("fTitle")),h("div",{class:"feed"},feed.map(e=>{
         const txt=fill(t({done:"evDone",msg:"evMsg",app:"evApp",seen:"evSeen",sent:"evSent"}[e.k]),{name:e.name||"—",d:e.d,note:e.note});
