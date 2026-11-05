@@ -7,7 +7,7 @@
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycby8ZKOH6brIK0ETc7cLBffeiNX0bWkStD18CPIh7RBBX3Kwq80ShNBwooOHV1dkJzwKzA/exec';
+const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbznpiQfA7OHvHsxqbG4jbPn5jSqgikf08_M6TtJ5harA2FhBgAFje9vo4Mz7Yv7K6Qibg/exec';
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT UNIQUE NOT NULL, role TEXT NOT NULL DEFAULT 'user', name TEXT, tg_id TEXT, tg_chat TEXT, profile TEXT NOT NULL DEFAULT '{}', created_at INTEGER NOT NULL)`,
