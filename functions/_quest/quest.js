@@ -3,6 +3,9 @@
    the directions from the application (shows, photo, ads/video, clips, promo, hosting), gender, age (under 18 = safe variants),
    and gaps in the application (no Instagram, no portfolio). New models get a plan automatically from their sheet row. */
 
+import { D_UZ } from './uz.js';
+import { D_EN } from './en.js';
+
 export const TOTAL = 30;
 export const TZ_OFFSET_H = 5;   // Asia/Tashkent, no daylight saving
 
@@ -172,44 +175,86 @@ export function profileOf(user, payload = {}) {
   };
 }
 
-export function describeProfile(pf) {
-  const lv = { new: 'без опыта', mid: 'опыт до года', pro: 'есть опыт (от года)' }[pf.level];
-  const ds = pf.dirs.length ? pf.dirs.map(d => DIR_LABEL[d]).join(', ') : 'направления не указаны';
-  return { level: lv, dirs: ds };
+export const LANGS = ['ru', 'uz', 'en'];
+export const normLang = l => (LANGS.includes(String(l || '').toLowerCase()) ? String(l).toLowerCase() : 'ru');
+const PLANS = { ru: D, uz: D_UZ, en: D_EN };
+
+/* texts around the tasks, in the three site languages */
+const S = {
+  ru: {
+    weeks: WEEKS, levels: LEVELS.map(l => l[0]), dirs: DIR_LABEL, lv: { new: 'без опыта', mid: 'опыт до года', pro: 'есть опыт (от года)' }, noDirs: 'направления не указаны',
+    tuned: (lv, ds) => `Задания подобраны по твоей анкете: уровень — ${lv}; направления — ${ds}.`,
+    forYou: 'Для тебя', day: 'День', of: 'из', morning: n => `☀️ Доброе утро${n ? ', ' + n : ''}!`,
+    missed: n => `Невыполненных заданий: ${n}. Их можно закрыть в любой день.`,
+    mark: 'Отметь выполнение в кабинете: zaya.uz → «Кабинет» → «Квест».', stop: 'Остановить задания: /stop',
+    fin: (n, d, pts, lv) => `🎉 Квест «30 дней» завершён${n ? ', ' + n : ''}!\nВыполнено заданий: ${d} из ${TOTAL}. Очки: ${pts}. Уровень: ${lv}.\n\nНапиши менеджеру в чат кабинета: обсудим следующий шаг и твой план на месяц.`,
+    enroll: '🎯 Для вас открыт квест «30 дней»: каждое утро — новое задание, подобранное под вашу анкету.',
+    stopped: 'Задания остановлены. Вернуть их: /quest', resumed: 'Квест продолжается. Следующее задание придёт утром.', noQuest: 'Квест доступен моделям после входа в кабинет на zaya.uz.',
+  },
+  uz: {
+    weeks: ['Asos', 'Kamera va pozalar', 'Kasb', 'Kasting'], levels: ['Boshlovchi', 'Starter', 'Amaliyotchi', 'Pro', 'ZAYA yulduzi'],
+    dirs: { show: 'namoyishlar', photo: 'fotosyomka', ad: 'reklama va video', clip: 'klip', promo: 'shourum va promo', host: 'boshlovchilik' },
+    lv: { new: 'tajribasiz', mid: 'tajriba bir yilgacha', pro: 'tajriba bor (bir yildan)' }, noDirs: 'yo‘nalishlar ko‘rsatilmagan',
+    tuned: (lv, ds) => `Topshiriqlar anketang bo‘yicha tanlangan: daraja — ${lv}; yo‘nalishlar — ${ds}.`,
+    forYou: 'Siz uchun', day: 'Kun', of: '/', morning: n => `☀️ Xayrli tong${n ? ', ' + n : ''}!`,
+    missed: n => `Bajarilmagan topshiriqlar: ${n}. Ularni istalgan kuni yopishing mumkin.`,
+    mark: 'Bajarilganini kabinetda belgila: zaya.uz → «Kabinet» → «Kvest».', stop: 'Topshiriqlarni to‘xtatish: /stop',
+    fin: (n, d, pts, lv) => `🎉 «30 kun» kvesti yakunlandi${n ? ', ' + n : ''}!\nBajarilgan topshiriqlar: ${d} / ${TOTAL}. Ball: ${pts}. Daraja: ${lv}.\n\nKabinet chatida menejerga yoz: keyingi qadam va bir oylik rejangni muhokama qilamiz.`,
+    enroll: '🎯 Siz uchun «30 kun» kvesti ochildi: har kuni ertalab anketangga mos yangi topshiriq.',
+    stopped: 'Topshiriqlar to‘xtatildi. Qaytarish: /quest', resumed: 'Kvest davom etadi. Keyingi topshiriq ertalab keladi.', noQuest: 'Kvest kabinetga kirgandan keyin modellar uchun ochiladi (zaya.uz).',
+  },
+  en: {
+    weeks: ['Foundation', 'Camera and poses', 'Profession', 'Casting'], levels: ['Rookie', 'Starter', 'Practitioner', 'Pro', 'ZAYA Star'],
+    dirs: { show: 'runway', photo: 'photo shoots', ad: 'ads and video', clip: 'music videos', promo: 'showroom and promo', host: 'hosting' },
+    lv: { new: 'no experience', mid: 'under a year of experience', pro: 'experienced (a year or more)' }, noDirs: 'no directions listed',
+    tuned: (lv, ds) => `The tasks are built from your application: level — ${lv}; directions — ${ds}.`,
+    forYou: 'For you', day: 'Day', of: 'of', morning: n => `☀️ Good morning${n ? ', ' + n : ''}!`,
+    missed: n => `Tasks not yet done: ${n}. You can catch up any day.`,
+    mark: 'Mark it as done in the cabinet: zaya.uz → “Cabinet” → “Quest”.', stop: 'Pause the tasks: /stop',
+    fin: (n, d, pts, lv) => `🎉 The “30 days” quest is complete${n ? ', ' + n : ''}!\nTasks done: ${d} of ${TOTAL}. Points: ${pts}. Level: ${lv}.\n\nWrite to the manager in the cabinet chat: we will discuss your next step and your plan for the month.`,
+    enroll: '🎯 The “30 days” quest is open for you: a new task every morning, built from your application.',
+    stopped: 'Tasks paused. Resume them with /quest', resumed: 'The quest goes on. The next task arrives in the morning.', noQuest: 'The quest opens for models after logging in to the cabinet at zaya.uz.',
+  },
+};
+export const msgs = lang => S[normLang(lang)];
+
+export function describeProfile(pf, lang = 'ru') {
+  const x = S[normLang(lang)];
+  return { level: x.lv[pf.level], dirs: pf.dirs.length ? pf.dirs.map(d => x.dirs[d]).join(', ') : x.noDirs };
 }
 
 /* ---------- one task for one person ---------- */
-export function taskFor(day, pf) {
-  const d = D[day - 1];
+export function taskFor(day, pf, lang = 'ru') {
+  lang = normLang(lang);
+  const d = PLANS[lang][day - 1], x = S[lang];
   if (!d) return null;
   const extras = [];
-  if (day === 1) {
-    const x = describeProfile(pf);
-    extras.push(`Задания подобраны по твоей анкете: уровень — ${x.level}; направления — ${x.dirs}.`);
-  }
+  if (day === 1) { const z = describeProfile(pf, lang); extras.push(x.tuned(z.level, z.dirs)); }
   if (d.lv && d.lv[pf.level]) extras.push(d.lv[pf.level]);
-  if (d.dir) { const k = (pf.dirs.length ? pf.dirs : DIR_ORDER).find(x => d.dir[x]); if (k) extras.push(d.dir[k]); }
+  if (d.dir) { const k = (pf.dirs.length ? pf.dirs : DIR_ORDER).find(q => d.dir[q]); if (k) extras.push(d.dir[k]); }
   if (d.sex && pf.gender && d.sex[pf.gender]) extras.push(d.sex[pf.gender]);
   if (pf.minor && d.minor) extras.push('👪 ' + d.minor);
   if (d.flag) {
     if (pf.noInsta && d.flag.noInsta) extras.push(d.flag.noInsta);
     if (pf.noPortfolio && d.flag.noPortfolio) extras.push(d.flag.noPortfolio);
   }
-  return { day, week: Math.ceil(day / 7), theme: WEEKS[Math.min(3, Math.floor((day - 1) / 7))], title: d.t, steps: d.steps.slice(), extras, final: day === TOTAL };
+  return { day, week: Math.ceil(day / 7), theme: x.weeks[Math.min(3, Math.floor((day - 1) / 7))], title: d.t, steps: d.steps.slice(), extras, final: day === TOTAL };
 }
 
 export function taskText(task, pf, opts = {}) {
-  const hi = opts.morning ? `☀️ Доброе утро${pf.name ? ', ' + pf.name : ''}!\n` : '';
-  const lines = [`${hi}День ${task.day} из ${TOTAL} · ${task.theme}`, '', task.title, ''];
+  const x = S[normLang(opts.lang)];
+  const hi = opts.morning ? `${x.morning(pf.name)}\n` : '';
+  const lines = [`${hi}${x.day} ${task.day} ${x.of} ${TOTAL} · ${task.theme}`, '', task.title, ''];
   task.steps.forEach((s, i) => lines.push(`${i + 1}. ${s}`));
-  if (task.extras.length) { lines.push('', '✨ Для тебя:'); task.extras.forEach(e => lines.push('• ' + e)); }
-  if (opts.missed > 1) lines.push('', `Невыполненных заданий: ${opts.missed}. Их можно закрыть в любой день.`);
-  lines.push('', 'Отметь выполнение в кабинете: zaya.uz → «Кабинет» → «Квест».', 'Остановить задания: /stop');
+  if (task.extras.length) { lines.push('', `✨ ${x.forYou}:`); task.extras.forEach(e => lines.push('• ' + e)); }
+  if (opts.missed > 1) lines.push('', x.missed(opts.missed));
+  lines.push('', x.mark, x.stop);
   return lines.join('\n');
 }
 
-export function finalText(pf, st) {
-  return `🎉 Квест «30 дней» завершён${pf.name ? ', ' + pf.name : ''}!\nВыполнено заданий: ${st.doneCount} из ${TOTAL}. Очки: ${st.points}. Уровень: ${st.level}.\n\nНапиши менеджеру в чат кабинета: обсудим следующий шаг и твой план на месяц.`;
+export function finalText(pf, st, lang = 'ru') {
+  const x = S[normLang(lang)];
+  return x.fin(pf.name, st.doneCount, st.points, x.levels[st.levelIdx]);
 }
 
 /* ---------- progress ---------- */
