@@ -247,7 +247,8 @@ export function taskFor(day, pf, lang = 'ru') {
 export function taskText(task, pf, opts = {}) {
   const x = S[normLang(opts.lang)];
   const hi = opts.morning ? `${x.morning(pf.name)}\n` : '';
-  const lines = [`${hi}${x.day} ${task.day} ${x.of} ${TOTAL} · ${task.theme}`, '', task.title, ''];
+  const qt = opts.quote ? `✨ «${opts.quote}»\n\n` : '';
+  const lines = [`${hi}${qt}${x.day} ${task.day} ${x.of} ${TOTAL} · ${task.theme}`, '', task.title, ''];
   task.steps.forEach((s, i) => lines.push(`${i + 1}. ${s}`));
   if (task.extras.length) { lines.push('', `✨ ${x.forYou}:`); task.extras.forEach(e => lines.push('• ' + e)); }
   if (opts.missed > 1) lines.push('', x.missed(opts.missed));

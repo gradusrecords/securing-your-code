@@ -10,6 +10,7 @@
 
 import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
 import { rosterOf } from '../_quest/roster.js';
+import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
@@ -555,7 +556,7 @@ async function questEnroll(env, user) {
   const lang = normLang((await env.DB.prepare("SELECT lang FROM apps WHERE phone=? AND kind='apply' ORDER BY id DESC LIMIT 1").bind(user.phone).first() || {}).lang);
   await env.DB.prepare('INSERT OR IGNORE INTO quest(user_id,start,status,last_sent,created_at,lang) VALUES(?,?,?,?,?,?)').bind(user.id, todayYmd(), 'on', 1, NOW(), lang).run();
   q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
-  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n' + msgs(lang).principle + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang }));
+  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n' + msgs(lang).principle + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang, quote: quoteFor(1, lang) }));
   return q;
 }
 async function questMe(env, user, wantLang) {
@@ -614,7 +615,7 @@ async function questTick(env, limit = 20) {
     } else {
       const missed = day - 1 - done.filter(x => x < day).length;
       const lg = normLang(r.lang);
-      await questSay(env, r.user_id, r.tg_chat, day, 'task', taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg }));
+      await questSay(env, r.user_id, r.tg_chat, day, 'task', taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg, quote: quoteFor(day, lg) }));
     }
     sent++;
   }
@@ -671,7 +672,32 @@ async function questWarn(env, limit) {
 const firstNameOf = full => (profileOf({ name: full, profile: {} }, {}).name) || '';
 async function questTickKey(req, env) {
   if (!env.QUEST_KEY || !same(req.headers.get('x-quest-key') || '', env.QUEST_KEY)) return fail(403, 'forbidden');
-  return json({ ok: true, ...(await questTick(env)) });
+  const slot = new URL(req.url).searchParams.get('slot') || 'morning';
+  if (slot !== 'morning' && !['lounge', 'nudge', 'night'].includes(slot)) return fail(400, 'bad slot');
+  return json({ ok: true, slot, ...(slot === 'morning' ? await questTick(env) : await questSlot(env, slot)) });
+}
+/* the other three messages of the day: lounge (13:00), nudge or compliment (14:00), night (22:00); each is sent once per person per quest day */
+async function questSlot(env, slot, limit = 20) {
+  const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.lang,u.name,u.profile,u.tg_chat,
+      (SELECT payload FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) payload,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
+      (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=q.user_id) done,
+      (SELECT group_concat(day) FROM quest_msgs m WHERE m.user_id=q.user_id AND m.kind=?) got
+    FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND u.tg_chat IS NOT NULL`).bind(slot).all()).results || [];
+  let sent = 0, left = 0;
+  for (const r of rows) {
+    const day = dayNumber(r.start);
+    if (day < 1 || day > TOTAL || !inRoster(env, r.codes)) continue;
+    if (String(r.got || '').split(',').map(Number).includes(day)) continue;
+    if (sent >= limit) { left++; continue; }
+    const lang = normLang(r.lang), pf = profileOf({ name: r.name, profile: safeJson(r.profile) }, safeJson(r.payload));
+    const done = String(r.done || '').split(',').filter(Boolean).map(Number).includes(day);
+    const task = taskFor(day, pf, lang), nextTask = day < TOTAL ? taskFor(day + 1, pf, lang) : null;
+    const text = slot === 'lounge' ? loungeText(day, lang) : slot === 'nudge' ? nudgeText({ day, task, done, name: pf.name, lang }) : nightText({ day, task, nextTask, done, name: pf.name, lang });
+    await questSay(env, r.user_id, r.tg_chat, day, slot, text);
+    sent++;
+  }
+  return { sent, remaining: left };
 }
 async function adminQuest(env) {
   const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.status,u.name,u.phone,
