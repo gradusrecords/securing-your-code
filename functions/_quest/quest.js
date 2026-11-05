@@ -320,6 +320,17 @@ export function progressText(pf, st, day, lang) {
   return `${x.day} ${day} ${x.of} ${TOTAL}\n⭐ ${st.points} · ${x.levels[st.levelIdx]} (${m[st.levelIdx]})\n🔥 ${st.streak} · ✓ ${st.doneCount}/${TOTAL}${nx}`;
 }
 
+/* ---------- one-off announcements to all the catalog models (sent by the morning run from the given date, once per person) ---------- */
+export const ANNOUNCEMENTS = [{ id: 'participation-1', date: '2026-11-06' }];
+const ANN = {
+  'participation-1': {
+    ru: n => `Доброе утро${n ? ', ' + n : ''}! 🤍 Важное от команды ZAYA.\n\nСейчас от тебя требуется одно: активное участие в проектах агентства. Отвечай менеджерам, приходи на кастинги и съёмки, выполняй задания квеста каждый день. Именно это помогает достигать большого успеха, и мы рядом на каждом шаге.`,
+    uz: n => `Xayrli tong${n ? ', ' + n : ''}! 🤍 ZAYA jamoasidan muhim xabar.\n\nHozir sendan bitta narsa talab qilinadi: agentlik loyihalarida faol ishtirok etish. Menejerlarga javob ber, kasting va syomkalarga kel, kvest topshiriqlarini har kuni bajar. Aynan shu katta muvaffaqiyatga erishishga yordam beradi, biz har qadamda yoningdamiz.`,
+    en: n => `Good morning${n ? ', ' + n : ''}! 🤍 An important note from the ZAYA team.\n\nRight now we ask one thing of you: active participation in the agency’s projects. Reply to the managers, come to castings and shoots, do the quest tasks every day. This is what helps you reach great success, and we are with you every step of the way.`,
+  },
+};
+export const announceText = (id, name, lang) => ANN[id][normLang(lang)](name);
+
 /* ---------- progress ---------- */
 export function pointsOf(done) {
   const s = new Set(done);

@@ -8,7 +8,7 @@
    Secret:    QUEST_KEY (the GitHub Action that sends the morning quest tasks calls POST /api/quest/tick with it)
    Secret:    SHEET_KEY (same value as the API_KEY script property in the Google Apps Script: lets the server read a sheet row by its application code) */
 
-import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText } from '../_quest/quest.js';
+import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
 import { rosterOf } from '../_quest/roster.js';
 
 const enc = new TextEncoder();
@@ -599,8 +599,9 @@ async function questTick(env, limit = 20) {
       (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=q.user_id) done
     FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND q.last_sent<=?`).bind(TOTAL).all()).results || [];
   const due = rows.filter(r => inRoster(env, r.codes) && r.tg_chat && dayNumber(r.start) > r.last_sent && dayNumber(r.start) >= 2);
+  const an = await questAnnounce(env, limit);
   let sent = 0;
-  for (const r of due.slice(0, limit)) {
+  for (const r of due.slice(0, Math.max(0, limit - an.sent))) {
     const day = Math.min(dayNumber(r.start), TOTAL + 1);
     const claim = await env.DB.prepare('UPDATE quest SET last_sent=? WHERE user_id=? AND last_sent<?').bind(day, r.user_id, day).run();
     if (!claim.meta || claim.meta.changes !== 1) continue;
@@ -617,9 +618,31 @@ async function questTick(env, limit = 20) {
     }
     sent++;
   }
-  let remaining = Math.max(0, due.length - sent);
-  if (!remaining) { const w = await questWarn(env, Math.max(0, limit - sent)); sent += w.sent; remaining = w.remaining; }
-  return { sent, remaining };
+  let remaining = Math.max(0, due.length - sent) + an.remaining;
+  if (!remaining) { const w = await questWarn(env, Math.max(0, limit - sent - an.sent)); sent += w.sent; remaining = w.remaining; }
+  return { sent: sent + an.sent, remaining };
+}
+/* one-off announcements for every catalog model who has the bot chat: once per person, from the announcement date on */
+async function questAnnounce(env, limit) {
+  const live = ANNOUNCEMENTS.filter(a => todayYmd() >= (env.ANNOUNCE_FROM || a.date));   // ANNOUNCE_FROM: optional override of the date (YYYY-MM-DD)
+  if (!live.length) return { sent: 0, remaining: 0 };
+  const users = (await env.DB.prepare(`SELECT u.id,u.name,u.tg_chat,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
+      (SELECT lang FROM quest q WHERE q.user_id=u.id) qlang,
+      (SELECT lang FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) alang,
+      (SELECT group_concat(kind) FROM quest_msgs m WHERE m.user_id=u.id AND m.kind LIKE 'announce:%') got
+    FROM users u WHERE u.tg_chat IS NOT NULL AND u.role='user'`).all()).results || [];
+  let sent = 0, left = 0;
+  for (const u of users) {
+    if (!inRoster(env, u.codes)) continue;
+    for (const a of live) {
+      if (String(u.got || '').split(',').includes('announce:' + a.id)) continue;
+      if (sent >= limit) { left++; continue; }
+      await questSay(env, u.id, u.tg_chat, 0, 'announce:' + a.id, announceText(a.id, firstNameOf(u.name), normLang(u.qlang || u.alang)));
+      sent++;
+    }
+  }
+  return { sent, remaining: left };
 }
 /* inactivity warnings to the model (after 3, 7 and 14 days) and an alert to the managers; the team decides about cooperation, nothing is automatic */
 async function questWarn(env, limit) {
