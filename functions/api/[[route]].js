@@ -267,6 +267,7 @@ async function authVerify(req, env) {
   const role = isManagerPhone(env, phone) ? 'manager' : 'user';
   if (role !== user.role) await env.DB.prepare('UPDATE users SET role=? WHERE id=?').bind(role, user.id).run();
   user = { ...user, role };
+  try { await autoLink(env, user); } catch {}   // everything written with this number is ready right after login
   const c = await startSession(req, env, user.id);
   return json({ ok: true, user: pubUser(user) }, 200, { 'set-cookie': c });
 }
@@ -359,6 +360,32 @@ async function fetchSheet(env, code) {
     return await r.json();
   } catch { return { ok: false, error: 'sheet unavailable' }; }
 }
+/* every sheet row (models and business) where this phone is the applicant's or the parent's number */
+async function fetchSheetByPhone(env, phone) {
+  if (!env.SHEET_KEY) return [];
+  const u = new URL(env.FORM_URL || DEFAULT_FORM_URL);
+  u.searchParams.set('action', 'byphone'); u.searchParams.set('phone', last9(phone)); u.searchParams.set('key', env.SHEET_KEY);
+  try {
+    const r = await fetch(u.toString(), { redirect: 'follow', signal: AbortSignal.timeout(8000) });
+    const j = await r.json();
+    return j && j.ok && Array.isArray(j.items) ? j.items.slice(0, 20) : [];
+  } catch { return []; }
+}
+/* the person logged in with a Telegram-verified number: attach all the sheet applications written with that number */
+async function autoLink(env, user) {
+  let n = 0;
+  for (const it of await fetchSheetByPhone(env, user.phone)) {
+    const row = it && it.row || {}, code = String(row['Заявка №'] || '').trim().toUpperCase();
+    if (!CODE_RE.test(code)) continue;
+    const allowed = new Set([...numbersIn(row['Телефон']), ...numbersIn(row['Родитель'])]);
+    if (!allowed.has(last9(user.phone))) continue;
+    const taken = await env.DB.prepare('SELECT phone FROM apps WHERE code=?').bind(code).first();
+    if (taken && taken.phone !== user.phone) continue;
+    await saveLinked(env, user.phone, code, code.charAt(0) === 'B' ? 'brief' : 'apply', row);
+    n++;
+  }
+  return n;
+}
 function rowToApp(kind, row) {
   const payload = {};
   for (const [h, k] of Object.entries(SHEET_MAP[kind])) { const v = clip(row[h], 2000); if (v) payload[k] = v; }
@@ -418,6 +445,8 @@ async function linkCode(req, env, user) {
 }
 async function syncMine(env, user) {
   if (!(await hit(env, 'sy:' + user.id, 30, 3600))) return fail(429, 'too many requests');
+  // pick up applications that appeared in the sheet after login (at most once in 10 minutes)
+  if (await hit(env, 'ph:' + user.id, 1, 600)) { try { await autoLink(env, user); } catch {} }
   // remove a leftover duplicate: the same application saved from the form (no code) next to its linked copy
   await env.DB.prepare('DELETE FROM apps WHERE phone=? AND code IS NULL AND EXISTS (SELECT 1 FROM apps b WHERE b.phone=apps.phone AND b.kind=apps.kind AND b.code IS NOT NULL AND b.name=apps.name)').bind(user.phone).run();
   const rows = await env.DB.prepare('SELECT code,kind FROM apps WHERE phone=? AND code IS NOT NULL AND (synced_at IS NULL OR synced_at<?) LIMIT 5').bind(user.phone, NOW() - 120).all();

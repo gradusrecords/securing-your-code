@@ -19,6 +19,7 @@ const BUSINESS_HEADERS = ['Заявка №', 'Отправлено', 'Стат�
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.action === 'lookup') return json_(lookup_(p));
+  if (p.action === 'byphone') return json_(byPhone_(p));
   return json_({ ok: true, service: 'zaya-forms' });
 }
 
@@ -47,6 +48,48 @@ function lookup_(p) {
     }
   }
   return { ok: false, error: 'not found' };
+}
+
+/**
+ * Все заявки, где указан этот номер (в колонке «Телефон» или «Родитель») — в обоих листах.
+ * Нужен для автоматической привязки при входе в кабинет. Тот же ключ API_KEY.
+ */
+function byPhone_(p) {
+  const key = PropertiesService.getScriptProperties().getProperty('API_KEY');
+  if (!key || String(p.key || '') !== key) return { ok: false, error: 'forbidden' };
+  const want = String(p.phone || '').replace(/\D/g, '').slice(-9);
+  if (want.length !== 9) return { ok: false, error: 'bad phone' };
+  const ss = SpreadsheetApp.openById(SHEET_ID), items = [];
+  [[MODELS_SHEET, 'apply'], [BUSINESS_SHEET, 'brief']].forEach(function (pair) {
+    const sh = ss.getSheetByName(pair[0]);
+    if (!sh) return;
+    const values = sh.getDataRange().getDisplayValues();
+    let h = 0;
+    for (let i = 0; i < Math.min(5, values.length); i++) if (String(values[i][0]).trim() === 'Заявка №') { h = i; break; }
+    const head = values[h].map(function (x) { return String(x).trim(); });
+    const ci = head.indexOf('Телефон'), pi = head.indexOf('Родитель');
+    for (let i = h + 1; i < values.length && items.length < 20; i++) {
+      const code = String(values[i][0]).trim().toUpperCase();
+      if (!/^[ZB]-[A-Z0-9]{4,8}$/.test(code)) continue;
+      const text = (ci >= 0 ? values[i][ci] : '') + ' ; ' + (pi >= 0 ? values[i][pi] : '');
+      if (!numbers_(text).some(function (d) { return d === want; })) continue;
+      const row = {};
+      head.forEach(function (name, j) { if (name) row[name] = String(values[i][j] == null ? '' : values[i][j]).trim(); });
+      items.push({ kind: pair[1], row: row });
+    }
+  });
+  return { ok: true, items: items };
+}
+
+// все номера, записанные в тексте (несколько номеров через / , ; «и»; пробелы внутри номера допустимы) — по 9 последних цифр
+function numbers_(text) {
+  const out = [];
+  String(text || '').split(/[\/,;]|\sи\s|\s{2,}/).forEach(function (part) {
+    const d = part.replace(/\D/g, '');
+    if (d.length >= 9) out.push(d.slice(-9));
+  });
+  (String(text || '').replace(/[^\d]/g, ' ').match(/\d{9,12}/g) || []).forEach(function (d) { out.push(d.slice(-9)); });
+  return out;
 }
 
 function doPost(e) {
