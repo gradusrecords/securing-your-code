@@ -1,0 +1,21 @@
+# Every morning at 08:00 Tashkent (03:00 UTC) asks the site to send today's quest task to every model in Telegram.
+# Needs the repository secret QUEST_KEY (the same value as the QUEST_KEY secret in Cloudflare Pages).
+name: Quest morning tasks
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send today's tasks
+        env:
+          QUEST_KEY: ${{ secrets.QUEST_KEY }}
+        run: |
+          for i in $(seq 1 20); do
+            out=$(curl -sS -m 60 -X POST https://zaya.uz/api/quest/tick -H 'x-zaya: 1' -H "x-quest-key: $QUEST_KEY")
+            echo "$out"
+            echo "$out" | grep -q '"ok":true' || exit 1
+            echo "$out" | grep -q '"remaining":0' && exit 0
+          done
