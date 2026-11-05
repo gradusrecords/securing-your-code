@@ -228,6 +228,7 @@ const I={
   rfsh:["Обновить","Yangilash","Refresh"],noItems:["Никого не найдено.","Hech kim topilmadi.","Nobody found."],
   ownerRole:["Владелец","Egasi","Owner"],
   pDays:["дн.","kun","d"],
+  dTasks:["Задания этой модели","Ushbu model topshiriqlari","This model’s tasks"],dSheetOnly:["Карточка из таблицы","Jadvaldan karta","Card from the sheet"],dCode:["Номер заявки","Ariza raqami","Application code"],dSheetSt:["Статус в таблице","Jadvaldagi status","Sheet status"],dNoteLbl:["Заметка модели","Model eslatmasi","Model’s note"],
   kApply:["Анкета модели","Model anketasi","Model application"],
   kBrief:["Бриф бизнеса","Biznes brifi","Business brief"],
   sent:["Отправлена","Yuborilgan","Submitted"],
@@ -617,7 +618,7 @@ async function viewAdminQuest(){
 }
 
 /* ---------- owner dashboard ---------- */
-state.dash={q:"",f:"all",status:"",sort:"act",open:0};
+state.dash={q:"",f:"all",status:"",sort:"act",open:0,sheet:null};
 async function viewDash(){
   const wrap=h("div",null);
   const ds=state.dash;
@@ -631,6 +632,7 @@ async function viewDash(){
   const draw=()=>{
     clear(wrap);
     if(!data){wrap.append(h("div",{class:"empty"},t("err")));return}
+    if(ds.sheet){const x=ds.sheet;wrap.append(h("button",{class:"btn sm",type:"button",onclick:()=>{ds.sheet=null;draw()}},t("dBack")),h("div",{class:"card",style:"margin-top:14px"},h("div",{class:"sub"},t("dSheetOnly")),h("h2",{class:"t"},x.name||"—"),h("dl",{class:"kv"},h("dt",null,t("dCode")),h("dd",null,x.code||"—"),h("dt",null,t("dSheetSt")),h("dd",null,x.sheetStatus||"—")),h("p",{class:"note"},t("dNotIn"))));return}
     if(ds.open){wrap.append(h("div",{class:"spin"},"…"));openDetail();return}
     const k=data.kpi;
     const kp=(n,l)=>h("div",{class:"kpi"},h("b",null,String(n)),h("span",null,l));
@@ -650,7 +652,7 @@ async function viewDash(){
     const search=h("input",{class:"inp",type:"search",placeholder:t("fSearch"),"aria-label":t("fSearch"),value:ds.q,oninput:e=>{ds.q=e.target.value;const pos=e.target.selectionStart;draw();const n=wrap.querySelector("input[type=search]");if(n){n.focus();n.setSelectionRange(pos,pos)}}});
     const sel=(opts,val,on,label)=>h("select",{class:"inp","aria-label":label,onchange:e=>{on(e.target.value);draw()}},opts.map(([v,l])=>h("option",{value:v,selected:v===val},l)));
     const head=h("div",{class:"dl hd"},h("div",null,t("cModel")),h("div",null,t("cCab")),h("div",null,t("fStatus")),h("div",null,t("cQuest")),h("div",null,t("cChat")),h("div",null,t("cProf")));
-    const rows=items.map(i=>h("button",{class:"dl row2",type:"button",onclick:()=>{if(i.uid){ds.open=i.uid;draw()}}},
+    const rows=items.map(i=>h("button",{class:"dl row2",type:"button",onclick:()=>{if(i.uid){ds.open=i.uid;draw()}else{ds.sheet=i;draw()}}},
       h("div",null,i.name||"—",h("small",null,(i.code||"")+(i.phone?" · +"+i.phone:""))),
       h("div",null,i.inCabinet?h("span",null,h("span",{class:"dot "+dotOf(i)}),ago(i.lastSeen)):h("span",{style:"color:var(--mute)"},t("never"))),
       h("div",null,i.sheetStatus||"—",i.appStatus&&i.inCabinet&&STATUS[i.appStatus]?h("small",null,STATUS[i.appStatus][LI]):null),
@@ -671,7 +673,7 @@ async function viewDash(){
   const openDetail=async()=>{
     const r=await api("GET","owner/user?id="+ds.open);
     clear(wrap);
-    const back=h("button",{class:"btn sm",type:"button",onclick:()=>{ds.open=0;draw()}},t("dBack"));
+    const back=h("button",{class:"btn sm",type:"button",onclick:()=>{ds.open=0;ds.sheet=null;draw()}},t("dBack"));
     if(!r.data.ok){wrap.append(back,h("div",{class:"empty"},t("err")));return}
     const d=r.data,u=d.user,q=d.quest,p=d.profile||{};
     const kv=(obj,keys)=>h("dl",{class:"kv"},keys.filter(k=>obj[k]).flatMap(k=>[h("dt",null,(KEYS[k]||[k,k,k])[LI]),h("dd",null,String(obj[k]))]));
@@ -688,6 +690,11 @@ async function viewDash(){
       h("div",{class:"card"},h("h3",{class:"t"},t("dQuest")),
         q?h("div",null,h("div",{class:"qstats"},h("span",null,h("b",null,String(q.day)),t("qDay")+" "+t("qOf")+" 30"),h("span",null,h("b",null,String(q.points)),t("qPts")),h("span",null,h("b",null,String(q.streak)),t("qStreak")+" 🔥"),h("span",null,t("qLvl")+": ",h("b",{style:"font-size:18px"},t("lv"+q.levelIdx)))),dots,
           notes.length?h("dl",{class:"kv"},notes.flatMap(l=>[h("dt",null,t("qDay")+" "+l.day),h("dd",null,l.note)])):null):h("div",{class:"empty"},t("dNoQuest"))),
+      q&&q.tasks&&q.tasks.length?h("div",{class:"card"},h("h3",{class:"t"},t("dTasks")),q.tasks.slice().reverse().map(x=>h("details",{style:"border-bottom:1px solid var(--line);padding:10px 0"},
+        h("summary",{style:"margin:0;text-transform:none;letter-spacing:.04em;font-size:14px;color:#D9D2C4"},(x.done?"✓ ":x.day<q.day?"⚠ ":"")+t("qDay")+" "+x.day+" · "+x.title),
+        h("ol",{class:"steps",style:"margin-top:14px"},x.steps.map(z=>h("li",null,z))),
+        x.extras.length?h("div",{class:"qfor"},h("p",{class:"sub"},t("qFor")),h("ul",null,x.extras.map(e=>h("li",null,e)))):null,
+        x.note?h("p",{class:"note"},t("dNoteLbl")+": "+x.note):null))):h("span"),
       h("div",{class:"card"},h("h3",{class:"t"},t("dProfile")),kv(p,["city","instagram","telegram","height","weight","bust","waist","hips","shoes","hair","eyes","about"])),
       h("div",{class:"card"},h("h3",{class:"t"},t("dApps")),d.apps.map(a=>h("div",{style:"margin-bottom:12px"},h("span",{class:"pill"},a.code||"—")," ",statusPill(a.status)))),
       h("div",{class:"card"},h("h3",{class:"t"},t("dChat")),d.messages.length?h("div",{class:"log",style:"max-height:340px"},d.messages.map(m=>h("div",{class:"m"+(m.from_role==="manager"?" me":"")},m.body))):h("div",{class:"empty"},t("dNoMsgs"))),

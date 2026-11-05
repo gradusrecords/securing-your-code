@@ -688,12 +688,14 @@ async function ownerUser(env, id) {
   const msgs2 = ((await env.DB.prepare('SELECT from_role,body,created_at FROM messages WHERE thread=? ORDER BY id DESC LIMIT 30').bind(id).all()).results || []).reverse();
   const photos = ((await env.DB.prepare('SELECT id FROM photos WHERE user_id=? ORDER BY id DESC LIMIT 12').bind(id).all()).results || []).map(r => r.id);
   const day = q ? Math.min(Math.max(dayNumber(q.start), 1), TOTAL) : 0;
-  const titles = q ? Array.from({ length: day }, (_, i) => { const t = taskFor(i + 1, { dirs: [], level: 'new', gender: '', minor: false, noInsta: false, noPortfolio: false }, normLang(q.lang)); return t.title; }) : [];
+  const pf = q ? await questSubject(env, u) : null, ql = q ? normLang(q.lang) : 'ru', byDay = Object.fromEntries(log.map(l => [l.day, l]));
+  const tasks = pf ? Array.from({ length: day }, (_, i) => ({ ...taskFor(i + 1, pf, ql), done: !!byDay[i + 1], doneAt: byDay[i + 1] ? byDay[i + 1].done_at : null, note: byDay[i + 1] ? byDay[i + 1].note || '' : '' })) : [];
+  const titles = tasks.map(t => t.title);
   return json({ ok: true,
     user: { id: u.id, name: u.name || '', phone: u.phone, role: u.role, lastSeen: u.last_seen || 0, joined: u.created_at, tg: !!u.tg_chat },
     profile: safeJson(u.profile),
     apps: apps.map(a => ({ id: a.id, kind: a.kind, code: a.code || '', status: a.status, created: a.created_at, payload: safeJson(a.payload) })),
-    quest: q ? { status: q.status, start: q.start, day, lang: normLang(q.lang), log, titles, ...progressOf(log.map(l => l.day), day) } : null,
+    quest: q ? { status: q.status, start: q.start, day, lang: normLang(q.lang), log, titles, tasks, ...progressOf(log.map(l => l.day), day) } : null,
     messages: msgs2, photos });
 }
 async function ownerFeed(env) {
