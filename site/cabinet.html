@@ -200,7 +200,8 @@ const I={
   qStop:["Остановить задания","Topshiriqlarni to‘xtatish","Pause the tasks"],qGo:["Продолжить квест","Kvestni davom ettirish","Resume the quest"],
   qPaused:["Задания на паузе: утренние сообщения не приходят.","Topshiriqlar to‘xtatilgan: ertalabki xabarlar kelmaydi.","Tasks are paused: no morning messages."],
   qFin:["Квест завершён! Напишите менеджеру во вкладке «Чат».","Kvest yakunlandi! «Chat» bo‘limida menejerga yozing.","The quest is finished! Write to the manager in the “Chat” tab."],
-  qNone:["Квест откроется после заявки модели.","Kvest model arizasidan keyin ochiladi.","The quest opens after a model application."],
+  qNone:["Квест пока доступен моделям из каталога агентства.","Kvest hozircha agentlik katalogidagi modellar uchun.","The quest is currently open to the models of the agency catalog."],
+  fOthers:["Остальные заявки","Boshqa arizalar","Other applications"],
   qTg:["Задания приходят и в Telegram каждое утро в 08:00. Остановить: /stop","Topshiriqlar har kuni ertalab 08:00 da Telegram’ga ham keladi. To‘xtatish: /stop","Tasks also arrive in Telegram every morning at 08:00. Stop: /stop"],
   qPeople:["Участники квеста","Kvest ishtirokchilari","Quest participants"],
   qSendNow:["Отправить сегодняшние задания сейчас","Bugungi topshiriqlarni hozir yuborish","Send today’s tasks now"],
@@ -627,7 +628,7 @@ async function viewAdminQuest(){
 }
 
 /* ---------- owner dashboard ---------- */
-state.dash={q:"",f:"all",status:"",sort:"act",open:0,sheet:null};
+state.dash={q:"",f:"all",status:"",sort:"act",open:0,sheet:null,others:false};
 async function viewDash(){
   const wrap=h("div",null);
   const ds=state.dash;
@@ -650,6 +651,7 @@ async function viewDash(){
     let items=data.items.filter(i=>{
       const q=ds.q.trim().toLowerCase();
       if(q&&!(i.name+" "+i.code+" "+i.phone).toLowerCase().includes(q))return false;
+      if(!ds.others&&!i.catalog)return false;
       if(ds.status&&(i.sheetStatus||"—")!==ds.status)return false;
       if(ds.f==="nocab")return !i.inCabinet;
       if(ds.f==="idle")return quiet(i);
@@ -675,7 +677,7 @@ async function viewDash(){
         h("div",{class:"kpis"},kp(k.models,t("kModels")),kp(k.inCabinet,t("kCab")),kp(k.active7d,t("kActive")),kp(k.questActive,t("kQuest")),kp(k.tasksToday,t("kToday")),kp(k.avgProgress+"%",t("kAvg")),kp(k.risk,t("kRisk")),kp(k.unread,t("kUnread")),kp(k.newToday,t("kNew")))),
       h("div",{class:"card"},
         h("div",{class:"dtools"},search,sel([["act",t("sAct")],["name",t("sName")],["prog",t("sProg")]],ds.sort,v=>ds.sort=v,t("sSort")),sel([["",t("fStatus")+": "+t("fAll")],...statuses.map(x=>[x,x+" ("+k.bySheet[x]+")"])],ds.status,v=>ds.status=v,t("fStatus"))),
-        h("div",{class:"dtools"},chip("all",t("fAll")+" "+data.items.length),chip("nocab",t("fNoCab")),chip("idle",t("fIdle")),chip("risk",t("fRisk")),chip("unread",t("fUnread"))),
+        h("div",{class:"dtools"},chip("all",t("fAll")+" "+data.items.filter(i=>i.catalog).length),chip("nocab",t("fNoCab")),chip("idle",t("fIdle")),chip("risk",t("fRisk")),data.others?h("button",{class:"chip"+(ds.others?" on":""),type:"button",onclick:()=>{ds.others=!ds.others;draw()}},(ds.others?"✓ ":"+ ")+t("fOthers")+" "+data.others):null,chip("unread",t("fUnread"))),
         items.length?h("div",null,head,rows):h("div",{class:"empty"},t("noItems"))),
       h("div",{class:"card"},h("h3",{class:"t"},t("fTitle")),h("div",{class:"feed"},feed.map(e=>{
         const txt=fill(t({done:"evDone",msg:"evMsg",app:"evApp",seen:"evSeen",sent:"evSent"}[e.k]),{name:e.name||"—",d:e.d,note:e.note});
@@ -724,7 +726,7 @@ async function render(){
   const me=state.me;
   const isMgr=isStaff(me),isOwner=me.role==="owner";
   const unread=state.data?state.data.unread:0;
-  const hasQuest=!isMgr&&state.data&&state.data.apps.some(a=>a.kind==="apply");
+  const hasQuest=!isMgr&&state.data&&state.data.quest===true;
   const list=isMgr?[...(isOwner?[["dash",t("tDash")]]:[]),["apps",t("tApps")],["chats",t("tChats")],["quest",t("tQuest")]]:[["apps",t("tApps")],...(hasQuest?[["quest",t("tQuest")]]:[]),["profile",t("tProfile")],["chat",t("tChat"),unread||""]];
   if(!list.some(x=>x[0]===state.tab))state.tab=isOwner?"dash":"apps";
   shell(tabs(list),h("div",{id:"view"},h("div",{class:"spin"},"…")));

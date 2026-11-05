@@ -3,11 +3,13 @@
    Bindings:  DB (D1), BUCKET (R2, optional: without it photos are kept in D1)
    Secrets:   BOT_TOKEN, TG_SECRET, PEPPER
    Variables: BOT_USERNAME, MANAGER_PHONES (digits, comma separated), FORM_URL (optional Apps Script), TG_API (dev only)
+   Variable:  ROSTER_CODES (optional, comma separated sheet codes): replaces the built-in list of catalog models who get the quest and the dashboard
    Variable:  OWNER_PHONES (digits, comma separated): the owner sees the dashboard with every model; the owner also has all manager rights
    Secret:    QUEST_KEY (the GitHub Action that sends the morning quest tasks calls POST /api/quest/tick with it)
    Secret:    SHEET_KEY (same value as the API_KEY script property in the Google Apps Script: lets the server read a sheet row by its application code) */
 
 import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText } from '../_quest/quest.js';
+import { rosterOf } from '../_quest/roster.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
@@ -530,6 +532,13 @@ async function questSubject(env, user) {
   const payload = safeJson(a.payload); payload.sheet_status = payload.sheet_status || '';
   return profileOf({ name: user.name, profile: safeJson(user.profile) }, payload);
 }
+/* the quest is only for the models of the catalog (an application code from the roster) */
+async function questEligible(env, user) {
+  const codes = ((await env.DB.prepare("SELECT code FROM apps WHERE phone=? AND kind='apply' AND code IS NOT NULL").bind(user.phone).all()).results || []).map(r => String(r.code).toUpperCase());
+  const roster = rosterOf(env);
+  return codes.some(c => roster.has(c));
+}
+const inRoster = (env, codes) => { const r = rosterOf(env); return String(codes || '').split(',').some(c => r.has(c.trim().toUpperCase())); };
 const doneDays = async (env, uid) => ((await env.DB.prepare('SELECT day FROM quest_log WHERE user_id=?').bind(uid).all()).results || []).map(r => r.day);
 /* sends a quest message and keeps a copy: the owner dashboard shows exactly what each model received */
 async function questSay(env, uid, chat, day, kind, text) {
@@ -538,7 +547,7 @@ async function questSay(env, uid, chat, day, kind, text) {
   return res;
 }
 async function questEnroll(env, user) {
-  if (isStaff(user)) return null;
+  if (isStaff(user) || !(await questEligible(env, user))) return null;
   let q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
   if (q) return q;
   const pf = await questSubject(env, user);
@@ -552,7 +561,7 @@ async function questEnroll(env, user) {
 async function questMe(env, user, wantLang) {
   if (isStaff(user)) return json({ ok: true, enabled: false });
   const q = await questEnroll(env, user);
-  if (!q) return json({ ok: true, enabled: false });
+  if (!q || !(await questEligible(env, user))) return json({ ok: true, enabled: false });
   if (wantLang && ['ru', 'uz', 'en'].includes(wantLang) && wantLang !== q.lang) {   // the cabinet language also becomes the language of the Telegram tasks
     await env.DB.prepare('UPDATE quest SET lang=? WHERE user_id=?').bind(wantLang, user.id).run(); q.lang = wantLang;
   }
@@ -586,9 +595,10 @@ async function questToggle(env, user, status) {
 async function questTick(env, limit = 20) {
   const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.last_sent,q.lang,u.name,u.profile,u.tg_chat,
       (SELECT payload FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) payload,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
       (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=q.user_id) done
     FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND q.last_sent<=?`).bind(TOTAL).all()).results || [];
-  const due = rows.filter(r => r.tg_chat && dayNumber(r.start) > r.last_sent && dayNumber(r.start) >= 2);
+  const due = rows.filter(r => inRoster(env, r.codes) && r.tg_chat && dayNumber(r.start) > r.last_sent && dayNumber(r.start) >= 2);
   let sent = 0;
   for (const r of due.slice(0, limit)) {
     const day = Math.min(dayNumber(r.start), TOTAL + 1);
@@ -614,10 +624,12 @@ async function questTick(env, limit = 20) {
 /* inactivity warnings to the model (after 3, 7 and 14 days) and an alert to the managers; the team decides about cooperation, nothing is automatic */
 async function questWarn(env, limit) {
   const rows = (await env.DB.prepare(`SELECT q.user_id,q.lang,q.created_at,u.name,u.phone,u.tg_chat,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
       (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=q.user_id) last_done
     FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND u.tg_chat IS NOT NULL`).all()).results || [];
   const cand = [];
   for (const r of rows) {
+    if (!inRoster(env, r.codes)) continue;
     const base = r.last_done || r.created_at, idle = Math.floor((NOW() - base) / 86400);
     const days = [...WARN_DAYS].reverse().find(d => idle >= d);
     if (days) cand.push({ ...r, base, idle, days });
@@ -699,13 +711,17 @@ async function ownerOverview(env) {
     };
     mine.push(item); if (r.code) byCode.set(r.code, item);
   }
-  const items = [];
+  const roster = rosterOf(env);
+  let items = [];
   for (const sh of await sheetList(env)) {
     const m = byCode.get(sh.code);
     if (m) { m.sheetStatus = sh.status; if (sh.name) m.name = sh.name; items.push(m); byCode.delete(sh.code); }
     else items.push({ code: sh.code, name: sh.name, phone: '', appStatus: '', sheetStatus: sh.status, uid: 0, inCabinet: false, tg: false, lastSeen: 0, joined: 0, photos: 0, unread: 0, lastMsg: 0, profilePct: 0, quest: null });
   }
   for (const m of mine) if (!items.includes(m)) items.push(m);   // people who exist only on the site
+  items.forEach(i => { i.catalog = roster.has(String(i.code).toUpperCase()); });
+  const all = items, cat = items.filter(i => i.catalog);
+  items = cat;   // numbers and charts are about the catalog models only
   const now = NOW(), t0 = dayStartTs();
   const inQuest = items.filter(i => i.quest);
   const doneToday = await env.DB.prepare('SELECT COUNT(*) c, COUNT(DISTINCT user_id) u FROM quest_log WHERE done_at>=?').bind(t0).first();
@@ -714,13 +730,13 @@ async function ownerOverview(env) {
   items.forEach(i => { const k = i.sheetStatus || '—'; bySheet[k] = (bySheet[k] || 0) + 1; });
   const uq = [...new Map(inQuest.map(i => [i.uid, i.quest])).values()];
   const tot = uq.reduce((a, q) => a + q.day, 0), dn = uq.reduce((a, q) => a + q.doneCount, 0);
-  return json({ ok: true, today: todayYmd(), kpi: {
+  return json({ ok: true, today: todayYmd(), others: all.length - cat.length, kpi: {
     models: items.length, inCabinet: new Set(items.filter(i => i.uid).map(i => i.uid)).size, active7d: new Set(items.filter(i => i.lastSeen > now - 7 * 86400).map(i => i.uid)).size,
     questActive: new Set(inQuest.filter(i => i.quest.status === 'on').map(i => i.uid)).size, questDone: new Set(inQuest.filter(i => i.quest.status === 'done').map(i => i.uid)).size,
     tasksToday: doneToday ? doneToday.c : 0, peopleToday: doneToday ? doneToday.u : 0, avgProgress: tot ? Math.round(dn / tot * 100) : 0,
     risk: new Set(inQuest.filter(i => i.quest.idle >= 7).map(i => i.uid)).size,
     unread: [...new Map(items.filter(i => i.uid).map(i => [i.uid, i.unread])).values()].reduce((a, n) => a + n, 0), newToday: newToday ? newToday.c : 0, bySheet,
-  }, items });
+  }, items: all });
 }
 async function ownerUser(env, id) {
   const u = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(id).first();
@@ -762,7 +778,7 @@ async function myData(env, user) {
   return json({
     ok: true, user: pubUser(user),
     apps: (apps.results || []).map(a => ({ ...a, payload: safeJson(a.payload), statuses: STATUS[a.kind === 'apply' ? 'apply' : 'brief'] })),
-    photos: photos.results || [], unread: unread ? unread.c : 0,
+    photos: photos.results || [], unread: unread ? unread.c : 0, quest: !isStaff(user) && await questEligible(env, user),
   });
 }
 
