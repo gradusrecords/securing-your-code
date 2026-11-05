@@ -20,6 +20,7 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.action === 'lookup') return json_(lookup_(p));
   if (p.action === 'byphone') return json_(byPhone_(p));
+  if (p.action === 'list') return json_(list_(p));
   return json_({ ok: true, service: 'zaya-forms' });
 }
 
@@ -90,6 +91,30 @@ function numbers_(text) {
   });
   (String(text || '').replace(/[^\d]/g, ' ').match(/\d{9,12}/g) || []).forEach(function (d) { out.push(d.slice(-9)); });
   return out;
+}
+
+/**
+ * Список всех заявок: только код, имя и статус (без телефонов и анкет). Тот же ключ API_KEY.
+ */
+function list_(p) {
+  const key = PropertiesService.getScriptProperties().getProperty('API_KEY');
+  if (!key || String(p.key || '') !== key) return { ok: false, error: 'forbidden' };
+  const ss = SpreadsheetApp.openById(SHEET_ID), items = [];
+  [[MODELS_SHEET, 'apply', 'Имя и фамилия', 'Отбор'], [BUSINESS_SHEET, 'brief', 'Имя', 'Статус']].forEach(function (c) {
+    const sh = ss.getSheetByName(c[0]);
+    if (!sh) return;
+    const values = sh.getDataRange().getDisplayValues();
+    let h = 0;
+    for (let i = 0; i < Math.min(5, values.length); i++) if (String(values[i][0]).trim() === 'Заявка №') { h = i; break; }
+    const head = values[h].map(function (x) { return String(x).trim(); });
+    const ni = head.indexOf(c[2]), si = head.indexOf(c[3]);
+    for (let i = h + 1; i < values.length; i++) {
+      const code = String(values[i][0]).trim().toUpperCase();
+      if (!/^[ZB]-[A-Z0-9]{4,8}$/.test(code)) continue;
+      items.push({ kind: c[1], code: code, name: ni >= 0 ? String(values[i][ni]).trim() : '', status: si >= 0 ? String(values[i][si]).trim() : '' });
+    }
+  });
+  return { ok: true, items: items };
 }
 
 function doPost(e) {
