@@ -594,7 +594,18 @@ async function questToggle(env, user, status) {
   return json({ ok: true, status });
 }
 /* sends today's task to everybody who has not got it yet; called every morning by the GitHub Action (and by a manager button) */
+/* catalog models who have an account and a bot chat but never got a quest row (they logged in before the quest existed): start it for them */
+async function questAutoEnroll(env, limit) {
+  const rows = (await env.DB.prepare(`SELECT u.*,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes
+    FROM users u WHERE u.role='user' AND u.tg_chat IS NOT NULL AND NOT EXISTS (SELECT 1 FROM quest q WHERE q.user_id=u.id)`).all()).results || [];
+  const todo = rows.filter(r => inRoster(env, r.codes));
+  let n = 0;
+  for (const u of todo.slice(0, limit)) { if (await questEnroll(env, u)) n++; }
+  return { sent: n, remaining: Math.max(0, todo.length - limit) };
+}
 async function questTick(env, limit = 20) {
+  const en = await questAutoEnroll(env, 8);
   const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.last_sent,q.lang,u.name,u.profile,u.tg_chat,
       (SELECT payload FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) payload,
       (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
@@ -620,9 +631,9 @@ async function questTick(env, limit = 20) {
     }
     sent++;
   }
-  let remaining = Math.max(0, due.length - sent) + an.remaining;
+  let remaining = Math.max(0, due.length - sent) + an.remaining + en.remaining;
   if (!remaining) { const w = await questWarn(env, Math.max(0, limit - sent - an.sent)); sent += w.sent; remaining = w.remaining; }
-  return { sent: sent + an.sent, remaining };
+  return { sent: sent + an.sent + en.sent, remaining };
 }
 /* one-off announcements for every catalog model who has the bot chat: once per person, from the announcement date on */
 async function questAnnounce(env, limit) {
@@ -702,6 +713,7 @@ async function questStatus(req, env) {
   }
   const annMiss = people.filter(r => r.tg_chat && !String(r.msgs || '').includes('announce:')).map(label);
   return json({ ok: true, today: todayYmd(), hourTashkent: hour, models: { inRoster: roster.size, withAccount: people.length, withChat: people.filter(r => r.tg_chat).length, inQuest: active.length, paused: people.filter(r => r.status === 'off').length },
+    withoutQuest: people.filter(r => r.tg_chat && !r.start).map(label),
     slots: out, announcement: { sent: people.filter(r => r.tg_chat).length - annMiss.length, missing: annMiss },
     notLoggedInCodes: [...roster].filter(c => !known.has(c)) });
 }
