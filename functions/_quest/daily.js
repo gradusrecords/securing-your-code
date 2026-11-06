@@ -1,5 +1,5 @@
 /* ZAYA — the daily rhythm of the quest in Telegram (3 languages):
-     morning  08:00  a quote built around today's task + the task itself
+     morning  09:00  a quote built around today's task + the task itself
      lounge   13:00  a lunch "lounge": how to rest a little and cheer up (13:00–14:00)
      nudge    14:00  a gentle focus reminder if the task is not done, a compliment if it is done
      night    22:00  good night + a thought about how to do the task (today's, or tomorrow's if today's is done)

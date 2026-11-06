@@ -1,6 +1,6 @@
 # Runs a few minutes past the hour on purpose: GitHub often skips or delays schedules that start exactly on the hour.
 # The daily rhythm of the quest in Telegram (times are Asia/Tashkent = UTC+5):
-#   08:07  morning  quote + the task of the day (and one-off announcements, inactivity warnings)
+#   09:07  morning  quote + the task of the day (and one-off announcements, inactivity warnings)
 #   13:07  lounge   a lunch break: how to rest a little and cheer up
 #   14:07  nudge    a gentle focus reminder, or a compliment if the task is done
 #   22:07  night    good night and a thought about how to do the task
@@ -9,7 +9,7 @@
 name: Quest daily messages
 on:
   schedule:
-    - cron: '7 3 * * *'
+    - cron: '7 4 * * *'
     - cron: '7 8 * * *'
     - cron: '7 9 * * *'
     - cron: '7 17 * * *'
@@ -34,7 +34,7 @@ jobs:
             '7 8 * * *')  SLOT=lounge ;;
             '7 9 * * *')  SLOT=nudge ;;
             '7 17 * * *') SLOT=night ;;
-            '7 3 * * *')  SLOT=morning ;;
+            '7 4 * * *')  SLOT=morning ;;
             *)            SLOT="${PICKED:-morning}" ;;
           esac
           echo "slot: $SLOT"
