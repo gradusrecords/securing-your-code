@@ -677,7 +677,11 @@ async function questTickKey(req, env) {
   return json({ ok: true, slot, ...(slot === 'morning' ? await questTick(env) : await questSlot(env, slot)) });
 }
 /* the other three messages of the day: lounge (13:00), nudge or compliment (14:00), night (22:00); each is sent once per person per quest day */
+/* local (Tashkent) hours in which each message makes sense; a delayed run outside the window sends nothing (a "lunch lounge" at 21:00 would be odd) */
+const SLOT_HOURS = { lounge: [13, 15], nudge: [14, 17], night: [21, 24] };
 async function questSlot(env, slot, limit = 20) {
+  const hour = new Date(Date.now() + 5 * 3600e3).getUTCHours(), w = SLOT_HOURS[slot];
+  if (w && (hour < w[0] || hour >= w[1]) && !env.SLOT_ANYTIME) return { sent: 0, remaining: 0, skipped: 'outside the time window' };
   const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.lang,u.name,u.profile,u.tg_chat,
       (SELECT payload FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) payload,
       (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
