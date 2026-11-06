@@ -1,17 +1,18 @@
+# Runs a few minutes past the hour on purpose: GitHub often skips or delays schedules that start exactly on the hour.
 # The daily rhythm of the quest in Telegram (times are Asia/Tashkent = UTC+5):
-#   08:00  morning  quote + the task of the day (and one-off announcements, inactivity warnings)
-#   13:00  lounge   a lunch break: how to rest a little and cheer up
-#   14:00  nudge    a gentle focus reminder, or a compliment if the task is done
-#   22:00  night    good night and a thought about how to do the task
+#   08:07  morning  quote + the task of the day (and one-off announcements, inactivity warnings)
+#   13:07  lounge   a lunch break: how to rest a little and cheer up
+#   14:07  nudge    a gentle focus reminder, or a compliment if the task is done
+#   22:07  night    good night and a thought about how to do the task
 # Needs the repository secret QUEST_KEY (the same value as the QUEST_KEY secret in Cloudflare Pages).
 # GitHub may delay a scheduled run by several minutes. Run by hand: Actions -> this workflow -> Run workflow (pick a slot).
 name: Quest daily messages
 on:
   schedule:
-    - cron: '0 3 * * *'
-    - cron: '0 8 * * *'
-    - cron: '0 9 * * *'
-    - cron: '0 17 * * *'
+    - cron: '7 3 * * *'
+    - cron: '7 8 * * *'
+    - cron: '7 9 * * *'
+    - cron: '7 17 * * *'
   workflow_dispatch:
     inputs:
       slot:
@@ -30,10 +31,10 @@ jobs:
           PICKED: ${{ github.event.inputs.slot }}
         run: |
           case "$SCHEDULE" in
-            '0 8 * * *')  SLOT=lounge ;;
-            '0 9 * * *')  SLOT=nudge ;;
-            '0 17 * * *') SLOT=night ;;
-            '0 3 * * *')  SLOT=morning ;;
+            '7 8 * * *')  SLOT=lounge ;;
+            '7 9 * * *')  SLOT=nudge ;;
+            '7 17 * * *') SLOT=night ;;
+            '7 3 * * *')  SLOT=morning ;;
             *)            SLOT="${PICKED:-morning}" ;;
           esac
           echo "slot: $SLOT"
