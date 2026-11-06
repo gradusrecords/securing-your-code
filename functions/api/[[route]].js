@@ -3,11 +3,14 @@
    Bindings:  DB (D1), BUCKET (R2, optional: without it photos are kept in D1)
    Secrets:   BOT_TOKEN, TG_SECRET, PEPPER
    Variables: BOT_USERNAME, MANAGER_PHONES (digits, comma separated), FORM_URL (optional Apps Script), TG_API (dev only)
+   Variable:  ROSTER_CODES (optional, comma separated sheet codes): replaces the built-in list of catalog models who get the quest and the dashboard
    Variable:  OWNER_PHONES (digits, comma separated): the owner sees the dashboard with every model; the owner also has all manager rights
    Secret:    QUEST_KEY (the GitHub Action that sends the morning quest tasks calls POST /api/quest/tick with it)
    Secret:    SHEET_KEY (same value as the API_KEY script property in the Google Apps Script: lets the server read a sheet row by its application code) */
 
-import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs } from '../_quest/quest.js';
+import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
+import { rosterOf } from '../_quest/roster.js';
+import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
@@ -26,6 +29,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS hits(k TEXT PRIMARY KEY, n INTEGER NOT NULL, reset_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS photo_data(photo_id INTEGER PRIMARY KEY, b64 TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS quest(user_id INTEGER PRIMARY KEY, start TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'on', last_sent INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS quest_msgs(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, day INTEGER NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, sent_at INTEGER NOT NULL, ok INTEGER NOT NULL DEFAULT 0)`,
   `CREATE TABLE IF NOT EXISTS quest_log(user_id INTEGER NOT NULL, day INTEGER NOT NULL, done_at INTEGER NOT NULL, note TEXT, PRIMARY KEY(user_id, day))`,
 ];
 let schemaReady = false;
@@ -347,6 +351,16 @@ async function tgWebhook(req, env) {
     }
     return json({ ok: true });
   }
+  if (/^\/(rules|progress)\b/.test(text)) {
+    const u3 = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
+    const q3 = u3 && await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(u3.id).first();
+    if (q3) {
+      const ql = normLang(q3.lang);
+      if (/^\/rules\b/.test(text)) await say(env, chat, rulesText(ql));
+      else { const cur = Math.min(Math.max(dayNumber(q3.start), 1), TOTAL); await say(env, chat, progressText({}, progressOf(await doneDays(env, u3.id), cur), cur, ql)); }
+    } else await say(env, chat, msgs('ru').noQuest);
+    return json({ ok: true });
+  }
   if (/^\/(stop|quest)\b/.test(text)) {
     const u2 = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
     if (u2) {
@@ -519,9 +533,22 @@ async function questSubject(env, user) {
   const payload = safeJson(a.payload); payload.sheet_status = payload.sheet_status || '';
   return profileOf({ name: user.name, profile: safeJson(user.profile) }, payload);
 }
+/* the quest is only for the models of the catalog (an application code from the roster) */
+async function questEligible(env, user) {
+  const codes = ((await env.DB.prepare("SELECT code FROM apps WHERE phone=? AND kind='apply' AND code IS NOT NULL").bind(user.phone).all()).results || []).map(r => String(r.code).toUpperCase());
+  const roster = rosterOf(env);
+  return codes.some(c => roster.has(c));
+}
+const inRoster = (env, codes) => { const r = rosterOf(env); return String(codes || '').split(',').some(c => r.has(c.trim().toUpperCase())); };
 const doneDays = async (env, uid) => ((await env.DB.prepare('SELECT day FROM quest_log WHERE user_id=?').bind(uid).all()).results || []).map(r => r.day);
+/* sends a quest message and keeps a copy: the owner dashboard shows exactly what each model received */
+async function questSay(env, uid, chat, day, kind, text) {
+  const res = await say(env, chat, text);
+  try { await env.DB.prepare('INSERT INTO quest_msgs(user_id,day,kind,body,sent_at,ok) VALUES(?,?,?,?,?,?)').bind(uid, day, kind, text, NOW(), res && res.ok ? 1 : 0).run(); } catch { /* the log must never block the delivery */ }
+  return res;
+}
 async function questEnroll(env, user) {
-  if (isStaff(user)) return null;
+  if (isStaff(user) || !(await questEligible(env, user))) return null;
   let q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
   if (q) return q;
   const pf = await questSubject(env, user);
@@ -529,13 +556,13 @@ async function questEnroll(env, user) {
   const lang = normLang((await env.DB.prepare("SELECT lang FROM apps WHERE phone=? AND kind='apply' ORDER BY id DESC LIMIT 1").bind(user.phone).first() || {}).lang);
   await env.DB.prepare('INSERT OR IGNORE INTO quest(user_id,start,status,last_sent,created_at,lang) VALUES(?,?,?,?,?,?)').bind(user.id, todayYmd(), 'on', 1, NOW(), lang).run();
   q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
-  if (user.tg_chat) await say(env, user.tg_chat, msgs(lang).enroll + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang }));
+  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n' + msgs(lang).principle + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang, quote: quoteFor(1, lang) }));
   return q;
 }
 async function questMe(env, user, wantLang) {
   if (isStaff(user)) return json({ ok: true, enabled: false });
   const q = await questEnroll(env, user);
-  if (!q) return json({ ok: true, enabled: false });
+  if (!q || !(await questEligible(env, user))) return json({ ok: true, enabled: false });
   if (wantLang && ['ru', 'uz', 'en'].includes(wantLang) && wantLang !== q.lang) {   // the cabinet language also becomes the language of the Telegram tasks
     await env.DB.prepare('UPDATE quest SET lang=? WHERE user_id=?').bind(wantLang, user.id).run(); q.lang = wantLang;
   }
@@ -547,7 +574,7 @@ async function questMe(env, user, wantLang) {
   const tasks = [];
   for (let d = 1; d <= cur; d++) tasks.push({ ...taskFor(d, pf, lang), done: !!byDay[d], doneAt: byDay[d] ? byDay[d].done_at : null, note: byDay[d] ? byDay[d].note || '' : '' });
   const prog = progressOf(log.map(l => l.day), cur);
-  return json({ ok: true, enabled: true, lang, status: q.status, day: cur, total: TOTAL, finished: day > TOTAL, tasks, progress: prog, levels: LEVELS.map(l => l[1]) });
+  return json({ ok: true, enabled: true, lang, rules: rulesOf(lang), status: q.status, day: cur, total: TOTAL, finished: day > TOTAL, tasks, progress: prog, levels: LEVELS.map(l => l[1]) });
 }
 async function questDone(req, env, user) {
   const d = await body(req, 2000);
@@ -569,11 +596,13 @@ async function questToggle(env, user, status) {
 async function questTick(env, limit = 20) {
   const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.last_sent,q.lang,u.name,u.profile,u.tg_chat,
       (SELECT payload FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) payload,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
       (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=q.user_id) done
     FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND q.last_sent<=?`).bind(TOTAL).all()).results || [];
-  const due = rows.filter(r => r.tg_chat && dayNumber(r.start) > r.last_sent && dayNumber(r.start) >= 2);
+  const due = rows.filter(r => inRoster(env, r.codes) && r.tg_chat && dayNumber(r.start) > r.last_sent && dayNumber(r.start) >= 2);
+  const an = await questAnnounce(env, limit);
   let sent = 0;
-  for (const r of due.slice(0, limit)) {
+  for (const r of due.slice(0, Math.max(0, limit - an.sent))) {
     const day = Math.min(dayNumber(r.start), TOTAL + 1);
     const claim = await env.DB.prepare('UPDATE quest SET last_sent=? WHERE user_id=? AND last_sent<?').bind(day, r.user_id, day).run();
     if (!claim.meta || claim.meta.changes !== 1) continue;
@@ -581,20 +610,94 @@ async function questTick(env, limit = 20) {
     const done = String(r.done || '').split(',').filter(Boolean).map(Number);
     if (day > TOTAL) {
       const pr = progressOf(done, TOTAL);
-      await say(env, r.tg_chat, finalText(pf, pr, normLang(r.lang)));
+      await questSay(env, r.user_id, r.tg_chat, day, 'final', finalText(pf, pr, normLang(r.lang)));
       await env.DB.prepare("UPDATE quest SET status='done' WHERE user_id=?").bind(r.user_id).run();
     } else {
       const missed = day - 1 - done.filter(x => x < day).length;
       const lg = normLang(r.lang);
-      await say(env, r.tg_chat, taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg }));
+      await questSay(env, r.user_id, r.tg_chat, day, 'task', taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg, quote: quoteFor(day, lg) }));
     }
     sent++;
   }
-  return { sent, remaining: Math.max(0, due.length - sent) };
+  let remaining = Math.max(0, due.length - sent) + an.remaining;
+  if (!remaining) { const w = await questWarn(env, Math.max(0, limit - sent - an.sent)); sent += w.sent; remaining = w.remaining; }
+  return { sent: sent + an.sent, remaining };
 }
+/* one-off announcements for every catalog model who has the bot chat: once per person, from the announcement date on */
+async function questAnnounce(env, limit) {
+  const live = ANNOUNCEMENTS.filter(a => todayYmd() >= (env.ANNOUNCE_FROM || a.date));   // ANNOUNCE_FROM: optional override of the date (YYYY-MM-DD)
+  if (!live.length) return { sent: 0, remaining: 0 };
+  const users = (await env.DB.prepare(`SELECT u.id,u.name,u.tg_chat,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
+      (SELECT lang FROM quest q WHERE q.user_id=u.id) qlang,
+      (SELECT lang FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) alang,
+      (SELECT group_concat(kind) FROM quest_msgs m WHERE m.user_id=u.id AND m.kind LIKE 'announce:%') got
+    FROM users u WHERE u.tg_chat IS NOT NULL AND u.role='user'`).all()).results || [];
+  let sent = 0, left = 0;
+  for (const u of users) {
+    if (!inRoster(env, u.codes)) continue;
+    for (const a of live) {
+      if (String(u.got || '').split(',').includes('announce:' + a.id)) continue;
+      if (sent >= limit) { left++; continue; }
+      await questSay(env, u.id, u.tg_chat, 0, 'announce:' + a.id, announceText(a.id, firstNameOf(u.name), normLang(u.qlang || u.alang)));
+      sent++;
+    }
+  }
+  return { sent, remaining: left };
+}
+/* inactivity warnings to the model (after 3, 7 and 14 days) and an alert to the managers; the team decides about cooperation, nothing is automatic */
+async function questWarn(env, limit) {
+  const rows = (await env.DB.prepare(`SELECT q.user_id,q.lang,q.created_at,u.name,u.phone,u.tg_chat,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
+      (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=q.user_id) last_done
+    FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND u.tg_chat IS NOT NULL`).all()).results || [];
+  const cand = [];
+  for (const r of rows) {
+    if (!inRoster(env, r.codes)) continue;
+    const base = r.last_done || r.created_at, idle = Math.floor((NOW() - base) / 86400);
+    const days = [...WARN_DAYS].reverse().find(d => idle >= d);
+    if (days) cand.push({ ...r, base, idle, days });
+  }
+  let sent = 0, left = 0;
+  for (const r of cand) {
+    const done = await env.DB.prepare("SELECT 1 x FROM quest_msgs WHERE user_id=? AND kind=? AND sent_at>?").bind(r.user_id, 'warn' + r.days, r.base).first();
+    if (done) continue;
+    if (sent >= limit) { left++; continue; }
+    await questSay(env, r.user_id, r.tg_chat, 0, 'warn' + r.days, warnText(r.days, firstNameOf(r.name), normLang(r.lang)));
+    if (r.days >= 7) await notifyManagers(env, staffRiskText(r.name, r.phone, r.idle, r.days));
+    sent++;
+  }
+  return { sent, remaining: left };
+}
+const firstNameOf = full => (profileOf({ name: full, profile: {} }, {}).name) || '';
 async function questTickKey(req, env) {
   if (!env.QUEST_KEY || !same(req.headers.get('x-quest-key') || '', env.QUEST_KEY)) return fail(403, 'forbidden');
-  return json({ ok: true, ...(await questTick(env)) });
+  const slot = new URL(req.url).searchParams.get('slot') || 'morning';
+  if (slot !== 'morning' && !['lounge', 'nudge', 'night'].includes(slot)) return fail(400, 'bad slot');
+  return json({ ok: true, slot, ...(slot === 'morning' ? await questTick(env) : await questSlot(env, slot)) });
+}
+/* the other three messages of the day: lounge (13:00), nudge or compliment (14:00), night (22:00); each is sent once per person per quest day */
+async function questSlot(env, slot, limit = 20) {
+  const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.lang,u.name,u.profile,u.tg_chat,
+      (SELECT payload FROM apps a WHERE a.phone=u.phone AND a.kind='apply' ORDER BY a.id DESC LIMIT 1) payload,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
+      (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=q.user_id) done,
+      (SELECT group_concat(day) FROM quest_msgs m WHERE m.user_id=q.user_id AND m.kind=?) got
+    FROM quest q JOIN users u ON u.id=q.user_id WHERE q.status='on' AND u.tg_chat IS NOT NULL`).bind(slot).all()).results || [];
+  let sent = 0, left = 0;
+  for (const r of rows) {
+    const day = dayNumber(r.start);
+    if (day < 1 || day > TOTAL || !inRoster(env, r.codes)) continue;
+    if (String(r.got || '').split(',').map(Number).includes(day)) continue;
+    if (sent >= limit) { left++; continue; }
+    const lang = normLang(r.lang), pf = profileOf({ name: r.name, profile: safeJson(r.profile) }, safeJson(r.payload));
+    const done = String(r.done || '').split(',').filter(Boolean).map(Number).includes(day);
+    const task = taskFor(day, pf, lang), nextTask = day < TOTAL ? taskFor(day + 1, pf, lang) : null;
+    const text = slot === 'lounge' ? loungeText(day, lang) : slot === 'nudge' ? nudgeText({ day, task, done, name: pf.name, lang }) : nightText({ day, task, nextTask, done, name: pf.name, lang });
+    await questSay(env, r.user_id, r.tg_chat, day, slot, text);
+    sent++;
+  }
+  return { sent, remaining: left };
 }
 async function adminQuest(env) {
   const rows = (await env.DB.prepare(`SELECT q.user_id,q.start,q.status,u.name,u.phone,
@@ -634,7 +737,7 @@ const profilePct = p => Math.round(PCT_KEYS.filter(k => p && p[k]).length / PCT_
 const dayStartTs = () => Math.floor(Date.parse(todayYmd() + 'T00:00:00Z') / 1000) - 5 * 3600;
 async function ownerOverview(env) {
   const rows = (await env.DB.prepare(`SELECT a.id app_id,a.code,a.status app_status,a.name,a.phone,a.created_at app_created,
-      u.id uid,u.last_seen,u.tg_chat,u.profile,u.created_at user_created,q.start qstart,q.status qstatus,
+      u.id uid,u.last_seen,u.tg_chat,u.profile,u.created_at user_created,q.start qstart,q.status qstatus,q.lang qlang,q.created_at qcreated,
       (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=u.id) done,
       (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=u.id) last_done,
       (SELECT COUNT(*) FROM photos p WHERE p.user_id=u.id) photos,
@@ -653,17 +756,21 @@ async function ownerOverview(env) {
       code: r.code || '', name: r.name || '', phone: r.phone, appStatus: r.app_status, sheetStatus: '', uid: r.uid || 0, inCabinet: !!r.uid, tg: !!r.tg_chat,
       lastSeen: r.last_seen || 0, joined: r.user_created || 0, photos: r.photos || 0, unread: r.unread || 0, lastMsg: r.last_msg || 0,
       profilePct: r.uid ? profilePct(safeJson(r.profile)) : 0,
-      quest: r.qstart ? { status: r.qstatus, day, lastDone: r.last_done || 0, ...progressOf(done, day) } : null,
+      quest: r.qstart ? { status: r.qstatus, day, lastDone: r.last_done || 0, todayTitle: (taskFor(day, { dirs: [], level: 'new', gender: '', minor: false, noInsta: false, noPortfolio: false }, normLang(r.qlang)) || {}).title || '', todayDone: done.includes(day), idle: r.qstatus === 'on' ? Math.floor((NOW() - (r.last_done || r.qcreated || NOW())) / 86400) : 0, ...progressOf(done, day) } : null,
     };
     mine.push(item); if (r.code) byCode.set(r.code, item);
   }
-  const items = [];
+  const roster = rosterOf(env);
+  let items = [];
   for (const sh of await sheetList(env)) {
     const m = byCode.get(sh.code);
     if (m) { m.sheetStatus = sh.status; if (sh.name) m.name = sh.name; items.push(m); byCode.delete(sh.code); }
     else items.push({ code: sh.code, name: sh.name, phone: '', appStatus: '', sheetStatus: sh.status, uid: 0, inCabinet: false, tg: false, lastSeen: 0, joined: 0, photos: 0, unread: 0, lastMsg: 0, profilePct: 0, quest: null });
   }
   for (const m of mine) if (!items.includes(m)) items.push(m);   // people who exist only on the site
+  items.forEach(i => { i.catalog = roster.has(String(i.code).toUpperCase()); });
+  const all = items, cat = items.filter(i => i.catalog);
+  items = cat;   // numbers and charts are about the catalog models only
   const now = NOW(), t0 = dayStartTs();
   const inQuest = items.filter(i => i.quest);
   const doneToday = await env.DB.prepare('SELECT COUNT(*) c, COUNT(DISTINCT user_id) u FROM quest_log WHERE done_at>=?').bind(t0).first();
@@ -672,12 +779,13 @@ async function ownerOverview(env) {
   items.forEach(i => { const k = i.sheetStatus || '—'; bySheet[k] = (bySheet[k] || 0) + 1; });
   const uq = [...new Map(inQuest.map(i => [i.uid, i.quest])).values()];
   const tot = uq.reduce((a, q) => a + q.day, 0), dn = uq.reduce((a, q) => a + q.doneCount, 0);
-  return json({ ok: true, today: todayYmd(), kpi: {
+  return json({ ok: true, today: todayYmd(), others: all.length - cat.length, kpi: {
     models: items.length, inCabinet: new Set(items.filter(i => i.uid).map(i => i.uid)).size, active7d: new Set(items.filter(i => i.lastSeen > now - 7 * 86400).map(i => i.uid)).size,
     questActive: new Set(inQuest.filter(i => i.quest.status === 'on').map(i => i.uid)).size, questDone: new Set(inQuest.filter(i => i.quest.status === 'done').map(i => i.uid)).size,
     tasksToday: doneToday ? doneToday.c : 0, peopleToday: doneToday ? doneToday.u : 0, avgProgress: tot ? Math.round(dn / tot * 100) : 0,
+    risk: new Set(inQuest.filter(i => i.quest.idle >= 7).map(i => i.uid)).size,
     unread: [...new Map(items.filter(i => i.uid).map(i => [i.uid, i.unread])).values()].reduce((a, n) => a + n, 0), newToday: newToday ? newToday.c : 0, bySheet,
-  }, items });
+  }, items: all });
 }
 async function ownerUser(env, id) {
   const u = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(id).first();
@@ -686,15 +794,18 @@ async function ownerUser(env, id) {
   const q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(id).first();
   const log = (await env.DB.prepare('SELECT day,done_at,note FROM quest_log WHERE user_id=? ORDER BY day').bind(id).all()).results || [];
   const msgs2 = ((await env.DB.prepare('SELECT from_role,body,created_at FROM messages WHERE thread=? ORDER BY id DESC LIMIT 30').bind(id).all()).results || []).reverse();
+  const sent = (await env.DB.prepare('SELECT day,kind,body,sent_at,ok FROM quest_msgs WHERE user_id=? ORDER BY id DESC LIMIT 40').bind(id).all()).results || [];
   const photos = ((await env.DB.prepare('SELECT id FROM photos WHERE user_id=? ORDER BY id DESC LIMIT 12').bind(id).all()).results || []).map(r => r.id);
   const day = q ? Math.min(Math.max(dayNumber(q.start), 1), TOTAL) : 0;
-  const titles = q ? Array.from({ length: day }, (_, i) => { const t = taskFor(i + 1, { dirs: [], level: 'new', gender: '', minor: false, noInsta: false, noPortfolio: false }, normLang(q.lang)); return t.title; }) : [];
+  const pf = q ? await questSubject(env, u) : null, ql = q ? normLang(q.lang) : 'ru', byDay = Object.fromEntries(log.map(l => [l.day, l]));
+  const tasks = pf ? Array.from({ length: day }, (_, i) => ({ ...taskFor(i + 1, pf, ql), done: !!byDay[i + 1], doneAt: byDay[i + 1] ? byDay[i + 1].done_at : null, note: byDay[i + 1] ? byDay[i + 1].note || '' : '' })) : [];
+  const titles = tasks.map(t => t.title);
   return json({ ok: true,
     user: { id: u.id, name: u.name || '', phone: u.phone, role: u.role, lastSeen: u.last_seen || 0, joined: u.created_at, tg: !!u.tg_chat },
     profile: safeJson(u.profile),
     apps: apps.map(a => ({ id: a.id, kind: a.kind, code: a.code || '', status: a.status, created: a.created_at, payload: safeJson(a.payload) })),
-    quest: q ? { status: q.status, start: q.start, day, lang: normLang(q.lang), log, titles, ...progressOf(log.map(l => l.day), day) } : null,
-    messages: msgs2, photos });
+    quest: q ? { status: q.status, start: q.start, day, lang: normLang(q.lang), log, titles, tasks, ...progressOf(log.map(l => l.day), day) } : null,
+    messages: msgs2, photos, sent });
 }
 async function ownerFeed(env) {
   const ev = [];
@@ -702,6 +813,7 @@ async function ownerFeed(env) {
   add('done', await env.DB.prepare('SELECT l.done_at t,u.name,u.id uid,l.day d,l.note FROM quest_log l JOIN users u ON u.id=l.user_id ORDER BY l.done_at DESC LIMIT 40').all());
   add('msg', await env.DB.prepare("SELECT m.created_at t,u.name,u.id uid,substr(m.body,1,140) note FROM messages m JOIN users u ON u.id=m.thread WHERE m.from_role='user' ORDER BY m.id DESC LIMIT 40").all());
   add('app', await env.DB.prepare('SELECT a.created_at t,a.name,u.id uid,a.kind note FROM apps a LEFT JOIN users u ON u.phone=a.phone ORDER BY a.id DESC LIMIT 30').all());
+  add('sent', await env.DB.prepare('SELECT m.sent_at t,u.name,u.id uid,m.day d,m.kind note FROM quest_msgs m JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 40').all());
   add('seen', await env.DB.prepare("SELECT u.last_seen t,u.name,u.id uid FROM users u WHERE u.last_seen IS NOT NULL AND u.role='user' ORDER BY u.last_seen DESC LIMIT 25").all());
   ev.sort((a, b) => b.t - a.t);
   return json({ ok: true, events: ev.slice(0, 70) });
@@ -715,7 +827,7 @@ async function myData(env, user) {
   return json({
     ok: true, user: pubUser(user),
     apps: (apps.results || []).map(a => ({ ...a, payload: safeJson(a.payload), statuses: STATUS[a.kind === 'apply' ? 'apply' : 'brief'] })),
-    photos: photos.results || [], unread: unread ? unread.c : 0,
+    photos: photos.results || [], unread: unread ? unread.c : 0, quest: !isStaff(user) && await questEligible(env, user),
   });
 }
 

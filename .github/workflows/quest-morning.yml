@@ -1,20 +1,45 @@
-# Every morning at 08:00 Tashkent (03:00 UTC) asks the site to send today's quest task to every model in Telegram.
+# Runs a few minutes past the hour on purpose: GitHub often skips or delays schedules that start exactly on the hour.
+# The daily rhythm of the quest in Telegram (times are Asia/Tashkent = UTC+5):
+#   08:07  morning  quote + the task of the day (and one-off announcements, inactivity warnings)
+#   13:07  lounge   a lunch break: how to rest a little and cheer up
+#   14:07  nudge    a gentle focus reminder, or a compliment if the task is done
+#   22:07  night    good night and a thought about how to do the task
 # Needs the repository secret QUEST_KEY (the same value as the QUEST_KEY secret in Cloudflare Pages).
-name: Quest morning tasks
+# GitHub may delay a scheduled run by several minutes. Run by hand: Actions -> this workflow -> Run workflow (pick a slot).
+name: Quest daily messages
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '7 3 * * *'
+    - cron: '7 8 * * *'
+    - cron: '7 9 * * *'
+    - cron: '7 17 * * *'
   workflow_dispatch:
+    inputs:
+      slot:
+        description: 'Which message to send now'
+        type: choice
+        options: [morning, lounge, nudge, night]
+        default: morning
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
-      - name: Send today's tasks
+      - name: Send the messages of this slot
         env:
           QUEST_KEY: ${{ secrets.QUEST_KEY }}
+          SCHEDULE: ${{ github.event.schedule }}
+          PICKED: ${{ github.event.inputs.slot }}
         run: |
+          case "$SCHEDULE" in
+            '7 8 * * *')  SLOT=lounge ;;
+            '7 9 * * *')  SLOT=nudge ;;
+            '7 17 * * *') SLOT=night ;;
+            '7 3 * * *')  SLOT=morning ;;
+            *)            SLOT="${PICKED:-morning}" ;;
+          esac
+          echo "slot: $SLOT"
           for i in $(seq 1 20); do
-            out=$(curl -sS -m 60 -X POST https://zaya.uz/api/quest/tick -H 'x-zaya: 1' -H "x-quest-key: $QUEST_KEY")
+            out=$(curl -sS -m 60 -X POST "https://zaya.uz/api/quest/tick?slot=$SLOT" -H 'x-zaya: 1' -H "x-quest-key: $QUEST_KEY")
             echo "$out"
             echo "$out" | grep -q '"ok":true' || exit 1
             echo "$out" | grep -q '"remaining":0' && exit 0

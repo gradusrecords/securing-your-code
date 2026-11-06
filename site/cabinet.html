@@ -191,6 +191,7 @@ const I={
   qNext:["до следующего уровня","keyingi darajagacha","to next level"],
   lv0:["Новичок","Boshlovchi","Rookie"],lv1:["Стартер","Starter","Starter"],lv2:["Практик","Amaliyotchi","Practitioner"],lv3:["Профи","Pro","Pro"],lv4:["Звезда ZAYA","ZAYA yulduzi","ZAYA Star"],
   qFor:["Для тебя","Siz uchun","For you"],
+  qRules:["10 баллов за задание · +20 за неделю · +50 за 5 дней подряд · +50 за все 30 дней","Topshiriq uchun 10 ball · hafta uchun +20 · ketma-ket 5 kun uchun +50 · 30 kun uchun +50","10 points per task · +20 per week · +50 for 5 days in a row · +50 for all 30 days"],
   qNote:["Заметка (необязательно)","Eslatma (ixtiyoriy)","Note (optional)"],
   qDone:["Выполнено ✓","Bajarildi ✓","Done ✓"],qUndo:["Снять отметку","Belgini olib tashlash","Undo"],
   qLocked:["Это задание откроется позже","Bu topshiriq keyinroq ochiladi","This task unlocks later"],
@@ -199,7 +200,8 @@ const I={
   qStop:["Остановить задания","Topshiriqlarni to‘xtatish","Pause the tasks"],qGo:["Продолжить квест","Kvestni davom ettirish","Resume the quest"],
   qPaused:["Задания на паузе: утренние сообщения не приходят.","Topshiriqlar to‘xtatilgan: ertalabki xabarlar kelmaydi.","Tasks are paused: no morning messages."],
   qFin:["Квест завершён! Напишите менеджеру во вкладке «Чат».","Kvest yakunlandi! «Chat» bo‘limida menejerga yozing.","The quest is finished! Write to the manager in the “Chat” tab."],
-  qNone:["Квест откроется после заявки модели.","Kvest model arizasidan keyin ochiladi.","The quest opens after a model application."],
+  qNone:["Квест пока доступен моделям из каталога агентства.","Kvest hozircha agentlik katalogidagi modellar uchun.","The quest is currently open to the models of the agency catalog."],
+  fOthers:["Остальные заявки","Boshqa arizalar","Other applications"],
   qTg:["Задания приходят и в Telegram каждое утро в 08:00. Остановить: /stop","Topshiriqlar har kuni ertalab 08:00 da Telegram’ga ham keladi. To‘xtatish: /stop","Tasks also arrive in Telegram every morning at 08:00. Stop: /stop"],
   qPeople:["Участники квеста","Kvest ishtirokchilari","Quest participants"],
   qSendNow:["Отправить сегодняшние задания сейчас","Bugungi topshiriqlarni hozir yuborish","Send today’s tasks now"],
@@ -210,6 +212,7 @@ const I={
   dTitle:["Дашборд владельца","Egasi dashbordi","Owner dashboard"],
   kModels:["Моделей","Modellar","Models"],kCab:["В кабинете","Kabinetda","In the cabinet"],kActive:["Заходили за 7 дней","7 kunda kirgan","Active in 7 days"],
   kQuest:["В квесте","Kvestda","In the quest"],kToday:["Заданий сегодня","Bugungi topshiriqlar","Tasks today"],kAvg:["Средний прогресс","O‘rtacha progress","Average progress"],
+  kRisk:["Зона риска (7+ дней)","Xavf zonasi (7+ kun)","At risk (7+ days)"],fRisk:["Зона риска","Xavf zonasi","At risk"],qRulesT:["Правила игры","O‘yin qoidalari","Rules of the game"],qMeaning:["Что значат уровни","Darajalar nimani anglatadi","What the levels mean"],
   kUnread:["Непрочитанных","O‘qilmagan","Unread"],kNew:["Новых заявок сегодня","Bugungi yangi arizalar","New applications today"],
   fSearch:["Поиск: имя, код, телефон","Qidiruv: ism, kod, telefon","Search: name, code, phone"],fAll:["Все","Hammasi","All"],fNoCab:["Не заходили","Kirmaganlar","Not logged in"],
   fIdle:["Нет заданий 3+ дня","3+ kun topshiriq yo‘q","No tasks for 3+ days"],fUnread:["Есть непрочитанное","O‘qilmagani bor","Has unread"],fStatus:["Статус в таблице","Jadvaldagi status","Sheet status"],
@@ -225,9 +228,14 @@ const I={
   fTitle:["Лента активности","Faollik lentasi","Activity feed"],
   evDone:["{name}: день {d} выполнен","{name}: {d}-kun bajarildi","{name}: day {d} done"],evMsg:["{name} пишет: {note}","{name} yozdi: {note}","{name} wrote: {note}"],
   evApp:["Новая заявка: {name}","Yangi ariza: {name}","New application: {name}"],evSeen:["{name} в кабинете","{name} kabinetda","{name} is in the cabinet"],
+  dSent:["Отправлено модели в Telegram","Modelga Telegram’da yuborilgan","Sent to the model in Telegram"],dNoSent:["Пока ничего не отправлялось.","Hozircha hech narsa yuborilmagan.","Nothing has been sent yet."],dFailed:["не доставлено","yetkazilmadi","not delivered"],
+  evSent:["{name}: отправлено задание дня {d}","{name}: {d}-kun topshirig‘i yuborildi","{name}: day {d} task sent"],
+  kMorning:["утро","ertalab","morning"],kTask:["утро","ertalab","morning"],kEnroll:["старт","start","start"],kFinal:["финал","final","finale"],kLounge:["лаунж 13:00","lounj 13:00","lounge 13:00"],kNudge:["14:00","14:00","14:00"],kNight:["ночь","tun","night"],kWarn7:["предупреждение","ogohlantirish","warning"],kAnnounce:["объявление","e’lon","announcement"],
+  evNotice:["{name}: отправлено уведомление","{name}: xabarnoma yuborildi","{name}: a notice was sent"],
   rfsh:["Обновить","Yangilash","Refresh"],noItems:["Никого не найдено.","Hech kim topilmadi.","Nobody found."],
   ownerRole:["Владелец","Egasi","Owner"],
   pDays:["дн.","kun","d"],
+  dTasks:["Задания этой модели","Ushbu model topshiriqlari","This model’s tasks"],dSheetOnly:["Карточка из таблицы","Jadvaldan karta","Card from the sheet"],dCode:["Номер заявки","Ariza raqami","Application code"],dSheetSt:["Статус в таблице","Jadvaldagi status","Sheet status"],dNoteLbl:["Заметка модели","Model eslatmasi","Model’s note"],
   kApply:["Анкета модели","Model anketasi","Model application"],
   kBrief:["Бриф бизнеса","Biznes brifi","Business brief"],
   sent:["Отправлена","Yuborilgan","Submitted"],
@@ -599,6 +607,11 @@ async function viewQuest(){
     const stopBtn=h("button",{class:"btn sm",type:"button",onclick:async()=>{const rr=await api("POST","quest/"+(q.status==="on"?"stop":"start"));if(rr.data.ok){q.status=rr.data.status;draw()}}},q.status==="on"?t("qStop"):t("qGo"));
     wrap.append(h("div",{class:"card"},h("h2",{class:"t"},t("qTitle")),stats(),dots,q.finished?h("p",{class:"msg ok"},t("qFin")):null,null),
       card,
+      h("p",{class:"note",style:"margin-top:14px"},"⭐ "+t("qRules")),
+      q.rules?h("details",{class:"card",style:"margin-top:14px"},h("summary",null,t("qRulesT")),
+        q.rules.blocks.map(b=>h("div",{style:"margin-bottom:14px"},h("div",{class:"sub"},b.h),h("p",{style:"margin:6px 0 0;color:#D9D2C4;font-size:14px;line-height:1.6"},b.t))),
+        h("div",{class:"sub",style:"margin-top:8px"},t("qMeaning")),
+        h("ul",{style:"margin:8px 0 0;padding-left:18px;color:#D9D2C4;font-size:14px;line-height:1.7"},q.rules.meaning.map((m,i)=>h("li",null,t("lv"+i)+": "+m)))):null,
       h("div",{class:"row",style:"margin-top:18px"},stopBtn,h("span",{class:"note"},q.status==="on"?t("qTg"):t("qPaused"))));
   };
   draw();return wrap;
@@ -617,7 +630,7 @@ async function viewAdminQuest(){
 }
 
 /* ---------- owner dashboard ---------- */
-state.dash={q:"",f:"all",status:"",sort:"act",open:0};
+state.dash={q:"",f:"all",status:"",sort:"act",open:0,sheet:null,others:false};
 async function viewDash(){
   const wrap=h("div",null);
   const ds=state.dash;
@@ -626,11 +639,13 @@ async function viewDash(){
     const [a,b]=await Promise.all([api("GET","owner/overview"),api("GET","owner/feed")]);
     if(a.data.ok)data=a.data;if(b.data.ok)feed=b.data.events;
   };
-  const quiet=i=>i.quest&&i.quest.status==="on"&&(Date.now()/1000-(i.quest.lastDone||i.joined||0))>3*86400;
+  const quiet=i=>i.quest&&i.quest.status==="on"&&i.quest.idle>=3;
+  const risk=i=>i.quest&&i.quest.status==="on"&&i.quest.idle>=7;
   const dotOf=i=>!i.inCabinet?"":(Date.now()/1000-i.lastSeen<86400*2?"g":Date.now()/1000-i.lastSeen<86400*7?"y":"r");
   const draw=()=>{
     clear(wrap);
     if(!data){wrap.append(h("div",{class:"empty"},t("err")));return}
+    if(ds.sheet){const x=ds.sheet;wrap.append(h("button",{class:"btn sm",type:"button",onclick:()=>{ds.sheet=null;draw()}},t("dBack")),h("div",{class:"card",style:"margin-top:14px"},h("div",{class:"sub"},t("dSheetOnly")),h("h2",{class:"t"},x.name||"—"),h("dl",{class:"kv"},h("dt",null,t("dCode")),h("dd",null,x.code||"—"),h("dt",null,t("dSheetSt")),h("dd",null,x.sheetStatus||"—")),h("p",{class:"note"},t("dNotIn"))));return}
     if(ds.open){wrap.append(h("div",{class:"spin"},"…"));openDetail();return}
     const k=data.kpi;
     const kp=(n,l)=>h("div",{class:"kpi"},h("b",null,String(n)),h("span",null,l));
@@ -638,9 +653,11 @@ async function viewDash(){
     let items=data.items.filter(i=>{
       const q=ds.q.trim().toLowerCase();
       if(q&&!(i.name+" "+i.code+" "+i.phone).toLowerCase().includes(q))return false;
+      if(!ds.others&&!i.catalog)return false;
       if(ds.status&&(i.sheetStatus||"—")!==ds.status)return false;
       if(ds.f==="nocab")return !i.inCabinet;
       if(ds.f==="idle")return quiet(i);
+      if(ds.f==="risk")return risk(i);
       if(ds.f==="unread")return i.unread>0;
       return true;
     });
@@ -650,28 +667,28 @@ async function viewDash(){
     const search=h("input",{class:"inp",type:"search",placeholder:t("fSearch"),"aria-label":t("fSearch"),value:ds.q,oninput:e=>{ds.q=e.target.value;const pos=e.target.selectionStart;draw();const n=wrap.querySelector("input[type=search]");if(n){n.focus();n.setSelectionRange(pos,pos)}}});
     const sel=(opts,val,on,label)=>h("select",{class:"inp","aria-label":label,onchange:e=>{on(e.target.value);draw()}},opts.map(([v,l])=>h("option",{value:v,selected:v===val},l)));
     const head=h("div",{class:"dl hd"},h("div",null,t("cModel")),h("div",null,t("cCab")),h("div",null,t("fStatus")),h("div",null,t("cQuest")),h("div",null,t("cChat")),h("div",null,t("cProf")));
-    const rows=items.map(i=>h("button",{class:"dl row2",type:"button",onclick:()=>{if(i.uid){ds.open=i.uid;draw()}}},
+    const rows=items.map(i=>h("button",{class:"dl row2",type:"button",onclick:()=>{if(i.uid){ds.open=i.uid;draw()}else{ds.sheet=i;draw()}}},
       h("div",null,i.name||"—",h("small",null,(i.code||"")+(i.phone?" · +"+i.phone:""))),
       h("div",null,i.inCabinet?h("span",null,h("span",{class:"dot "+dotOf(i)}),ago(i.lastSeen)):h("span",{style:"color:var(--mute)"},t("never"))),
       h("div",null,i.sheetStatus||"—",i.appStatus&&i.inCabinet&&STATUS[i.appStatus]?h("small",null,STATUS[i.appStatus][LI]):null),
-      h("div",null,i.quest?h("span",null,t("qDay")+" "+i.quest.day+"/30 · ✓"+i.quest.doneCount,h("small",null,i.quest.points+" · "+t("lv"+i.quest.levelIdx)+(quiet(i)?" ⚠":"")),h("div",{class:"bar"},h("i",{style:"width:"+Math.round(i.quest.doneCount/30*100)+"%"}))):h("span",{style:"color:var(--mute)"},"—")),
+      h("div",null,i.quest?h("span",null,t("qDay")+" "+i.quest.day+"/30 · ✓"+i.quest.doneCount,h("small",null,(i.quest.status==="done"?"":(i.quest.todayDone?"✓ ":"")+i.quest.todayTitle+" · ")+i.quest.points+" · "+t("lv"+i.quest.levelIdx)+(risk(i)?" 🔴 "+i.quest.idle+" "+t("pDays"):quiet(i)?" ⚠ "+i.quest.idle+" "+t("pDays"):"")),h("div",{class:"bar"},h("i",{style:"width:"+Math.round(i.quest.doneCount/30*100)+"%"}))):h("span",{style:"color:var(--mute)"},"—")),
       h("div",null,i.unread?h("span",{class:"badge",style:"margin-left:0"},i.unread):i.lastMsg?ago(i.lastMsg):"—"),
       h("div",null,i.inCabinet?i.profilePct+"%":"—",i.inCabinet?h("small",null,"📷 "+i.photos):null)));
     wrap.append(
       h("div",{class:"card"},h("div",{class:"row",style:"justify-content:space-between;margin-bottom:6px"},h("h2",{class:"t",style:"margin:0"},t("dTitle")),h("button",{class:"btn sm",type:"button",onclick:async()=>{await load();draw()}},t("rfsh"))),
-        h("div",{class:"kpis"},kp(k.models,t("kModels")),kp(k.inCabinet,t("kCab")),kp(k.active7d,t("kActive")),kp(k.questActive,t("kQuest")),kp(k.tasksToday,t("kToday")),kp(k.avgProgress+"%",t("kAvg")),kp(k.unread,t("kUnread")),kp(k.newToday,t("kNew")))),
+        h("div",{class:"kpis"},kp(k.models,t("kModels")),kp(k.inCabinet,t("kCab")),kp(k.active7d,t("kActive")),kp(k.questActive,t("kQuest")),kp(k.tasksToday,t("kToday")),kp(k.avgProgress+"%",t("kAvg")),kp(k.risk,t("kRisk")),kp(k.unread,t("kUnread")),kp(k.newToday,t("kNew")))),
       h("div",{class:"card"},
         h("div",{class:"dtools"},search,sel([["act",t("sAct")],["name",t("sName")],["prog",t("sProg")]],ds.sort,v=>ds.sort=v,t("sSort")),sel([["",t("fStatus")+": "+t("fAll")],...statuses.map(x=>[x,x+" ("+k.bySheet[x]+")"])],ds.status,v=>ds.status=v,t("fStatus"))),
-        h("div",{class:"dtools"},chip("all",t("fAll")+" "+data.items.length),chip("nocab",t("fNoCab")),chip("idle",t("fIdle")),chip("unread",t("fUnread"))),
+        h("div",{class:"dtools"},chip("all",t("fAll")+" "+data.items.filter(i=>i.catalog).length),chip("nocab",t("fNoCab")),chip("idle",t("fIdle")),chip("risk",t("fRisk")),data.others?h("button",{class:"chip"+(ds.others?" on":""),type:"button",onclick:()=>{ds.others=!ds.others;draw()}},(ds.others?"✓ ":"+ ")+t("fOthers")+" "+data.others):null,chip("unread",t("fUnread"))),
         items.length?h("div",null,head,rows):h("div",{class:"empty"},t("noItems"))),
       h("div",{class:"card"},h("h3",{class:"t"},t("fTitle")),h("div",{class:"feed"},feed.map(e=>{
-        const txt=fill(t({done:"evDone",msg:"evMsg",app:"evApp",seen:"evSeen"}[e.k]),{name:e.name||"—",d:e.d,note:e.note});
+        const txt=fill(t(e.k==="sent"&&e.note!=="task"&&e.note!=="enroll"?"evNotice":{done:"evDone",msg:"evMsg",app:"evApp",seen:"evSeen",sent:"evSent"}[e.k]),{name:e.name||"—",d:e.d,note:e.note});
         return h("div",{style:e.uid?"cursor:pointer":"",onclick:()=>{if(e.uid){ds.open=e.uid;draw()}}},txt,h("small",null,ago(e.t)))}))));
   };
   const openDetail=async()=>{
     const r=await api("GET","owner/user?id="+ds.open);
     clear(wrap);
-    const back=h("button",{class:"btn sm",type:"button",onclick:()=>{ds.open=0;draw()}},t("dBack"));
+    const back=h("button",{class:"btn sm",type:"button",onclick:()=>{ds.open=0;ds.sheet=null;draw()}},t("dBack"));
     if(!r.data.ok){wrap.append(back,h("div",{class:"empty"},t("err")));return}
     const d=r.data,u=d.user,q=d.quest,p=d.profile||{};
     const kv=(obj,keys)=>h("dl",{class:"kv"},keys.filter(k=>obj[k]).flatMap(k=>[h("dt",null,(KEYS[k]||[k,k,k])[LI]),h("dd",null,String(obj[k]))]));
@@ -688,6 +705,14 @@ async function viewDash(){
       h("div",{class:"card"},h("h3",{class:"t"},t("dQuest")),
         q?h("div",null,h("div",{class:"qstats"},h("span",null,h("b",null,String(q.day)),t("qDay")+" "+t("qOf")+" 30"),h("span",null,h("b",null,String(q.points)),t("qPts")),h("span",null,h("b",null,String(q.streak)),t("qStreak")+" 🔥"),h("span",null,t("qLvl")+": ",h("b",{style:"font-size:18px"},t("lv"+q.levelIdx)))),dots,
           notes.length?h("dl",{class:"kv"},notes.flatMap(l=>[h("dt",null,t("qDay")+" "+l.day),h("dd",null,l.note)])):null):h("div",{class:"empty"},t("dNoQuest"))),
+      h("div",{class:"card"},h("h3",{class:"t"},t("dSent")),d.sent&&d.sent.length?d.sent.map(m=>h("details",{style:"border-bottom:1px solid var(--line);padding:10px 0"},
+        h("summary",{style:"margin:0;text-transform:none;letter-spacing:.04em;font-size:14px;color:#D9D2C4"},new Date(m.sent_at*1000).toLocaleString(CODE==="uz"?"uz-UZ":CODE==="en"?"en-GB":"ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+(m.day?" · "+t("qDay")+" "+m.day:"")+" · "+(({task:"kTask",enroll:"kEnroll",final:"kFinal",lounge:"kLounge",nudge:"kNudge",night:"kNight"})[m.kind]?t(({task:"kTask",enroll:"kEnroll",final:"kFinal",lounge:"kLounge",nudge:"kNudge",night:"kNight"})[m.kind]):/^warn/.test(m.kind)?t("kWarn7"):t("kAnnounce"))+(m.ok?"":" · ⚠ "+t("dFailed"))),
+        h("div",{class:"m",style:"max-width:none;margin-top:12px"},m.body))):h("div",{class:"empty"},t("dNoSent"))),
+      q&&q.tasks&&q.tasks.length?h("div",{class:"card"},h("h3",{class:"t"},t("dTasks")),q.tasks.slice().reverse().map(x=>h("details",{style:"border-bottom:1px solid var(--line);padding:10px 0"},
+        h("summary",{style:"margin:0;text-transform:none;letter-spacing:.04em;font-size:14px;color:#D9D2C4"},(x.done?"✓ ":x.day<q.day?"⚠ ":"")+t("qDay")+" "+x.day+" · "+x.title),
+        h("ol",{class:"steps",style:"margin-top:14px"},x.steps.map(z=>h("li",null,z))),
+        x.extras.length?h("div",{class:"qfor"},h("p",{class:"sub"},t("qFor")),h("ul",null,x.extras.map(e=>h("li",null,e)))):null,
+        x.note?h("p",{class:"note"},t("dNoteLbl")+": "+x.note):null))):h("span"),
       h("div",{class:"card"},h("h3",{class:"t"},t("dProfile")),kv(p,["city","instagram","telegram","height","weight","bust","waist","hips","shoes","hair","eyes","about"])),
       h("div",{class:"card"},h("h3",{class:"t"},t("dApps")),d.apps.map(a=>h("div",{style:"margin-bottom:12px"},h("span",{class:"pill"},a.code||"—")," ",statusPill(a.status)))),
       h("div",{class:"card"},h("h3",{class:"t"},t("dChat")),d.messages.length?h("div",{class:"log",style:"max-height:340px"},d.messages.map(m=>h("div",{class:"m"+(m.from_role==="manager"?" me":"")},m.body))):h("div",{class:"empty"},t("dNoMsgs"))),
@@ -703,7 +728,7 @@ async function render(){
   const me=state.me;
   const isMgr=isStaff(me),isOwner=me.role==="owner";
   const unread=state.data?state.data.unread:0;
-  const hasQuest=!isMgr&&state.data&&state.data.apps.some(a=>a.kind==="apply");
+  const hasQuest=!isMgr&&state.data&&state.data.quest===true;
   const list=isMgr?[...(isOwner?[["dash",t("tDash")]]:[]),["apps",t("tApps")],["chats",t("tChats")],["quest",t("tQuest")]]:[["apps",t("tApps")],...(hasQuest?[["quest",t("tQuest")]]:[]),["profile",t("tProfile")],["chat",t("tChat"),unread||""]];
   if(!list.some(x=>x[0]===state.tab))state.tab=isOwner?"dash":"apps";
   shell(tabs(list),h("div",{id:"view"},h("div",{class:"spin"},"…")));

@@ -188,6 +188,7 @@ const S = {
     missed: n => `Невыполненных заданий: ${n}. Их можно закрыть в любой день.`,
     mark: 'Отметь выполнение в кабинете: zaya.uz → «Кабинет» → «Квест».', stop: 'Остановить задания: /stop',
     fin: (n, d, pts, lv) => `🎉 Квест «30 дней» завершён${n ? ', ' + n : ''}!\nВыполнено заданий: ${d} из ${TOTAL}. Очки: ${pts}. Уровень: ${lv}.\n\nНапиши менеджеру в чат кабинета: обсудим следующий шаг и твой план на месяц.`,
+    principle: 'Каждый день узнавать что-то новое — это уже прогресс. Правила игры: /rules, твой прогресс: /progress.',
     enroll: '🎯 Для вас открыт квест «30 дней»: каждое утро — новое задание, подобранное под вашу анкету.',
     stopped: 'Задания остановлены. Вернуть их: /quest', resumed: 'Квест продолжается. Следующее задание придёт утром.', noQuest: 'Квест доступен моделям после входа в кабинет на zaya.uz.',
   },
@@ -200,6 +201,7 @@ const S = {
     missed: n => `Bajarilmagan topshiriqlar: ${n}. Ularni istalgan kuni yopishing mumkin.`,
     mark: 'Bajarilganini kabinetda belgila: zaya.uz → «Kabinet» → «Kvest».', stop: 'Topshiriqlarni to‘xtatish: /stop',
     fin: (n, d, pts, lv) => `🎉 «30 kun» kvesti yakunlandi${n ? ', ' + n : ''}!\nBajarilgan topshiriqlar: ${d} / ${TOTAL}. Ball: ${pts}. Daraja: ${lv}.\n\nKabinet chatida menejerga yoz: keyingi qadam va bir oylik rejangni muhokama qilamiz.`,
+    principle: 'Har kuni yangi narsa o‘rganish — bu allaqachon progress. O‘yin qoidalari: /rules, progressing: /progress.',
     enroll: '🎯 Siz uchun «30 kun» kvesti ochildi: har kuni ertalab anketangga mos yangi topshiriq.',
     stopped: 'Topshiriqlar to‘xtatildi. Qaytarish: /quest', resumed: 'Kvest davom etadi. Keyingi topshiriq ertalab keladi.', noQuest: 'Kvest kabinetga kirgandan keyin modellar uchun ochiladi (zaya.uz).',
   },
@@ -212,6 +214,7 @@ const S = {
     missed: n => `Tasks not yet done: ${n}. You can catch up any day.`,
     mark: 'Mark it as done in the cabinet: zaya.uz → “Cabinet” → “Quest”.', stop: 'Pause the tasks: /stop',
     fin: (n, d, pts, lv) => `🎉 The “30 days” quest is complete${n ? ', ' + n : ''}!\nTasks done: ${d} of ${TOTAL}. Points: ${pts}. Level: ${lv}.\n\nWrite to the manager in the cabinet chat: we will discuss your next step and your plan for the month.`,
+    principle: 'Learning something new every day is already progress. The rules of the game: /rules, your progress: /progress.',
     enroll: '🎯 The “30 days” quest is open for you: a new task every morning, built from your application.',
     stopped: 'Tasks paused. Resume them with /quest', resumed: 'The quest goes on. The next task arrives in the morning.', noQuest: 'The quest opens for models after logging in to the cabinet at zaya.uz.',
   },
@@ -244,7 +247,8 @@ export function taskFor(day, pf, lang = 'ru') {
 export function taskText(task, pf, opts = {}) {
   const x = S[normLang(opts.lang)];
   const hi = opts.morning ? `${x.morning(pf.name)}\n` : '';
-  const lines = [`${hi}${x.day} ${task.day} ${x.of} ${TOTAL} · ${task.theme}`, '', task.title, ''];
+  const qt = opts.quote ? `✨ «${opts.quote}»\n\n` : '';
+  const lines = [`${hi}${qt}${x.day} ${task.day} ${x.of} ${TOTAL} · ${task.theme}`, '', task.title, ''];
   task.steps.forEach((s, i) => lines.push(`${i + 1}. ${s}`));
   if (task.extras.length) { lines.push('', `✨ ${x.forYou}:`); task.extras.forEach(e => lines.push('• ' + e)); }
   if (opts.missed > 1) lines.push('', x.missed(opts.missed));
@@ -257,12 +261,89 @@ export function finalText(pf, st, lang = 'ru') {
   return x.fin(pf.name, st.doneCount, st.points, x.levels[st.levelIdx]);
 }
 
+/* ---------- the rules of the game and the warnings (3 languages) ---------- */
+/* Honest framing: the quest is a real professional path, activity is seen by the managers, and the team decides about cooperation.
+   No concrete promises (jobs, money, ranks) are made: the rules say they will be added along the way. */
+const RULES = {
+  ru: { title: 'Как устроена игра', blocks: [
+    { h: 'Главная идея', t: 'Каждый день ты узнаёшь что-то новое о профессии. Даже маленький шаг — уже прогресс. Квест — это не игра ради очков, а твой настоящий путь модели: то, что ты тренируешь здесь, пригодится на кастингах и съёмках.' },
+    { h: 'Уровни — это рост', t: 'Новичок → Стартер → Практик → Профи → Звезда ZAYA. Уровень показывает, насколько ты вошёл(ла) в профессию. Менеджеры агентства видят твой уровень, серию дней и заметки.' },
+    { h: 'Что мы ждём', t: 'Выполняй задания каждый день, а если пропустил(а), наверстай. Пиши заметки: так видно, что ты действительно работаешь. Приходи вовремя, предупреждай, если не можешь, и будь вежлив(а) с менеджерами и другими моделями.' },
+    { h: 'Если ты пропадаешь', t: 'Нет активности 3 дня — мы напомним. 7 дней — менеджер свяжется лично. 14 дней и больше без причины — агентство может прекратить сотрудничество. Если есть причина (болезнь, учёба, экзамены), просто напиши менеджеру в чат кабинета: мы пойдём навстречу.' },
+    { h: 'Недобросовестное поведение', t: 'Невыполнение договорённостей, срыв съёмок или кастингов, грубость и обман — основание для прекращения сотрудничества. Решение принимает команда ZAYA.' },
+    { h: 'Игра будет расти', t: 'Мы развиваемся вместе с вами. Новые возможности и правила будут появляться по ходу игры, и мы сообщим о них заранее.' },
+  ] },
+  uz: { title: 'O‘yin qanday ishlaydi', blocks: [
+    { h: 'Asosiy g‘oya', t: 'Har kuni kasb haqida yangi narsa o‘rganasan. Hatto kichik qadam ham — progress. Kvest ball uchun o‘yin emas, sening haqiqiy model yo‘ling: bu yerda mashq qilganing kastinglar va syomkalarda asqotadi.' },
+    { h: 'Darajalar — o‘sish', t: 'Boshlovchi → Starter → Amaliyotchi → Pro → ZAYA yulduzi. Daraja kasbga qanchalik kirib borganingni ko‘rsatadi. Agentlik menejerlari darajangni, ketma-ket kunlarni va eslatmalaringni ko‘radi.' },
+    { h: 'Biz nimani kutamiz', t: 'Topshiriqlarni har kuni bajar, o‘tkazib yuborsang, yetib ol. Eslatma yoz: shunda haqiqatan ishlayotganing ko‘rinadi. O‘z vaqtida kel, kela olmasang ogohlantir, menejerlar va boshqa modellar bilan hurmat bilan muloqot qil.' },
+    { h: 'Agar yo‘qolib qolsang', t: '3 kun faolsizlik — eslatamiz. 7 kun — menejer shaxsan bog‘lanadi. Sababsiz 14 kun va undan ko‘p — agentlik hamkorlikni to‘xtatishi mumkin. Sabab bo‘lsa (kasallik, o‘qish, imtihon), kabinet chatida menejerga yoz: kelishamiz.' },
+    { h: 'Insofsiz xatti-harakat', t: 'Kelishuvlarni bajarmaslik, syomka yoki kastingni buzish, qo‘pollik va aldov — hamkorlikni to‘xtatish uchun asos. Qarorni ZAYA jamoasi qabul qiladi.' },
+    { h: 'O‘yin o‘sib boradi', t: 'Biz siz bilan birga rivojlanamiz. Yangi imkoniyatlar va qoidalar o‘yin davomida paydo bo‘ladi, ular haqida oldindan xabar beramiz.' },
+  ] },
+  en: { title: 'How the game works', blocks: [
+    { h: 'The main idea', t: 'Every day you learn something new about the profession. Even a small step is progress. The quest is not a game for points, it is your real path as a model: what you practise here will help you at castings and shoots.' },
+    { h: 'Levels are growth', t: 'Rookie → Starter → Practitioner → Pro → ZAYA Star. Your level shows how far into the profession you have come. The agency managers see your level, your streak and your notes.' },
+    { h: 'What we expect', t: 'Do the tasks every day, and if you miss one, catch up. Write notes: it shows that you really work. Arrive on time, warn us if you cannot, and be polite to the managers and the other models.' },
+    { h: 'If you disappear', t: 'No activity for 3 days: we will remind you. 7 days: a manager will contact you personally. 14 days or more without a reason: the agency may end the cooperation. If there is a reason (illness, studies, exams), just write to the manager in the cabinet chat: we will meet you halfway.' },
+    { h: 'Unfair conduct', t: 'Breaking agreements, missing shoots or castings, rudeness and deceit are grounds for ending the cooperation. The ZAYA team makes the decision.' },
+    { h: 'The game will grow', t: 'We are growing together with you. New opportunities and rules will appear along the way, and we will tell you about them in advance.' },
+  ] },
+};
+const MEANING = {
+  ru: ['Первые шаги', 'Привычка закреплена', 'Уверенная практика', 'Готовность к проектам', 'Пример для других'],
+  uz: ['Birinchi qadamlar', 'Odat mustahkamlandi', 'Ishonchli amaliyot', 'Loyihalarga tayyorlik', 'Boshqalar uchun namuna'],
+  en: ['First steps', 'The habit is set', 'Confident practice', 'Ready for projects', 'An example for others'],
+};
+export const rulesOf = lang => ({ ...RULES[normLang(lang)], meaning: MEANING[normLang(lang)] });
+export const rulesText = lang => {
+  const r = RULES[normLang(lang)], m = MEANING[normLang(lang)], x = S[normLang(lang)];
+  return [`📘 ${r.title}`, '', ...r.blocks.flatMap(b => [`${b.h}`, b.t, '']), x.levels.map((l, i) => `${i + 1}. ${l}: ${m[i]}`).join('\n')].join('\n');
+};
+/* inactivity warnings: what a model receives after 3, 7 and 14 idle days */
+export const WARN_DAYS = [3, 7, 14];
+const WARN = {
+  ru: { 3: n => `${n ? n + ', м' : 'М'}ы заметили, что тебя не было в квесте 3 дня. Один небольшой шаг сегодня вернёт ритм: открой задание в кабинете. Если что-то мешает, напиши менеджеру.`,
+        7: n => `${n ? n + ', т' : 'Т'}ебя нет в квесте уже 7 дней, и менеджер свяжется с тобой. Помни: каждый день узнавать что-то новое — это и есть прогресс в профессии. Если есть причина, напиши в чат кабинета.`,
+        14: n => `${n ? n + ', у' : 'У'}же 14 дней без активности. Если мы не получим ответа, агентство может прекратить сотрудничество. Напиши менеджеру в чат кабинета, чтобы договориться.` },
+  uz: { 3: n => `${n ? n + ', ' : ''}sen kvestda 3 kun ko‘rinmading. Bugun bitta kichik qadam ritmni qaytaradi: kabinetdagi topshiriqni och. Nimadir xalaqit bersa, menejerga yoz.`,
+        7: n => `${n ? n + ', ' : ''}sen kvestda 7 kundan beri yo‘qsan, menejer sen bilan bog‘lanadi. Esda tut: har kuni yangi narsa o‘rganish — kasbdagi progressning o‘zi. Sabab bo‘lsa, kabinet chatiga yoz.`,
+        14: n => `${n ? n + ', ' : ''}14 kundan beri faollik yo‘q. Javob olmasak, agentlik hamkorlikni to‘xtatishi mumkin. Kelishish uchun kabinet chatida menejerga yoz.` },
+  en: { 3: n => `${n ? n + ', w' : 'W'}e noticed you have been away from the quest for 3 days. One small step today will bring the rhythm back: open the task in the cabinet. If something is in the way, write to the manager.`,
+        7: n => `${n ? n + ', y' : 'Y'}ou have been away from the quest for 7 days, and a manager will contact you. Remember: learning something new every day is progress in the profession. If there is a reason, write in the cabinet chat.`,
+        14: n => `${n ? n + ', i' : 'I'}t has been 14 days without activity. If we get no reply, the agency may end the cooperation. Write to the manager in the cabinet chat so we can agree on a way forward.` },
+};
+export const warnText = (days, name, lang) => WARN[normLang(lang)][days](name);
+export const staffRiskText = (name, phone, idle, days) => `⚠️ ${name || '+' + phone} (+${phone}): нет активности в квесте ${idle} дн.` + (days >= 14 ? ' Модель получила последнее предупреждение. Рекомендуем связаться: решение о сотрудничестве за вами.' : days >= 7 ? ' Модель предупреждена, нужен личный контакт менеджера.' : '');
+export function progressText(pf, st, day, lang) {
+  const x = S[normLang(lang)], m = MEANING[normLang(lang)];
+  const nx = st.nextAt != null ? `\n${st.nextAt - st.points} → ${x.levels[st.levelIdx + 1]}` : '';
+  return `${x.day} ${day} ${x.of} ${TOTAL}\n⭐ ${st.points} · ${x.levels[st.levelIdx]} (${m[st.levelIdx]})\n🔥 ${st.streak} · ✓ ${st.doneCount}/${TOTAL}${nx}`;
+}
+
+/* ---------- one-off announcements to all the catalog models (sent by the morning run from the given date, once per person) ---------- */
+export const ANNOUNCEMENTS = [{ id: 'participation-1', date: '2026-11-06' }];
+const ANN = {
+  'participation-1': {
+    ru: n => `Доброе утро${n ? ', ' + n : ''}! 🤍 Важное от команды ZAYA.\n\nСейчас от тебя требуется одно: активное участие в проектах агентства. Отвечай менеджерам, приходи на кастинги и съёмки, выполняй задания квеста каждый день. Именно это помогает достигать большого успеха, и мы рядом на каждом шаге.`,
+    uz: n => `Xayrli tong${n ? ', ' + n : ''}! 🤍 ZAYA jamoasidan muhim xabar.\n\nHozir sendan bitta narsa talab qilinadi: agentlik loyihalarida faol ishtirok etish. Menejerlarga javob ber, kasting va syomkalarga kel, kvest topshiriqlarini har kuni bajar. Aynan shu katta muvaffaqiyatga erishishga yordam beradi, biz har qadamda yoningdamiz.`,
+    en: n => `Good morning${n ? ', ' + n : ''}! 🤍 An important note from the ZAYA team.\n\nRight now we ask one thing of you: active participation in the agency’s projects. Reply to the managers, come to castings and shoots, do the quest tasks every day. This is what helps you reach great success, and we are with you every step of the way.`,
+  },
+};
+export const announceText = (id, name, lang) => ANN[id][normLang(lang)](name);
+
 /* ---------- progress ---------- */
 export function pointsOf(done) {
   const s = new Set(done);
   let pts = s.size * 10;
   for (let w = 1; w <= 4; w++) { let all = true; for (let d = 7 * w - 6; d <= 7 * w; d++) if (!s.has(d)) all = false; if (all) pts += 20; }
   if (s.size >= TOTAL) pts += 50;
+  // streak bonus: +50 for every 5 days in a row (a run of 10 gives 100, a run of 5 + a break + 5 gives 100)
+  let run = 0;
+  for (let d = 1; d <= TOTAL + 1; d++) {
+    if (s.has(d)) run++;
+    else { pts += Math.floor(run / 5) * 50; run = 0; }
+  }
   return pts;
 }
 export function levelOf(pts) { let i = 0; LEVELS.forEach((l, k) => { if (pts >= l[1]) i = k; }); return i; }
