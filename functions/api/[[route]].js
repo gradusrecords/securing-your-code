@@ -178,6 +178,7 @@ export async function onRequest(ctx) {
     }
 
     if (path === 'quest/tick' && method === 'POST') return questTickKey(req, env);
+    if (path === 'quest/status' && method === 'GET') return questStatus(req, env);
 
     const user = await me(req, env);
     if (path === 'me' && method === 'GET') return json(user ? { ok: true, user: pubUser(user) } : { ok: false });   // 200 either way: no console noise for visitors
@@ -675,6 +676,34 @@ async function questTickKey(req, env) {
   const slot = new URL(req.url).searchParams.get('slot') || 'morning';
   if (slot !== 'morning' && !['lounge', 'nudge', 'night'].includes(slot)) return fail(400, 'bad slot');
   return json({ ok: true, slot, ...(slot === 'morning' ? await questTick(env) : await questSlot(env, slot)) });
+}
+/* read-only report for today: who got which message (protected by QUEST_KEY, sends nothing) */
+async function questStatus(req, env) {
+  if (!env.QUEST_KEY || !same(req.headers.get('x-quest-key') || '', env.QUEST_KEY)) return fail(403, 'forbidden');
+  const roster = rosterOf(env);
+  const rows = (await env.DB.prepare(`SELECT u.id,u.name,u.tg_chat,q.start,q.status,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
+      (SELECT group_concat(kind||':'||day) FROM quest_msgs m WHERE m.user_id=u.id) msgs
+    FROM users u LEFT JOIN quest q ON q.user_id=u.id WHERE u.role='user'`).all()).results || [];
+  const people = rows.filter(r => inRoster(env, r.codes));
+  const known = new Set(people.flatMap(r => String(r.codes || '').split(',').map(c => c.trim().toUpperCase())));
+  const hour = new Date(Date.now() + 5 * 3600e3).getUTCHours();
+  const slots = { morning: ['task', 'enroll'], lounge: ['lounge'], nudge: ['nudge'], night: ['night'] };
+  const out = {}, label = r => (r.name || '').split(/\s+/).slice(0, 2).join(' ') || ('#' + r.id);
+  const active = people.filter(r => r.start && r.status === 'on' && r.tg_chat && dayNumber(r.start) >= 1 && dayNumber(r.start) <= TOTAL);
+  for (const [slot, kinds] of Object.entries(slots)) {
+    const miss = [];
+    let sent = 0;
+    for (const r of active) {
+      const d = dayNumber(r.start), got = String(r.msgs || '').split(',');
+      if (kinds.some(k => got.includes(k + ':' + d))) sent++; else miss.push(label(r));
+    }
+    out[slot] = { eligible: active.length, sent, missing: miss };
+  }
+  const annMiss = people.filter(r => r.tg_chat && !String(r.msgs || '').includes('announce:')).map(label);
+  return json({ ok: true, today: todayYmd(), hourTashkent: hour, models: { inRoster: roster.size, withAccount: people.length, withChat: people.filter(r => r.tg_chat).length, inQuest: active.length, paused: people.filter(r => r.status === 'off').length },
+    slots: out, announcement: { sent: people.filter(r => r.tg_chat).length - annMiss.length, missing: annMiss },
+    notLoggedInCodes: [...roster].filter(c => !known.has(c)) });
 }
 /* the other three messages of the day: lounge (13:00), nudge or compliment (14:00), night (22:00); each is sent once per person per quest day */
 /* local (Tashkent) hours in which each message makes sense; a delayed run outside the window sends nothing (a "lunch lounge" at 21:00 would be odd) */
