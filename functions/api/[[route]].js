@@ -313,6 +313,35 @@ async function tgSetup(req, env, url) {
   return json({ ok: true, telegram: r });
 }
 
+/* joining through the bot only: the model taps the invite link, presses "Share number", and the cabinet, the applications and the quest are connected (no website needed) */
+const JOIN_HELLO = `Здравствуйте! Это бот ZAYA.\nЧтобы подключить личный кабинет и квест «30 дней», нажмите кнопку «Поделиться номером» ниже.\n\nAssalomu alaykum! Bu ZAYA boti.\nShaxsiy kabinet va «30 kun» kvestini ulash uchun pastdagi «Raqamni ulashish» tugmasini bosing.\n\nHello! This is the ZAYA bot.\nTo connect your personal cabinet and the “30 days” quest, press the “Share number” button below.`;
+const JOIN = {
+  ru: { none: 'Мы не нашли заявку с этим номером. Подайте анкету на zaya.uz или напишите менеджеру: @zaya_booking.', ok: '✅ Готово! Ваши данные подключены. Личный кабинет: zaya.uz → «Войти» (код придёт в этот бот).', quest: 'Квест «30 дней» уже начался: первое задание выше.', many: 'Слишком много попыток. Попробуйте позже.' },
+  uz: { none: 'Bu raqam bilan ariza topilmadi. zaya.uz da anketa yuboring yoki menejerga yozing: @zaya_booking.', ok: '✅ Tayyor! Ma’lumotlaringiz ulandi. Shaxsiy kabinet: zaya.uz → «Kirish» (kod shu botga keladi).', quest: '«30 kun» kvesti boshlandi: birinchi topshiriq yuqorida.', many: 'Urinishlar juda ko‘p. Keyinroq urinib ko‘ring.' },
+  en: { none: 'We could not find an application with this number. Submit an application at zaya.uz or write to the manager: @zaya_booking.', ok: '✅ Done! Your data is connected. Personal cabinet: zaya.uz → “Sign in” (the code arrives in this bot).', quest: 'The “30 days” quest has started: the first task is above.', many: 'Too many attempts. Please try later.' },
+};
+async function joinByContact(env, chat, m, phone) {
+  const off = { reply_markup: { remove_keyboard: true } };
+  if (!phone) { await say(env, chat, JOIN.ru.none, off); return; }
+  if (!(await hit(env, 'join:' + chat, 6, 3600))) { await say(env, chat, JOIN.ru.many, off); return; }
+  let user = await env.DB.prepare('SELECT * FROM users WHERE phone=?').bind(phone).first();
+  const app = await env.DB.prepare('SELECT name,lang FROM apps WHERE phone=? ORDER BY id DESC LIMIT 1').bind(phone).first();
+  const rows = user || app ? [] : await fetchSheetByPhone(env, phone);        // the number must be in an application (site or sheet)
+  if (!user && !app && !rows.length) { await say(env, chat, JOIN.ru.none, off); return; }
+  const role = roleFor(env, phone);
+  if (user) await env.DB.prepare('UPDATE users SET tg_id=?, tg_chat=?, role=? WHERE id=?').bind(String(m.from.id), chat, role, user.id).run();
+  else {
+    const r0 = (rows[0] && rows[0].row) || {};
+    const name = (app && app.name) || clip(r0['Имя и фамилия'] || r0['Имя'] || ((m.from.first_name || '') + ' ' + (m.from.last_name || '')), 120);
+    await env.DB.prepare('INSERT INTO users(phone,role,name,tg_id,tg_chat,created_at) VALUES(?,?,?,?,?,?)').bind(phone, role, name, String(m.from.id), chat, NOW()).run();
+  }
+  user = await env.DB.prepare('SELECT * FROM users WHERE phone=?').bind(phone).first();
+  try { await autoLink(env, user); } catch { /* the sheet may be unavailable: the next login links it */ }
+  const lang = normLang((app && app.lang) || (rows[0] && String(rows[0].row['Язык'] || '').toLowerCase()));
+  let started = false;
+  try { started = !!(await questEnroll(env, user)); } catch { /* not a catalog model */ }
+  await say(env, chat, JOIN[lang].ok + (started ? '\n' + JOIN[lang].quest : ''), off);
+}
 async function tgWebhook(req, env) {
   if (!env.TG_SECRET || !same(req.headers.get('x-telegram-bot-api-secret-token') || '', env.TG_SECRET)) return fail(403, 'forbidden');
   const u = await body(req, 20000);
@@ -323,7 +352,7 @@ async function tgWebhook(req, env) {
     if (!m.from || m.contact.user_id !== m.from.id) { await say(env, chat, 'Отправьте свой номер кнопкой «Поделиться номером».'); return json({ ok: true }); }
     const phone = normPhone(m.contact.phone_number);
     const link = phone && await env.DB.prepare('SELECT * FROM links WHERE chat=? AND expires>? ORDER BY expires DESC').bind(chat, NOW()).first();
-    if (!link) { await say(env, chat, 'Ссылка устарела. Вернитесь на zaya.uz и нажмите «Войти» ещё раз.', { reply_markup: { remove_keyboard: true } }); return json({ ok: true }); }
+    if (!link) { await joinByContact(env, chat, m, phone); return json({ ok: true }); }
     if (link.phone !== phone) { await say(env, chat, 'Этот номер не совпадает с введённым на сайте. Вернитесь на zaya.uz и введите свой номер.', { reply_markup: { remove_keyboard: true } }); return json({ ok: true }); }
     const role = roleFor(env, phone);
     const ex = await env.DB.prepare('SELECT id FROM users WHERE phone=?').bind(phone).first();
@@ -348,7 +377,7 @@ async function tgWebhook(req, env) {
         reply_markup: { keyboard: [[{ text: '📱 Поделиться номером', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true },
       });
     } else {
-      await say(env, chat, 'ZAYA. Личный кабинет открывается на zaya.uz — нажмите «Войти» и введите свой номер телефона.');
+      await say(env, chat, JOIN_HELLO, { reply_markup: { keyboard: [[{ text: '📱 Поделиться номером / Raqamni ulashish / Share number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true } });
     }
     return json({ ok: true });
   }
