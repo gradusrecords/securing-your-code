@@ -10,6 +10,7 @@
 
 import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
 import { rosterOf } from '../_quest/roster.js';
+import { salesTurn, SALES_GREETING } from '../_sales/sales.js';
 import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
@@ -30,6 +31,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS photo_data(photo_id INTEGER PRIMARY KEY, b64 TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS quest(user_id INTEGER PRIMARY KEY, start TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'on', last_sent INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS quest_msgs(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, day INTEGER NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, sent_at INTEGER NOT NULL, ok INTEGER NOT NULL DEFAULT 0)`,
+  `CREATE TABLE IF NOT EXISTS sales_chats(id TEXT PRIMARY KEY, channel TEXT NOT NULL, msgs TEXT NOT NULL DEFAULT '[]', leads INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS quest_log(user_id INTEGER NOT NULL, day INTEGER NOT NULL, done_at INTEGER NOT NULL, note TEXT, PRIMARY KEY(user_id, day))`,
 ];
 let schemaReady = false;
@@ -169,6 +171,7 @@ export async function onRequest(ctx) {
     }
 
     if (path === 'submit' && method === 'POST') return submit(req, env, ctx);
+    if (path === 'sales/chat' && method === 'POST') return salesWeb(req, env, ctx);
     if (path === 'auth/start' && method === 'POST') return authStart(req, env);
     if (path === 'auth/verify' && method === 'POST') return authVerify(req, env);
     if (path === 'auth/logout' && method === 'POST') {
@@ -314,7 +317,7 @@ async function tgSetup(req, env, url) {
 }
 
 /* joining through the bot only: the model taps the invite link, presses "Share number", and the cabinet, the applications and the quest are connected (no website needed) */
-const JOIN_HELLO = `Здравствуйте! Это бот ZAYA.\nЧтобы подключить личный кабинет и квест «30 дней», нажмите кнопку «Поделиться номером» ниже.\n\nAssalomu alaykum! Bu ZAYA boti.\nShaxsiy kabinet va «30 kun» kvestini ulash uchun pastdagi «Raqamni ulashish» tugmasini bosing.\n\nHello! This is the ZAYA bot.\nTo connect your personal cabinet and the “30 days” quest, press the “Share number” button below.`;
+const JOIN_HELLO = `Здравствуйте! Это бот ZAYA.\nЧтобы подключить личный кабинет и квест «30 дней», нажмите кнопку «Поделиться номером» ниже.\n\nAssalomu alaykum! Bu ZAYA boti.\nShaxsiy kabinet va «30 kun» kvestini ulash uchun pastdagi «Raqamni ulashish» tugmasini bosing.\n\nHello! This is the ZAYA bot.\nTo connect your personal cabinet and the “30 days” quest, press the “Share number” button below.\n\n— — —\nБизнесу: просто напишите, что вам нужно, и ИИ-менеджер ZAYA Consulting ответит.\nBiznes uchun: shunchaki yozing, ZAYA Consulting sun’iy intellekt menejeri javob beradi.\nFor business: just write what you need and the ZAYA Consulting AI manager will reply.`;
 const JOIN = {
   ru: { none: 'Мы не нашли заявку с этим номером. Подайте анкету на zaya.uz или напишите менеджеру: @zaya_booking.', ok: '✅ Готово! Ваши данные подключены. Личный кабинет: zaya.uz → «Войти» (код придёт в этот бот).', quest: 'Квест «30 дней» уже начался: первое задание выше.', many: 'Слишком много попыток. Попробуйте позже.' },
   uz: { none: 'Bu raqam bilan ariza topilmadi. zaya.uz da anketa yuboring yoki menejerga yozing: @zaya_booking.', ok: '✅ Tayyor! Ma’lumotlaringiz ulandi. Shaxsiy kabinet: zaya.uz → «Kirish» (kod shu botga keladi).', quest: '«30 kun» kvesti boshlandi: birinchi topshiriq yuqorida.', many: 'Urinishlar juda ko‘p. Keyinroq urinib ko‘ring.' },
@@ -367,6 +370,10 @@ async function tgWebhook(req, env) {
     return json({ ok: true });
   }
   const text = String(m.text || '');
+  if (/^\/start\s+biz\b/.test(text) && env.ANTHROPIC_API_KEY) {
+    await say(env, chat, SALES_GREETING.ru + '\n\n' + SALES_GREETING.uz + '\n\n' + SALES_GREETING.en);
+    return json({ ok: true });
+  }
   const start = text.match(/^\/start(?:\s+([a-f0-9]{24}))?/);
   if (start) {
     const token = start[1];
@@ -401,8 +408,64 @@ async function tgWebhook(req, env) {
       return json({ ok: true });
     }
   }
-  await say(env, chat, 'Это служебный бот ZAYA. Пишите менеджеру прямо в кабинете на zaya.uz.');
+  // людям из кабинета (модели, менеджеры) отвечает служебная подсказка, остальным — ИИ-менеджер по продажам
+  const known = await env.DB.prepare('SELECT id FROM users WHERE tg_chat=?').bind(chat).first();
+  if (known || !env.ANTHROPIC_API_KEY) {
+    await say(env, chat, 'Это служебный бот ZAYA. Пишите менеджеру прямо в кабинете на zaya.uz.');
+    return json({ ok: true });
+  }
+  if (!text.trim()) { await say(env, chat, 'Напишите, пожалуйста, текстом: чем занимается ваш бизнес и что хотите улучшить.'); return json({ ok: true }); }
+  if (!(await hit(env, 'sales:tg:' + chat, 40, 3600)) || !(await hit(env, 'sales:day', 3000, 86400))) { await say(env, chat, 'Слишком много сообщений. Напишите менеджеру: @zaya_booking.'); return json({ ok: true }); }
+  tg(env, 'sendChatAction', { chat_id: chat, action: 'typing' });
+  const who = { username: m.from && m.from.username, name: m.from ? ((m.from.first_name || '') + ' ' + (m.from.last_name || '')).trim() : '' };
+  const lg = m.from && ['uz', 'en', 'ru'].includes(m.from.language_code) ? m.from.language_code : 'ru';
+  try {
+    const out = await salesTurn(env, 'tg:' + chat, text, { channel: 'tg', lang: lg, tgUser: who, onLead: lead => saveSalesLead(env, lead, 'Telegram-бот', who) });
+    await say(env, chat, out.reply);
+  } catch {
+    await say(env, chat, 'Сейчас не получилось ответить. Напишите менеджеру: @zaya_booking.');
+  }
   return json({ ok: true });
+}
+
+/* ---------- ИИ-менеджер по продажам: чат на сайте и сохранение заявки ---------- */
+async function salesWeb(req, env, ctx) {
+  if (!env.ANTHROPIC_API_KEY) return fail(503, 'ai manager is not configured');
+  const d = await body(req, 6000);
+  const sid = String(d.sid || '');
+  if (!/^[A-Za-z0-9]{16,40}$/.test(sid)) return fail(400, 'bad session');
+  const text = clip(d.text, 1500);
+  if (!text) return fail(400, 'empty');
+  if (!(await hit(env, 'sales:ip:' + ip(req), 60, 3600)) || !(await hit(env, 'sales:web:' + sid, 40, 3600)) || !(await hit(env, 'sales:day', 3000, 86400))) return fail(429, 'too many requests');
+  const lang = lang3(d.lang);
+  try {
+    const out = await salesTurn(env, 'web:' + sid, text, { channel: 'web', lang, onLead: lead => saveSalesLead(env, lead, 'чат на сайте', null) });
+    return json({ ok: true, reply: out.reply, lead: out.leadSaved });
+  } catch {
+    return fail(502, 'ai unavailable');
+  }
+}
+async function saveSalesLead(env, lead, source, tgUser) {
+  const phone = normPhone(lead.phone);
+  const name = clip(lead.name, 120);
+  const task = clip(lead.task, 1400);
+  if (!phone || name.length < 2 || task.length < 3) return { ok: false, error: 'name, valid phone and task are required' };
+  const tgNick = clip(lead.telegram, 60) || (tgUser && tgUser.username ? '@' + tgUser.username : '');
+  const d = {
+    type: 'brief', consent: true, lang: 'ru', name, phone: '+' + phone,
+    company: clip(lead.company, 120), position: clip(lead.position, 80), industry: clip(lead.industry, 120),
+    city: clip(lead.city, 60), team: clip(lead.team, 20), dirs: Array.isArray(lead.dirs) ? lead.dirs.slice(0, 7).map(x => clip(x, 40)).join(', ') : clip(lead.dirs, 200),
+    task: task + ` [Источник: ИИ-менеджер, ${source}]`, budget: clip(lead.budget, 40), timing: clip(lead.timing, 40),
+    telegram: tgNick, email: clip(lead.email, 120), contact: clip(lead.contact, 20) || (tgUser ? 'Telegram' : ''),
+  };
+  const dup = await env.DB.prepare('SELECT id FROM apps WHERE phone=? AND kind=? AND created_at>?').bind(phone, 'brief', NOW() - 120).first();
+  if (dup) return { ok: true, id: dup.id, duplicate: true };
+  const r = await env.DB.prepare('INSERT INTO apps(phone,kind,status,name,lang,payload,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)')
+    .bind(phone, 'brief', 'new', name, 'ru', JSON.stringify(cleanPayload(d)), NOW(), NOW()).run();
+  const target = env.FORM_URL || DEFAULT_FORM_URL;
+  if (target) { try { await fetch(target, { method: 'POST', headers: { 'content-type': 'text/plain;charset=utf-8' }, body: JSON.stringify(d), redirect: 'follow' }); } catch { /* таблица недоступна: заявка уже в базе */ } }
+  await notifyManagers(env, `🤖 Заявка от ИИ-менеджера (${source})\n${name}, +${phone}${tgNick ? ', ' + tgNick : ''}\n${d.company ? d.company + '. ' : ''}${d.industry ? d.industry + '. ' : ''}${d.team ? 'Команда: ' + d.team + '. ' : ''}\nЗадача: ${task}${d.dirs ? '\nНаправления: ' + d.dirs : ''}${d.budget ? '\nБюджет: ' + d.budget : ''}${d.timing ? '\nСроки: ' + d.timing : ''}`);
+  return { ok: true, id: r.meta.last_row_id };
 }
 
 /* ---------- application code: pull the person's record from the Google Sheet ---------- */
