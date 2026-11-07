@@ -186,7 +186,7 @@ const S = {
     tuned: (lv, ds) => `Задания подобраны по твоей анкете: уровень — ${lv}; направления — ${ds}.`,
     forYou: 'Для тебя', day: 'День', of: 'из', morning: n => `☀️ Доброе утро${n ? ', ' + n : ''}!`,
     missed: n => `Невыполненных заданий: ${n}. Их можно закрыть в любой день.`,
-    mark: 'Отметь выполнение в кабинете: zaya.uz → «Кабинет» → «Квест».', stop: 'Остановить задания: /stop',
+    mark: 'Отметь выполнение кнопкой «✅ Выполнено» здесь в боте или в кабинете на zaya.uz.', stop: 'Остановить задания: /stop',
     fin: (n, d, pts, lv) => `🎉 Квест «30 дней» завершён${n ? ', ' + n : ''}!\nВыполнено заданий: ${d} из ${TOTAL}. Очки: ${pts}. Уровень: ${lv}.\n\nНапиши менеджеру в чат кабинета: обсудим следующий шаг и твой план на месяц.`,
     principle: 'Каждый день узнавать что-то новое — это уже прогресс. Правила игры: /rules, твой прогресс: /progress.',
     enroll: '🎯 Для вас открыт квест «30 дней»: каждое утро — новое задание, подобранное под вашу анкету.',
@@ -199,7 +199,7 @@ const S = {
     tuned: (lv, ds) => `Topshiriqlar anketang bo‘yicha tanlangan: daraja — ${lv}; yo‘nalishlar — ${ds}.`,
     forYou: 'Siz uchun', day: 'Kun', of: '/', morning: n => `☀️ Xayrli tong${n ? ', ' + n : ''}!`,
     missed: n => `Bajarilmagan topshiriqlar: ${n}. Ularni istalgan kuni yopishing mumkin.`,
-    mark: 'Bajarilganini kabinetda belgila: zaya.uz → «Kabinet» → «Kvest».', stop: 'Topshiriqlarni to‘xtatish: /stop',
+    mark: 'Bajarilganini shu yerda «✅ Bajarildi» tugmasi bilan yoki zaya.uz kabinetida belgila.', stop: 'Topshiriqlarni to‘xtatish: /stop',
     fin: (n, d, pts, lv) => `🎉 «30 kun» kvesti yakunlandi${n ? ', ' + n : ''}!\nBajarilgan topshiriqlar: ${d} / ${TOTAL}. Ball: ${pts}. Daraja: ${lv}.\n\nKabinet chatida menejerga yoz: keyingi qadam va bir oylik rejangni muhokama qilamiz.`,
     principle: 'Har kuni yangi narsa o‘rganish — bu allaqachon progress. O‘yin qoidalari: /rules, progressing: /progress.',
     enroll: '🎯 Siz uchun «30 kun» kvesti ochildi: har kuni ertalab anketangga mos yangi topshiriq.',
@@ -212,7 +212,7 @@ const S = {
     tuned: (lv, ds) => `The tasks are built from your application: level — ${lv}; directions — ${ds}.`,
     forYou: 'For you', day: 'Day', of: 'of', morning: n => `☀️ Good morning${n ? ', ' + n : ''}!`,
     missed: n => `Tasks not yet done: ${n}. You can catch up any day.`,
-    mark: 'Mark it as done in the cabinet: zaya.uz → “Cabinet” → “Quest”.', stop: 'Pause the tasks: /stop',
+    mark: 'Mark it as done with the “✅ Done” button here in the bot or in the cabinet at zaya.uz.', stop: 'Pause the tasks: /stop',
     fin: (n, d, pts, lv) => `🎉 The “30 days” quest is complete${n ? ', ' + n : ''}!\nTasks done: ${d} of ${TOTAL}. Points: ${pts}. Level: ${lv}.\n\nWrite to the manager in the cabinet chat: we will discuss your next step and your plan for the month.`,
     principle: 'Learning something new every day is already progress. The rules of the game: /rules, your progress: /progress.',
     enroll: '🎯 The “30 days” quest is open for you: a new task every morning, built from your application.',
@@ -322,12 +322,17 @@ export function progressText(pf, st, day, lang) {
 }
 
 /* ---------- one-off announcements to all the catalog models (sent by the morning run from the given date, once per person) ---------- */
-export const ANNOUNCEMENTS = [{ id: 'participation-1', date: '2026-11-06' }];
+export const ANNOUNCEMENTS = [{ id: 'participation-1', date: '2026-11-06' }, { id: 'bot-cabinet-1', date: '2026-11-08', menu: true }];
 const ANN = {
   'participation-1': {
     ru: n => `Доброе утро${n ? ', ' + n : ''}! 🤍 Важное от команды ZAYA.\n\nСейчас от тебя требуется одно: активное участие в проектах агентства. Отвечай менеджерам, приходи на кастинги и съёмки, выполняй задания квеста каждый день. Именно это помогает достигать большого успеха, и мы рядом на каждом шаге.`,
     uz: n => `Xayrli tong${n ? ', ' + n : ''}! 🤍 ZAYA jamoasidan muhim xabar.\n\nHozir sendan bitta narsa talab qilinadi: agentlik loyihalarida faol ishtirok etish. Menejerlarga javob ber, kasting va syomkalarga kel, kvest topshiriqlarini har kuni bajar. Aynan shu katta muvaffaqiyatga erishishga yordam beradi, biz har qadamda yoningdamiz.`,
     en: n => `Good morning${n ? ', ' + n : ''}! 🤍 An important note from the ZAYA team.\n\nRight now we ask one thing of you: active participation in the agency’s projects. Reply to the managers, come to castings and shoots, do the quest tasks every day. This is what helps you reach great success, and we are with you every step of the way.`,
+  },
+  'bot-cabinet-1': {
+    ru: n => `Доброе утро${n ? ', ' + n : ''}! 🤍 Новое в боте ZAYA: личный кабинет теперь и здесь.\n\nКнопки под полем ввода: задание дня, отметка «Выполнено», прогресс, правила, заявки и чат с менеджером. Всё, как на сайте, без входа и кодов. Сообщение, написанное сюда, уйдёт менеджеру.`,
+    uz: n => `Xayrli tong${n ? ', ' + n : ''}! 🤍 ZAYA botida yangilik: shaxsiy kabinet endi shu yerda ham.\n\nYozuv maydoni ostidagi tugmalar: kun topshirig‘i, «Bajarildi» belgisi, natija, qoidalar, arizalar va menejer bilan chat. Hammasi saytdagidek, kirish va kodsiz. Shu yerga yozgan xabaringiz menejerga yetadi.`,
+    en: n => `Good morning${n ? ', ' + n : ''}! 🤍 New in the ZAYA bot: your personal cabinet is now here too.\n\nButtons under the input field: task of the day, “Done”, progress, rules, applications and the chat with the manager. Everything as on the website, with no sign-in or codes. A message written here goes to the manager.`,
   },
 };
 export const announceText = (id, name, lang) => ANN[id][normLang(lang)](name);

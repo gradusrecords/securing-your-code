@@ -11,6 +11,7 @@
 import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
 import { rosterOf } from '../_quest/roster.js';
 import { salesTurn, SALES_GREETING } from '../_sales/sales.js';
+import { bt, actionOf, menuKeyboard, langKeyboard, doneButton } from '../_bot/texts.js';
 import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
@@ -41,7 +42,7 @@ async function ensureSchema(env) {
   for (const col of ['code TEXT', 'synced_at INTEGER']) {       // columns added later: ignore "duplicate column"
     try { await env.DB.prepare(`ALTER TABLE apps ADD COLUMN ${col}`).run(); } catch (e) { /* already there */ }
   }
-  for (const q of ['ALTER TABLE users ADD COLUMN last_seen INTEGER', 'ALTER TABLE quest ADD COLUMN lang TEXT']) {
+  for (const q of ['ALTER TABLE users ADD COLUMN last_seen INTEGER', 'ALTER TABLE quest ADD COLUMN lang TEXT', 'ALTER TABLE users ADD COLUMN tg_lang TEXT']) {
     try { await env.DB.prepare(q).run(); } catch (e) { /* already there */ }
   }
   await env.DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS apps_code ON apps(code) WHERE code IS NOT NULL').run();
@@ -312,7 +313,7 @@ async function authVerify(req, env) {
 
 async function tgSetup(req, env, url) {
   if (!env.TG_SECRET || !same(url.searchParams.get('key') || '', env.TG_SECRET)) return fail(403, 'forbidden');
-  const r = await tg(env, 'setWebhook', { url: `${url.origin}/api/tg/webhook`, secret_token: env.TG_SECRET, allowed_updates: ['message'], drop_pending_updates: true });
+  const r = await tg(env, 'setWebhook', { url: `${url.origin}/api/tg/webhook`, secret_token: env.TG_SECRET, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
   return json({ ok: true, telegram: r });
 }
 
@@ -344,10 +345,12 @@ async function joinByContact(env, chat, m, phone) {
   let started = false;
   try { started = !!(await questEnroll(env, user)); } catch { /* not a catalog model */ }
   await say(env, chat, JOIN[lang].ok + (started ? '\n' + JOIN[lang].quest : ''), off);
+  await botMenu(env, chat, user);
 }
 async function tgWebhook(req, env) {
   if (!env.TG_SECRET || !same(req.headers.get('x-telegram-bot-api-secret-token') || '', env.TG_SECRET)) return fail(403, 'forbidden');
   const u = await body(req, 20000);
+  if (u.callback_query) { await botCallback(env, u.callback_query); return json({ ok: true }); }
   const m = u.message;
   if (!m || !m.chat || m.chat.type !== 'private') return json({ ok: true });
   const chat = String(m.chat.id);
@@ -383,6 +386,9 @@ async function tgWebhook(req, env) {
       await say(env, chat, 'Чтобы войти в кабинет ZAYA, подтвердите номер телефона кнопкой ниже. Мы пришлём код сюда.', {
         reply_markup: { keyboard: [[{ text: '📱 Поделиться номером', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true },
       });
+    } else if (await env.DB.prepare('SELECT id FROM users WHERE tg_chat=?').bind(chat).first()) {
+      const ku = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
+      await botMenu(env, chat, ku);
     } else {
       await say(env, chat, JOIN_HELLO, { reply_markup: { keyboard: [[{ text: '📱 Поделиться номером / Raqamni ulashish / Share number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true } });
     }
@@ -409,9 +415,10 @@ async function tgWebhook(req, env) {
     }
   }
   // людям из кабинета (модели, менеджеры) отвечает служебная подсказка, остальным — ИИ-менеджер по продажам
-  const known = await env.DB.prepare('SELECT id FROM users WHERE tg_chat=?').bind(chat).first();
-  if (known || !env.ANTHROPIC_API_KEY) {
-    await say(env, chat, 'Это служебный бот ZAYA. Пишите менеджеру прямо в кабинете на zaya.uz.');
+  const known = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
+  if (known) { await botUserText(env, known, chat, text); return json({ ok: true }); }
+  if (!env.ANTHROPIC_API_KEY) {
+    await say(env, chat, 'Это служебный бот ZAYA. Напишите менеджеру: @zaya_booking.');
     return json({ ok: true });
   }
   if (!text.trim()) { await say(env, chat, 'Напишите, пожалуйста, текстом: чем занимается ваш бизнес и что хотите улучшить.'); return json({ ok: true }); }
@@ -422,10 +429,122 @@ async function tgWebhook(req, env) {
   try {
     const out = await salesTurn(env, 'tg:' + chat, text, { channel: 'tg', lang: lg, tgUser: who, onLead: lead => saveSalesLead(env, lead, 'Telegram-бот', who) });
     await say(env, chat, out.reply);
+    if (out.leadSaved) await say(env, chat, bt(lg).shareToOpen, { reply_markup: { keyboard: [[{ text: bt(lg).share, request_contact: true }]], resize_keyboard: true, one_time_keyboard: true } });
   } catch {
     await say(env, chat, 'Сейчас не получилось ответить. Напишите менеджеру: @zaya_booking.');
   }
   return json({ ok: true });
+}
+
+
+/* ---------- личный кабинет внутри бота: меню, задания, заявки, чат с менеджером ---------- */
+async function botLang(env, user) {
+  if (user.tg_lang) return normLang(user.tg_lang);
+  const q = await env.DB.prepare('SELECT lang FROM quest WHERE user_id=?').bind(user.id).first();
+  if (q && q.lang) return normLang(q.lang);
+  const a = await env.DB.prepare('SELECT lang FROM apps WHERE phone=? ORDER BY id DESC LIMIT 1').bind(user.phone).first();
+  return normLang(a && a.lang);
+}
+async function botMenu(env, chat, user, text) {
+  const lang = await botLang(env, user);
+  const q = isStaff(user) ? null : await env.DB.prepare('SELECT status FROM quest WHERE user_id=?').bind(user.id).first();
+  await say(env, chat, text || bt(lang).menu(firstNameOf(user.name)), { reply_markup: menuKeyboard(lang, { quest: !!q, paused: !!q && q.status !== 'on' }) });
+}
+async function botSetDone(env, user, n, undo) {
+  const q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
+  if (!q) return { err: 'noquest' };
+  const cur = Math.min(dayNumber(q.start), TOTAL);
+  if (!Number.isInteger(n) || n < 1 || n > cur) return { err: 'bad' };
+  const had = !!(await env.DB.prepare('SELECT 1 x FROM quest_log WHERE user_id=? AND day=?').bind(user.id, n).first());
+  if (undo) await env.DB.prepare('DELETE FROM quest_log WHERE user_id=? AND day=?').bind(user.id, n).run();
+  else if (!had) await env.DB.prepare('INSERT OR REPLACE INTO quest_log(user_id,day,done_at,note) VALUES(?,?,?,?)').bind(user.id, n, NOW(), '').run();
+  const done = await doneDays(env, user.id);
+  return { q, cur, n, had, prog: progressOf(done, cur) };
+}
+async function botProgress(env, user, chat, lang) {
+  const q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
+  if (!q) { await say(env, chat, bt(lang).noQuest); return; }
+  const cur = Math.min(Math.max(dayNumber(q.start), 1), TOTAL);
+  await say(env, chat, progressText({}, progressOf(await doneDays(env, user.id), cur), cur, lang));
+}
+async function botTask(env, user, chat, lang) {
+  const B = bt(lang);
+  const q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
+  const pf = q && await questSubject(env, user);
+  if (!q || !pf) { await say(env, chat, B.noQuest); return; }
+  const cur = dayNumber(q.start);
+  if (cur > TOTAL) { await say(env, chat, B.finished); await botProgress(env, user, chat, lang); return; }
+  const done = (await doneDays(env, user.id)).includes(cur);
+  await say(env, chat, taskText(taskFor(cur, pf, lang), pf, { lang, quote: quoteFor(cur, lang) }), { reply_markup: doneButton(lang, cur, done) });
+}
+async function botApps(env, user, chat, lang) {
+  const B = bt(lang);
+  const rows = (await env.DB.prepare('SELECT kind,status,code,created_at FROM apps WHERE phone=? ORDER BY id DESC LIMIT 8').bind(user.phone).all()).results || [];
+  if (!rows.length) { await say(env, chat, B.noApps); return; }
+  await say(env, chat, B.appsTitle + '\n' + rows.map(a => `• ${B.kind[a.kind] || a.kind}${a.code ? ' ' + a.code : ''} — ${STATUS_TEXT[a.status] ? STATUS_TEXT[a.status][L(lang)] : a.status} (${new Date(a.created_at * 1000).toISOString().slice(0, 10)})`).join('\n'));
+}
+async function botUserText(env, user, chat, text) {
+  const lang = await botLang(env, user), B = bt(lang);
+  if (isStaff(user)) { await say(env, chat, B.staff); return; }
+  let act = actionOf(text);
+  if (!act) {
+    const c = text.match(/^\/(menu|task|done|apps|progress|rules|lang)\b/);
+    if (c) act = { menu: 'menu', task: 'task', done: 'done', apps: 'apps', progress: 'prog', rules: 'rules', lang: 'lang' }[c[1]];
+  }
+  if (act && act.startsWith('setlang:')) {
+    const nl = act.slice(8);
+    await env.DB.prepare('UPDATE users SET tg_lang=? WHERE id=?').bind(nl, user.id).run();
+    await env.DB.prepare('UPDATE quest SET lang=? WHERE user_id=?').bind(nl, user.id).run();
+    user.tg_lang = nl;
+    await botMenu(env, chat, user, bt(nl).langSet);
+    return;
+  }
+  switch (act) {
+    case 'menu': return botMenu(env, chat, user);
+    case 'task': return botTask(env, user, chat, lang);
+    case 'prog': return botProgress(env, user, chat, lang);
+    case 'rules': return say(env, chat, rulesText(lang));
+    case 'apps': return botApps(env, user, chat, lang);
+    case 'site': return say(env, chat, B.site);
+    case 'lang': return say(env, chat, B.pickLang, { reply_markup: langKeyboard() });
+    case 'chat': return say(env, chat, B.chatPrompt);
+    case 'pause': case 'resume': {
+      const r = await questToggle(env, user, act === 'pause' ? 'off' : 'on');
+      if (!(await r.json()).ok) return say(env, chat, B.noQuest);
+      return botMenu(env, chat, user, act === 'pause' ? B.paused : msgs(lang).resumed);
+    }
+    case 'done': {
+      const q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
+      if (!q) return say(env, chat, B.noQuest);
+      const cur = dayNumber(q.start);
+      if (cur > TOTAL) return botProgress(env, user, chat, lang);
+      const r = await botSetDone(env, user, cur, false);
+      if (r.err) return say(env, chat, B.noQuest);
+      if (r.had) return say(env, chat, B.alreadyDone(cur));
+      return say(env, chat, B.doneOk(cur) + '\n\n' + progressText({}, r.prog, r.cur, lang));
+    }
+  }
+  // any other text goes to the managers (the same chat as in the website cabinet)
+  const t = clip(text, 2000);
+  if (!t || t.startsWith('/')) return botMenu(env, chat, user);
+  if (!(await hit(env, 'botmsg:' + user.id, 30, 3600))) return say(env, chat, B.limit);
+  await env.DB.prepare('INSERT INTO messages(thread,from_role,from_id,body,created_at) VALUES(?,?,?,?,?)').bind(user.id, 'user', user.id, t, NOW()).run();
+  await notifyManagers(env, `💬 ${user.name || '+' + user.phone} (Telegram): ${t.slice(0, 300)}`);
+  await say(env, chat, B.sent);
+}
+async function botCallback(env, cq) {
+  const chat = String(cq && cq.message && cq.message.chat && cq.message.chat.id || '');
+  const ans = text => tg(env, 'answerCallbackQuery', { callback_query_id: cq.id, text: text || undefined });
+  const mt = String(cq && cq.data || '').match(/^([du]):(\d{1,2})$/);
+  const user = chat && cq.from ? await env.DB.prepare('SELECT * FROM users WHERE tg_chat=? AND tg_id=?').bind(chat, String(cq.from.id)).first() : null;
+  if (!user || !mt || isStaff(user)) { await ans(); return; }
+  if (!(await hit(env, 'botcb:' + user.id, 120, 3600))) { await ans(); return; }
+  const lang = await botLang(env, user), B = bt(lang), undo = mt[1] === 'u', n = +mt[2];
+  const r = await botSetDone(env, user, n, undo);
+  if (r.err) { await ans(B.noQuest); return; }
+  await ans(undo ? '↩️' : B.doneOk(n));
+  await tg(env, 'editMessageReplyMarkup', { chat_id: chat, message_id: cq.message.message_id, reply_markup: doneButton(lang, n, !undo) });
+  if (!undo && !r.had) await say(env, chat, B.doneOk(n) + '\n\n' + progressText({}, r.prog, r.cur, lang));
 }
 
 /* ---------- ИИ-менеджер по продажам: чат на сайте и сохранение заявки ---------- */
@@ -635,8 +754,8 @@ async function questEligible(env, user) {
 const inRoster = (env, codes) => { const r = rosterOf(env); return String(codes || '').split(',').some(c => r.has(c.trim().toUpperCase())); };
 const doneDays = async (env, uid) => ((await env.DB.prepare('SELECT day FROM quest_log WHERE user_id=?').bind(uid).all()).results || []).map(r => r.day);
 /* sends a quest message and keeps a copy: the owner dashboard shows exactly what each model received */
-async function questSay(env, uid, chat, day, kind, text) {
-  const res = await say(env, chat, text);
+async function questSay(env, uid, chat, day, kind, text, extra = {}) {
+  const res = await say(env, chat, text, extra);
   try { await env.DB.prepare('INSERT INTO quest_msgs(user_id,day,kind,body,sent_at,ok) VALUES(?,?,?,?,?,?)').bind(uid, day, kind, text, NOW(), res && res.ok ? 1 : 0).run(); } catch { /* the log must never block the delivery */ }
   return res;
 }
@@ -649,7 +768,7 @@ async function questEnroll(env, user) {
   const lang = normLang((await env.DB.prepare("SELECT lang FROM apps WHERE phone=? AND kind='apply' ORDER BY id DESC LIMIT 1").bind(user.phone).first() || {}).lang);
   await env.DB.prepare('INSERT OR IGNORE INTO quest(user_id,start,status,last_sent,created_at,lang) VALUES(?,?,?,?,?,?)').bind(user.id, todayYmd(), 'on', 1, NOW(), lang).run();
   q = await env.DB.prepare('SELECT * FROM quest WHERE user_id=?').bind(user.id).first();
-  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n' + msgs(lang).principle + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang, quote: quoteFor(1, lang) }));
+  if (user.tg_chat) await questSay(env, user.id, user.tg_chat, 1, 'enroll', msgs(lang).enroll + '\n' + msgs(lang).principle + '\n\n' + taskText(taskFor(1, pf, lang), pf, { lang, quote: quoteFor(1, lang) }), { reply_markup: doneButton(lang, 1, false) });
   return q;
 }
 async function questMe(env, user, wantLang) {
@@ -719,7 +838,7 @@ async function questTick(env, limit = 20) {
     } else {
       const missed = day - 1 - done.filter(x => x < day).length;
       const lg = normLang(r.lang);
-      await questSay(env, r.user_id, r.tg_chat, day, 'task', taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg, quote: quoteFor(day, lg) }));
+      await questSay(env, r.user_id, r.tg_chat, day, 'task', taskText(taskFor(day, pf, lg), pf, { morning: true, missed, lang: lg, quote: quoteFor(day, lg) }), { reply_markup: doneButton(lg, day, false) });
     }
     sent++;
   }
@@ -743,7 +862,8 @@ async function questAnnounce(env, limit) {
     for (const a of live) {
       if (String(u.got || '').split(',').includes('announce:' + a.id)) continue;
       if (sent >= limit) { left++; continue; }
-      await questSay(env, u.id, u.tg_chat, 0, 'announce:' + a.id, announceText(a.id, firstNameOf(u.name), normLang(u.qlang || u.alang)));
+      const al = normLang(u.qlang || u.alang);
+      await questSay(env, u.id, u.tg_chat, 0, 'announce:' + a.id, announceText(a.id, firstNameOf(u.name), al), a.menu ? { reply_markup: menuKeyboard(al, { quest: true }) } : {});
       sent++;
     }
   }
@@ -831,7 +951,7 @@ async function questSlot(env, slot, limit = 20) {
     const done = String(r.done || '').split(',').filter(Boolean).map(Number).includes(day);
     const task = taskFor(day, pf, lang), nextTask = day < TOTAL ? taskFor(day + 1, pf, lang) : null;
     const text = slot === 'lounge' ? loungeText(day, lang) : slot === 'nudge' ? nudgeText({ day, task, done, name: pf.name, lang }) : nightText({ day, task, nextTask, done, name: pf.name, lang });
-    await questSay(env, r.user_id, r.tg_chat, day, slot, text);
+    await questSay(env, r.user_id, r.tg_chat, day, slot, text, slot === 'nudge' && !done ? { reply_markup: doneButton(lang, day, false) } : {});
     sent++;
   }
   return { sent, remaining: left };
@@ -1054,7 +1174,7 @@ async function sendManagerMessage(req, env, manager, ctx) {
   const target = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(to).first();
   if (!target) return fail(404, 'not found');
   const r = await env.DB.prepare("INSERT INTO messages(thread,from_role,from_id,body,created_at) VALUES(?,?,?,?,?)").bind(to, 'manager', manager.id, text, NOW()).run();
-  if (target.tg_chat) ctx.waitUntil(say(env, target.tg_chat, 'ZAYA: у вас новое сообщение от менеджера. Откройте кабинет на zaya.uz → «Чат».'));
+  if (target.tg_chat) ctx.waitUntil(botLang(env, target).then(l => say(env, target.tg_chat, bt(l).managerMsg(text))));
   return json({ ok: true, id: r.meta.last_row_id });
 }
 
