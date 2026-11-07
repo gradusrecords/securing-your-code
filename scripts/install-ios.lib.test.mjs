@@ -41,3 +41,16 @@ test('Node 20 and newer are accepted, older ones are not', () => {
   assert.equal(nodeVersionOk('v20.0.0'), true);
   assert.equal(nodeVersionOk('v18.19.0'), false);
 });
+
+import { parsePlatform } from './install-ios.lib.mjs';
+
+test('the platform is read from --platform=', () => {
+  assert.equal(parsePlatform(['--platform=ios']), 'ios');
+  assert.equal(parsePlatform(['--dry-run', '--platform=android']), 'android');
+  assert.equal(parsePlatform(['--platform=both']), 'both');
+});
+
+test('an unknown or missing platform is an error, never a silent default', () => {
+  assert.throws(() => parsePlatform(['--platform=windows']), /ios, android/);
+  assert.throws(() => parsePlatform([]), /ios, android/);
+});

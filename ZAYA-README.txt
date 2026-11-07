@@ -31,8 +31,8 @@
   * mobile/ — Приложение для iPhone и Android (Expo, React Native, TypeScript)
   * admin/ — Веб-админка суперадмина (React, Vite)
   * supabase/ — База данных (миграции SQL, тесты, стартовый контент) и функция отправки push
-  * scripts/ — Установщик для iPhone (install-ios.mjs), демо-данные, назначение суперадмина
-  * ZAYA-iOS-Install.* — Запуск установщика двойным щелчком (Windows .bat, macOS .command, Linux .sh)
+  * scripts/ — Установщик (install-app.mjs), демо-данные, назначение суперадмина
+  * ZAYA-iOS-Install.*, ZAYA-Android-Install.* — Запуск установщика двойным щелчком (Windows .bat, macOS .command, Linux .sh)
   * docs/ — Подробные инструкции (zaya-setup.md, zaya-release.md), спецификация и планы
 
 Остальные файлы в корне репозитория относятся к стороннему учебному проекту и приложением ZAYA не используются.
@@ -46,11 +46,11 @@
   * Git — Получить код | git-scm.com
   * Аккаунт Supabase — База данных и вход пользователей | supabase.com (бесплатный тариф)
   * Аккаунт Expo — Облачная сборка приложения | expo.dev (бесплатно)
-  * Apple Developer (99 $ в год) — Установка на iPhone через TestFlight | developer.apple.com
+  * Apple Developer (99 $ в год) — Только для iPhone: установка через TestFlight | developer.apple.com
 
 Для сборки под iPhone Mac не нужен: приложение собирается в облаке Expo.
 
-Windows: установщик запускается двойным щелчком по ZAYA-iOS-Install.bat; остальные команды выполняйте в PowerShell или Git Bash.
+Windows: установщик запускается двойным щелчком по .bat-файлу; остальные команды выполняйте в PowerShell или Git Bash.
 
 5. Проверка, что всё работает
 -----------------------------
@@ -103,35 +103,32 @@ Windows: установщик запускается двойным щелчко
 2. В SQL editor выполните по очереди все файлы из supabase/migrations/ (от 0001 до 0016), затем из supabase/seed/.
 3. Authentication → Providers: включите Email.
 
-iPhone (TestFlight): установщик:
+Установщик (iPhone и Android):
 
-Самый простой способ — установщик, который сам спросит всё нужное и выполнит сборку в облаке:
+Самый простой способ — установщик: он сам спросит всё нужное и выполнит сборку в облаке Expo (Mac и Android Studio не нужны).
 
-- Windows: дважды щёлкните ZAYA-iOS-Install.bat.
-- macOS: дважды щёлкните ZAYA-iOS-Install.command (в первый раз: правый клик → «Открыть»).
-- Linux, WSL, Git Bash: bash ZAYA-iOS-Install.sh.
+  * iPhone (TestFlight) — двойной щелчок ZAYA-iOS-Install.bat | двойной щелчок ZAYA-iOS-Install.command | bash ZAYA-iOS-Install.sh
+  * Android (APK) — двойной щелчок ZAYA-Android-Install.bat | двойной щелчок ZAYA-Android-Install.command | bash ZAYA-Android-Install.sh
 
-Он проверит Node.js, спросит Project URL и ключ anon public из Supabase (секретный ключ service_role не примет), установит зависимости, войдёт в Expo, соберёт приложение и отправит его в TestFlight. Пробный запуск без аккаунтов: node scripts/install-ios.mjs --dry-run (команды только показываются).
+macOS: в первый раз нажмите правой кнопкой → «Открыть». Обе платформы сразу: node scripts/install-app.mjs --platform=both.
 
-Если нужно вручную (например, в PowerShell):
+Установщик проверит Node.js, спросит Project URL и ключ anon public из Supabase (секретный ключ service_role не примет), установит зависимости, войдёт в Expo, привяжет проект и запустит сборку. Пробный запуск без аккаунтов: добавьте --dry-run (команды только показываются).
+
+iPhone. Нужны аккаунты Expo и Apple Developer. Установщик соберёт приложение и отправит в TestFlight. Дальше в App Store Connect → TestFlight добавьте тестировщиков и разошлите приглашение. Сборка живёт 90 дней, потом выпускается новая. Первая сборка для внешних тестировщиков проходит короткую проверку Apple (обычно 1–2 дня).
+
+Android. Нужен только бесплатный аккаунт Expo. Установщик соберёт установочный файл .apk и покажет ссылку на него (список сборок: cd mobile && npx eas-cli@latest build:list). Отправьте ссылку пользователям; на телефоне нужно разрешить установку из неизвестных источников.
+
+Вручную (например, в PowerShell):
 
     cd mobile
     npm ci --legacy-peer-deps
     npx eas-cli@latest login
     npx eas-cli@latest init
-    npx eas-cli@latest env:create --name EXPO_PUBLIC_SUPABASE_URL --value https://<проект>.supabase.co --environment production --visibility plaintext
-    npx eas-cli@latest env:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon-ключ> --environment production --visibility plaintext
+    npx eas-cli@latest env:create --name EXPO_PUBLIC_SUPABASE_URL --value https://<проект>.supabase.co --environment production --environment preview --visibility plaintext
+    npx eas-cli@latest env:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon-ключ> --environment production --environment preview --visibility plaintext
+    npx eas-cli@latest build -p android --profile preview
     npx eas-cli@latest build -p ios --profile production
     npx eas-cli@latest submit -p ios --latest
-
-Затем в App Store Connect → TestFlight добавьте тестировщиков и разошлите ссылку-приглашение. Сборка живёт 90 дней, потом выпускается новая. Первая сборка для внешних тестировщиков проходит короткую проверку Apple (обычно 1–2 дня).
-
-Android (APK):
-
-    cd mobile
-    npx eas-cli@latest build -p android --profile preview
-
-EAS выдаст ссылку на .apk; отправьте её пользователям (на телефоне нужно разрешить установку из неизвестных источников).
 
 Первые данные:
 1. Зарегистрируйте в приложении тестовые аккаунты (две модели и бизнесмена).

@@ -31,3 +31,12 @@ export function checkAnonKey(input) {
   if (payload.role !== 'anon') throw bad();
   return key;
 }
+
+export function parsePlatform(argv) {
+  const arg = argv.find((a) => a.startsWith('--platform='));
+  const value = arg ? arg.slice('--platform='.length) : '';
+  if (!['ios', 'android', 'both'].includes(value)) {
+    throw new Error('Укажите платформу: --platform=ios, android или both.');
+  }
+  return value;
+}
