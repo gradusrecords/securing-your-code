@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Данные — ZAYA</title>
+<meta name="description" content="Простыми словами: какие данные собирает сайт zaya.uz, где они хранятся и кто их видит.">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="canonical" href="https://zaya.uz/privacy.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap">
+<style>
+:root{color-scheme:dark;--black:#050505;--gold:#DBB577;--gold-dim:#9C8157;--green:#0B2F23;--cream:#EEE7DA;--soft:#A39D90;--line:rgba(219,181,119,.22);--gutter:clamp(16px,5vw,64px)}
+:root[data-theme="light"]{color-scheme:light}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:radial-gradient(120% 80% at 80% -10%,#0E3829 0%,transparent 60%),var(--black);color:var(--cream);font-family:Jost,system-ui,sans-serif;font-weight:300;line-height:1.65;min-height:100vh}
+a{color:var(--gold)}
+.wrap{max-width:820px;margin:0 auto;padding:clamp(28px,6vw,72px) var(--gutter) 96px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:clamp(32px,6vw,64px)}
+.top a.back{font-size:12px;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;color:var(--gold)}
+.lang button{all:unset;cursor:pointer;font-size:12px;letter-spacing:.2em;padding:6px 8px;color:var(--soft)}
+.lang button[aria-pressed="true"]{color:var(--gold)}
+.lang button:focus-visible,.top a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.cap{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim)}
+h1{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:clamp(38px,7vw,64px);line-height:1.05;margin:12px 0 18px}
+h1 em{color:var(--gold);font-weight:300}
+h2{font-family:"Cormorant Garamond",serif;font-weight:500;font-size:clamp(24px,3.4vw,32px);color:var(--gold);margin:46px 0 10px;line-height:1.15}
+p,li{font-size:16px}
+ul{padding-left:20px}li{margin:6px 0}
+.lead{font-size:18px;color:var(--cream)}
+.note{margin-top:46px;padding:18px 20px;border:1px solid var(--line);color:var(--soft);font-size:14px}
+.rule{height:1px;background:var(--line);margin:40px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/" data-i="back">← На сайт</a>
+    <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uz">UZ</button><button type="button" data-lang="en">EN</button></div>
+  </div>
+  <main id="doc"></main>
+</div>
+<script>
+(function(){
+var T={
+ru:{
+ back:"← На сайт",
+ title:"Как мы работаем <em>с данными</em>",
+ kicker:"ZAYA · Данные",
+ lead:"Простыми словами: что сайт zaya.uz собирает, где это лежит и кто это видит.",
+ s:[
+  ["Что мы собираем",[
+   "Формы на сайте. Бриф для бизнеса: имя, телефон, компания, сфера, задача, бюджет и сроки. Анкета модели: имя, дата рождения, телефон, рост и другие параметры, соцсети. Для моделей младше 18 лет нужны данные родителя.",
+   "Чат с ИИ-помощником на сайте и в Telegram: текст ваших сообщений. Если вы оставляете имя и телефон, они попадают в заявку.",
+   "Telegram-бот: ваш Telegram-ник и номер телефона, если вы сами нажали «Поделиться номером», и переписка с ботом.",
+   "Личный кабинет: профиль, фото моделей, чат с менеджером, ход заданий.",
+   "Технически: IP-адрес на короткое время, чтобы защитить формы и чат от спама (ограничиваем число запросов). После входа в кабинет браузер хранит служебный файл cookie. В памяти браузера лежат ваш язык сайта, выбор музыки и номер диалога в чате."
+  ]],
+  ["Зачем",[
+   "Чтобы ответить на заявку, провести консультацию или кастинг, вести личный кабинет и присылать задания и ответы менеджера в Telegram. Мы не используем данные для рекламных рассылок третьих лиц."
+  ]],
+  ["Где хранится и кто это видит",[
+   "Данные лежат в сервисах, которыми мы пользуемся: Cloudflare (хостинг сайта и база данных), Google Таблицы (рабочая таблица заявок команды), Telegram (бот).",
+   "ИИ-помощник: текст диалога обрабатывает модель Claude компании Anthropic через её интерфейс. Не пишите в чат то, чем не хотите делиться.",
+   "Видят данные менеджеры и владелец ZAYA. Фото моделей видят только владелец и менеджеры.",
+   "Мы не продаём данные. На сайте нет рекламных трекеров и сервисов аналитики.",
+   "Как и у любого сайта, шрифты загружаются с Google Fonts, а курс валют в верхней строке с сайта Центрального банка Узбекистана (cbu.uz): эти сервисы видят IP-адрес вашего браузера."
+  ]],
+  ["ИИ-помощник",[
+   "Чат с «менеджером» ведёт ИИ, и он этого не скрывает. Он не называет цены, сроки и условия: это делает живой менеджер. Он не просит пароли, коды из сообщений и данные банковских карт. Если кто-то просит вас об этом от имени ZAYA, не отвечайте и напишите нам.",
+   "Контакты передаются менеджеру только после вашего согласия в чате."
+  ]],
+  ["Сколько хранится и как удалить",[
+   "Храним, пока идёт общение и сотрудничество или пока вы не попросите удалить. Чтобы узнать, что у нас есть о вас, исправить или удалить данные, напишите на info@zaya.uz или в Telegram @zaya_booking. Укажите номер телефона из заявки."
+  ]],
+  ["Как проверить, что вы на нашем сайте",[
+   "Адрес в браузере: zaya.uz (с замком HTTPS). Сообщения в Telegram приходят из бота @zaya_booking_bot. Мы не просим оплату или данные карт через чат."
+  ]]
+ ],
+ note:"Эта страница описывает, как сайт работает сейчас, простым языком. Юридическая редакция политики конфиденциальности готовится. Если есть вопросы, напишите нам."
+},
+uz:{
+ back:"← Saytga",
+ title:"Ma’lumotlar bilan <em>qanday ishlaymiz</em>",
+ kicker:"ZAYA · Ma’lumotlar",
+ lead:"Oddiy so‘zlar bilan: zaya.uz nimani yig‘adi, bu qayerda turadi va kim ko‘radi.",
+ s:[
+  ["Nimani yig‘amiz",[
+   "Saytdagi shakllar. Biznes brifi: ism, telefon, kompaniya, soha, vazifa, byudjet va muddat. Model anketasi: ism, tug‘ilgan sana, telefon, bo‘y va boshqa parametrlar, ijtimoiy tarmoqlar. 18 yoshgacha modellar uchun ota-ona ma’lumotlari kerak.",
+   "Saytdagi va Telegramdagi sun’iy intellekt yordamchisi bilan chat: xabarlaringiz matni. Ism va telefonni qoldirsangiz, ular arizaga tushadi.",
+   "Telegram-bot: Telegram nikingiz va telefon raqamingiz (o‘zingiz «Raqamni ulashish» tugmasini bossangiz), botdagi yozishma.",
+   "Shaxsiy kabinet: profil, modellar suratlari, menejer bilan chat, topshiriqlar borishi.",
+   "Texnik jihatdan: shakllar va chatni spamdan himoya qilish uchun IP-manzil qisqa muddatga (so‘rovlar sonini cheklaymiz). Kabinetga kirgach brauzer xizmat cookie faylini saqlaydi. Brauzer xotirasida sayt tili, musiqa tanlovi va chat suhbati raqami turadi."
+  ]],
+  ["Nima uchun",[
+   "Arizaga javob berish, konsultatsiya yoki kasting o‘tkazish, shaxsiy kabinetni yuritish va Telegramga topshiriqlar hamda menejer javoblarini yuborish uchun. Ma’lumotlarni uchinchi shaxslarning reklama xabarlari uchun ishlatmaymiz."
+  ]],
+  ["Qayerda saqlanadi va kim ko‘radi",[
+   "Ma’lumotlar biz foydalanadigan xizmatlarda turadi: Cloudflare (sayt hosting va ma’lumotlar bazasi), Google Jadvallar (jamoaning ariza jadvali), Telegram (bot).",
+   "Sun’iy intellekt yordamchisi: suhbat matnini Anthropic kompaniyasining Claude modeli o‘z interfeysi orqali qayta ishlaydi. Ulashishni xohlamagan narsangizni chatga yozmang.",
+   "Ma’lumotlarni ZAYA menejerlari va egasi ko‘radi. Modellar suratlarini faqat ega va menejerlar ko‘radi.",
+   "Ma’lumotlarni sotmaymiz. Saytda reklama trekerlari va analitika xizmatlari yo‘q.",
+   "Boshqa saytlar kabi, shriftlar Google Fonts’dan, tepadagi valyuta kursi esa O‘zbekiston Markaziy banki saytidan (cbu.uz) yuklanadi: bu xizmatlar brauzeringiz IP-manzilini ko‘radi."
+  ]],
+  ["Sun’iy intellekt yordamchisi",[
+   "«Menejer» bilan chatni sun’iy intellekt yuritadi va buni yashirmaydi. U narx, muddat va shartlarni aytmaydi: buni jonli menejer qiladi. U parol, xabardagi kodlar va bank kartasi ma’lumotlarini so‘ramaydi. Agar kimdir ZAYA nomidan buni so‘rasa, javob bermang va bizga yozing.",
+   "Kontaktlar menejerga faqat chatdagi roziligingizdan keyin yuboriladi."
+  ]],
+  ["Qancha saqlanadi va qanday o‘chiriladi",[
+   "Muloqot va hamkorlik davom etguncha yoki o‘chirishni so‘ramaguningizcha saqlaymiz. Siz haqingizda nima borligini bilish, tuzatish yoki o‘chirish uchun info@zaya.uz yoki Telegram @zaya_booking ga yozing. Arizadagi telefon raqamini ko‘rsating."
+  ]],
+  ["Bizning saytda ekaningizni qanday tekshirish",[
+   "Brauzerdagi manzil: zaya.uz (HTTPS qulfi bilan). Telegramdagi xabarlar @zaya_booking_bot botidan keladi. Chat orqali to‘lov yoki karta ma’lumotlarini so‘ramaymiz."
+  ]]
+ ],
+ note:"Bu sahifa saytning hozir qanday ishlashini oddiy tilda tasvirlaydi. Maxfiylik siyosatining huquqiy tahriri tayyorlanmoqda. Savollar bo‘lsa, bizga yozing."
+},
+en:{
+ back:"← Back to the site",
+ title:"How we handle <em>your data</em>",
+ kicker:"ZAYA · Data",
+ lead:"In plain words: what zaya.uz collects, where it is kept and who can see it.",
+ s:[
+  ["What we collect",[
+   "Forms on the site. Business brief: name, phone, company, industry, task, budget and timing. Model application: name, date of birth, phone, height and other parameters, social media. Models under 18 need a parent’s details.",
+   "The chat with the AI assistant on the site and in Telegram: the text of your messages. If you leave a name and phone, they go into the request.",
+   "The Telegram bot: your Telegram username and phone number if you press “Share number” yourself, and your conversation with the bot.",
+   "The personal cabinet: profile, model photos, the chat with a manager, quest progress.",
+   "Technically: your IP address for a short time to protect the forms and the chat from spam (we limit the number of requests). After signing in to the cabinet your browser keeps a service cookie. Your browser also remembers the site language, the music choice and a chat conversation number."
+  ]],
+  ["Why",[
+   "To answer a request, hold a consultation or casting, run the personal cabinet and send tasks and manager replies to Telegram. We do not use the data for advertising mailings by third parties."
+  ]],
+  ["Where it is kept and who sees it",[
+   "The data lives in the services we use: Cloudflare (site hosting and database), Google Sheets (the team’s working table of requests), Telegram (the bot).",
+   "AI assistant: the text of a conversation is processed by Anthropic’s Claude model through its interface. Do not write in the chat anything you do not want to share.",
+   "ZAYA managers and the owner see the data. Model photos are seen only by the owner and managers.",
+   "We do not sell data. The site has no advertising trackers or analytics services.",
+   "Like any site, fonts load from Google Fonts and the currency rates in the top bar from the Central Bank of Uzbekistan (cbu.uz): these services see your browser’s IP address."
+  ]],
+  ["The AI assistant",[
+   "The “manager” chat is run by an AI and it does not hide that. It does not name prices, timing or terms: a human manager does. It never asks for passwords, codes from messages or bank card details. If anyone asks you for these in the name of ZAYA, do not reply and write to us.",
+   "Your contacts are passed to a manager only after you agree in the chat."
+  ]],
+  ["How long we keep it and how to delete it",[
+   "We keep it while we are in contact and cooperating, or until you ask us to delete it. To find out what we hold about you, correct it or delete it, write to info@zaya.uz or Telegram @zaya_booking. Give the phone number from your request."
+  ]],
+  ["How to check you are on our site",[
+   "The address in the browser: zaya.uz (with the HTTPS padlock). Telegram messages come from the bot @zaya_booking_bot. We do not ask for payment or card details through the chat."
+  ]]
+ ],
+ note:"This page describes how the site works today, in plain language. A legal version of the privacy policy is being prepared. If you have questions, write to us."
+}};
+var langs=["ru","uz","en"],l="ru";
+try{var sv=localStorage.getItem("zaya-lang");if(langs.indexOf(sv)>=0)l=sv}catch(e){}
+function draw(){
+  var t=T[l];
+  document.documentElement.lang=l;
+  document.title=(l==="ru"?"Данные":l==="uz"?"Ma’lumotlar":"Data")+" — ZAYA";
+  document.querySelector(".back").textContent=t.back;
+  document.querySelectorAll(".lang button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.lang===l)});
+  var h='<span class="cap"></span><h1>'+t.title+'</h1><p class="lead">'+t.lead+'</p>';
+  t.s.forEach(function(x){h+='<h2></h2><ul></ul>'});
+  h+='<div class="note"></div>';
+  var box=document.getElementById("doc");box.innerHTML=h;
+  box.querySelector(".cap").textContent=t.kicker;
+  var hs=box.querySelectorAll("h2"),us=box.querySelectorAll("ul");
+  t.s.forEach(function(x,i){hs[i].textContent=x[0];x[1].forEach(function(line){var li=document.createElement("li");li.textContent=line;us[i].appendChild(li)})});
+  box.querySelector(".note").textContent=t.note;
+}
+document.querySelectorAll(".lang button").forEach(function(b){b.addEventListener("click",function(){l=b.dataset.lang;try{localStorage.setItem("zaya-lang",l)}catch(e){}draw()})});
+draw();
+})();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZAYA</title>
-<meta name="description" content="ZAYA — Ташкент. Бизнес-консалтинг под ключ и модельное агентство. Твоя высота начинается здесь.">
+<meta name="description" content="ZAYA — Ташкент. Продакшн (Медиа, СММ, PR) и модельное агентство. Твоя высота начинается здесь.">
 <meta name="theme-color" content="#050505">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="monogram.png" type="image/png">
@@ -13,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ZAYA">
 <meta property="og:title" content="ZAYA — Твоя высота начинается здесь">
-<meta property="og:description" content="Бизнес-консалтинг под ключ и модельное агентство. Ташкент.">
+<meta property="og:description" content="Продакшн (Медиа, СММ, PR) и модельное агентство. Ташкент.">
 <meta property="og:url" content="https://zaya.uz/">
 <meta property="og:image" content="https://zaya.uz/og.png">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
@@ -230,6 +230,9 @@ section{padding-block:clamp(100px,13vw,190px)}
 
 /* for whom */
 .whom{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,28px)}
+.whom.w4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:1000px){.whom.w4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.whom.w4{grid-template-columns:1fr}}
 .whom div{border:1px solid var(--line);padding:clamp(30px,3vw,48px);display:grid;gap:14px;background:color-mix(in srgb,var(--tint-b) 18%,rgba(5,5,5,.4));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .whom b{font-family:var(--serif);font-weight:300;font-size:clamp(26px,2.4vw,34px);line-height:1.1;color:var(--ink)}
 .whom p{margin:0;color:var(--soft);font-size:15px}
@@ -649,13 +652,13 @@ body.ready .pull{opacity:1}
       <div class="head rise">
         <span class="cap"><span data-i="ab.k">О нас</span></span>
         <h2 data-i="ab.h">Мы — <em>ZAYA</em></h2>
-        <p data-i="ab.p">Компания из Ташкента, которая растит бизнес и людей. Мы выстраиваем системы и открываем лица: два направления, одна высота.</p>
+        <p data-i="ab.p">Компания из Ташкента, которая делает бренды заметными и открывает лица: два направления, одна высота.</p>
       </div>
       <div class="duo rise">
         <article>
-          <span class="cap" data-i="ab.biz.k">ZAYA Consulting</span>
-          <h3 data-i="ab.biz.h">Бизнес под ключ</h3>
-          <p data-i="ab.biz.p">Систематизируем бизнес от диагностики и стратегии до работающих отделов: маркетинг, IT, юриспруденция, продажи, HR и R&amp;D.</p>
+          <span class="cap" data-i="ab.biz.k">ZAYA Production</span>
+          <h3 data-i="ab.biz.h">Медиа, СММ, PR</h3>
+          <p data-i="ab.biz.p">Делаем бренды заметными: контент, соцсети и репутация. Сначала разбор, потом план.</p>
         </article>
         <article>
           <span class="cap" data-i="ab.mod.k">ZAYA Model Agency</span>
@@ -679,7 +682,7 @@ body.ready .pull{opacity:1}
           <div class="front">
             <span class="cap" data-i="d.biz.k">Для бизнеса</span>
             <h2 data-i="d.biz.h">Клиентам</h2>
-            <p data-i="d.biz.p">Консалтинг и систематизация бизнеса под ключ</p>
+            <p data-i="d.biz.p">Медиа, СММ и PR для вашего бренда</p>
             <span class="arr" aria-hidden="true">→</span>
             <i class="glare"></i>
           </div>
@@ -703,11 +706,11 @@ body.ready .pull{opacity:1}
   <header class="qh" data-deck="business">
     <div class="wrap qh-in">
       <div class="qh-copy">
-        <span class="cap qh-k"><span data-i="b.k">ZAYA Consulting</span></span>
-        <h1 data-i="b.h">Бизнес <em>под ключ</em></h1>
-        <p class="qh-p" data-i="b.p">Мы систематизируем ваш бизнес: от полной диагностики и стратегии до работающих отделов. Вы сохраняете своё видение, мы выстраиваем вокруг него систему.</p>
+        <span class="cap qh-k"><span data-i="b.k">ZAYA Production</span></span>
+        <h1 data-i="b.h">Бренд, о котором <em>говорят</em></h1>
+        <p class="qh-p" data-i="b.p">Медиа, СММ и PR. Начинаем с разбора вашего бренда, затем предлагаем план и обсуждаем стоимость до старта.</p>
         <div class="qh-q sm"></div>
-        <div class="acts qh-acts"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить консультацию</span></a><a class="btn mag" href="#production"><span data-i="b.cta2">Услуги</span></a></div>
+        <div class="acts qh-acts"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить разбор бренда</span></a><a class="btn mag" href="#production"><span data-i="b.cta2">Услуги</span></a></div>
       </div>
       <div class="qh-vis"><div class="qh-arch t"></div><div class="qh-dots"></div></div>
     </div>
@@ -728,7 +731,7 @@ body.ready .pull{opacity:1}
     <div class="wrap">
       <div class="head rise">
         <span class="cap"><span data-i="pr.k">Как мы работаем</span></span>
-        <h2 data-i="pr.h">От диагностики <em>до результата</em></h2>
+        <h2 data-i="pr.h">От разбора <em>до отчёта</em></h2>
       </div>
       <ol class="steps rise" id="steps"></ol>
     </div>
@@ -738,10 +741,22 @@ body.ready .pull{opacity:1}
     <div class="wrap">
       <div class="head rise">
         <span class="cap"><span data-i="w.k">Для кого</span></span>
-        <h2 data-i="w.h">Когда бизнес готов <em>расти</em></h2>
+        <h2 data-i="w.h">Когда бренду пора <em>заявить о себе</em></h2>
       </div>
       <div class="whom rise" id="whom"></div>
-      <div class="center"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить консультацию</span></a></div>
+      <div class="center"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить разбор бренда</span></a></div>
+    </div>
+  </section>
+
+  <section id="trust">
+    <div class="wrap">
+      <div class="head rise">
+        <span class="cap"><span data-i="tr.k">Прозрачность</span></span>
+        <h2 data-i="tr.h">Можно ли нам <em>доверять</em></h2>
+        <p data-i="tr.p">Коротко и честно: как мы работаем с вами и вашими данными.</p>
+      </div>
+      <div class="whom w4 rise" id="trust-list"></div>
+      <div class="center"><a class="btn mag" href="privacy.html"><span data-i="tr.link">Как мы работаем с данными</span></a></div>
     </div>
   </section>
 
@@ -789,7 +804,7 @@ body.ready .pull{opacity:1}
     </div>
   </section>
 
-  <div class="cross"><a href="#business"><span class="cap" data-i="x.biz.k">ZAYA Consulting</span><b data-i="x.biz">Бизнес под ключ →</b></a></div>
+  <div class="cross"><a href="#business"><span class="cap" data-i="x.biz.k">ZAYA Production</span><b data-i="x.biz">Медиа, СММ и PR →</b></a></div>
 </main>
 
 <div class="drawer" id="drawer">
@@ -817,7 +832,7 @@ body.ready .pull{opacity:1}
       <span>© <span id="yr">2026</span> ZAYA</span>
       <span class="v">Telegram @zaya_booking</span>
       <span class="v"><span id="mail">info@zaya.uz</span><button class="copy" type="button" data-copy="info@zaya.uz" data-i="copy">Копировать</button></span>
-      <nav><a class="ul" href="#business" data-i="n.biz">Бизнесу</a><a class="ul" href="#models" data-i="n.mod">Моделям</a><a class="ul" href="catalog.html" data-i="n.cat">Каталог</a></nav>
+      <nav><a class="ul" href="#business" data-i="n.biz">Бизнесу</a><a class="ul" href="#models" data-i="n.mod">Моделям</a><a class="ul" href="catalog.html" data-i="n.cat">Каталог</a><a class="ul" href="privacy.html" data-i="n.priv">Данные</a></nav>
     </div>
   </div>
 </footer>
@@ -831,29 +846,31 @@ const $=id=>document.getElementById(id);
 const T={ru:{},uz:{
 "n.biz":"Biznesga","n.mod":"Modellarga","n.contact":"Aloqa","city":"Toshkent","copy":"Nusxa",
 "slogan":"Sening cho‘qqing shu yerdan boshlanadi",
-"d.biz.k":"Biznes uchun","d.biz.h":"Mijozlarga","d.biz.p":"Biznesni kalit topshirish asosida konsalting va tizimlashtirish",
+"d.biz.k":"Biznes uchun","d.biz.h":"Mijozlarga","d.biz.p":"Brendingiz uchun Media, SMM va PR",
 "d.mod.h":"Modellarga","d.mod.p":"Kasting va agentlikka qo‘shilish shartlari",
-"b.h":"Biznes <em>kalit topshirish</em> asosida","b.p":"Biznesingizni tizimlashtiramiz: to‘liq diagnostika va strategiyadan tortib ishlaydigan bo‘limlargacha. Siz o‘z qarashingizni saqlaysiz, biz uning atrofida tizim quramiz.","b.cta":"Konsultatsiya olish","b.cta2":"Xizmatlar",
+"b.h":"Haqida <em>gapiradigan</em> brend","b.p":"Media, SMM va PR. Brendingizni tahlil qilishdan boshlaymiz, so‘ng reja taklif qilamiz va boshlashdan oldin narxni muhokama qilamiz.","b.cta":"Brendni tahlil qildirish","b.cta2":"Xizmatlar",
 "dir.k":"Xizmatlar","dir.h":"ZAYA <em>Production</em>","dir.p":"Media, SMM va PR: brendingizni ko‘zga tashlanadigan qiladigan uchta xizmat.",
-"pr.k":"Qanday ishlaymiz","pr.h":"Diagnostikadan <em>natijagacha</em>",
-"w.k":"Kim uchun","w.h":"Biznes <em>o‘sishga</em> tayyor bo‘lganda",
+"tr.k":"Shaffoflik","tr.h":"Bizga <em>ishonsa</em> bo‘ladimi","tr.p":"Qisqa va ochiq: siz va ma’lumotlaringiz bilan qanday ishlashimiz haqida.","tr.link":"Ma’lumotlar bilan qanday ishlaymiz",
+"pr.k":"Qanday ishlaymiz","pr.h":"Tahlildan <em>hisobotgacha</em>",
+"w.k":"Kim uchun","w.h":"Brend o‘zini <em>namoyon qilish</em> vaqti kelganda",
 "x.mod":"Model bo‘lish →",
 "m.h":"<em>ZAYA</em> yuzi bo‘l","m.p":"Fashion, reklama, podium va shou-biznes uchun modellar. Tajriba shart emas: har bir modelni tanlaymiz, o‘rgatamiz va qo‘llab-quvvatlaymiz.","m.cta":"Kastingga yozilish","m.cta2":"Shartlar",
 "c.k":"Kasting","c.h":"Agentlikka <em>qanday qo‘shilish</em> mumkin","c.req":"Talablar","c.path":"Yo‘l","m.apply":"Ariza topshirish",
-"f.k":"Agentlik yuzlari","x.biz":"Biznes kalit topshirish asosida →"},
+"f.k":"Agentlik yuzlari","x.biz":"Media, SMM va PR →"},
 en:{
 "n.biz":"Business","n.mod":"Models","n.contact":"Contact","city":"Tashkent","copy":"Copy",
 "slogan":"Your heights begin here",
-"d.biz.k":"For business","d.biz.h":"Clients","d.biz.p":"Turnkey business consulting and systemisation",
+"d.biz.k":"For business","d.biz.h":"Clients","d.biz.p":"Media, SMM and PR for your brand",
 "d.mod.h":"Models","d.mod.p":"Casting and how to join the agency",
-"b.h":"Business, <em>turnkey</em>","b.p":"We systemise your business — from a full diagnostic and strategy to departments that actually run. You keep your vision; we build the system around it.","b.cta":"Book a consultation","b.cta2":"Services",
+"b.h":"A brand people <em>talk about</em>","b.p":"Media, SMM and PR. We start with a review of your brand, then propose a plan and agree the cost before we begin.","b.cta":"Get a brand review","b.cta2":"Services",
 "dir.k":"Services","dir.h":"ZAYA <em>Production</em>","dir.p":"Media, SMM and PR: three services that make your brand stand out.",
-"pr.k":"How we work","pr.h":"From diagnostic <em>to results</em>",
-"w.k":"Who it’s for","w.h":"When a business is ready <em>to grow</em>",
+"tr.k":"Transparency","tr.h":"Can you <em>trust us</em>","tr.p":"Short and honest: how we work with you and with your data.","tr.link":"How we handle data",
+"pr.k":"How we work","pr.h":"From review <em>to report</em>",
+"w.k":"Who it’s for","w.h":"When a brand is ready <em>to speak up</em>",
 "x.mod":"Become a model →",
 "m.h":"Become a <em>ZAYA</em> face","m.p":"Models for fashion, advertising, runway and entertainment. No experience needed: we select, train and guide every model.","m.cta":"Sign up for casting","m.cta2":"Conditions",
 "c.k":"Casting","c.h":"How to join <em>the agency</em>","c.req":"Requirements","c.path":"The path","m.apply":"Apply now",
-"f.k":"Our faces","x.biz":"Turnkey business →"}};
+"f.k":"Our faces","x.biz":"Media, SMM and PR →"}};
 document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.ru[el.dataset.i]=el.innerHTML});
 
 /* ---------------- structured content ---------------- */
@@ -863,8 +880,9 @@ dirs:[
 ["Media","Медиа","Контент и медиапроекты для вашего бренда.",[]],
 ["SMM","СММ","Соцсети бренда: ведение, контент и реклама.",[]],
 ["PR","PR","Репутация и публичность: чтобы о вас говорили.",[]]],
-steps:[["Диагностика","Полный аудит бизнеса: находим риски, узкие места и точки роста."],["Стратегия","План развития под ваше видение, цели и ресурсы."],["Внедрение","Выстраиваем отделы и процессы под ключ."],["Сопровождение","Контролируем результат и развиваем систему дальше."]],
-whom:[["Владельцам малого бизнеса","Когда всё держится на вас и пора выстроить систему."],["Предпринимателям","Которые хотят масштабироваться без хаоса."],["Компаниям перед инвестициями","Чтобы бизнес был прозрачным и готовым к инвестору."]],
+steps:[["Разбор","Смотрим ваш бренд, соцсети и цели: что уже есть и чего не хватает."],["Предложение","Состав работ, сроки и стоимость обсуждаем до старта."],["Запуск","Начинаем после вашего согласия: контент, соцсети, публикации."],["Отчёт","Показываем, что сделано и какие получились результаты."]],
+whom:[["Новым брендам","Чтобы о вас узнали с первых месяцев."],["Растущему бизнесу","Когда соцсети и публичный образ отстают от самого бизнеса."],["Перед запуском или ребрендингом","Когда нужно показать себя заново."]],
+trust:[["Рядом живые люди","За каждой заявкой стоит менеджер ZAYA. Пишите в Telegram @zaya_booking или на info@zaya.uz."],["ИИ не прячется","Чат на сайте и в Telegram ведёт ИИ-помощник и говорит об этом. Цену, сроки и условия называет только менеджер. Пароли, коды и данные карт в чате мы не просим."],["Данные с вашего согласия","Контакты уходят менеджеру только после вашего «да». Их видит команда ZAYA. Подробности на странице о данных."],["Сначала разбор, потом обещания","Результат заранее не обещаем: сначала смотрим ваш бренд, потом предлагаем план и обсуждаем стоимость."]],
 req:[["Возраст","от 18 лет"],["Студенты","приветствуются"],["Опыт","не обязателен"],["Фото","лицо и полный рост, без фильтров"]],
 path:[["Заявка","Имя, возраст, рост и фото в Telegram @zaya_booking."],["Кастинг","Личная встреча в агентстве."],["Договор","Официальное сотрудничество."],["Портфолио","Фотосессия и первые проекты."]],
 face:["Портрет скоро","см"]},
@@ -873,8 +891,9 @@ dirs:[
 ["Media","Media","Brendingiz uchun kontent va media loyihalar.",[]],
 ["SMM","SMM","Brend ijtimoiy tarmoqlari: yuritish, kontent va reklama.",[]],
 ["PR","PR","Obro‘ va ommaviylik: siz haqingizda gapirishsin.",[]]],
-steps:[["Diagnostika","Biznesning to‘liq auditi: xavflar, tor joylar va o‘sish nuqtalarini topamiz."],["Strategiya","Sizning qarashingiz, maqsad va resurslaringizga mos reja."],["Joriy etish","Bo‘lim va jarayonlarni kalit topshirish asosida quramiz."],["Kuzatuv","Natijani nazorat qilamiz va tizimni rivojlantiramiz."]],
-whom:[["Kichik biznes egalariga","Hammasi sizga bog‘liq bo‘lsa va tizim qurish vaqti kelganda."],["Tadbirkorlarga","Tartibsizliksiz kengaymoqchi bo‘lganlarga."],["Investitsiya oldidagi kompaniyalarga","Biznes shaffof va investorga tayyor bo‘lishi uchun."]],
+steps:[["Tahlil","Brendingiz, ijtimoiy tarmoqlaringiz va maqsadlaringizni ko‘ramiz: nima bor va nima yetishmaydi."],["Taklif","Ishlar tarkibi, muddat va narxni boshlashdan oldin muhokama qilamiz."],["Boshlash","Sizning roziligingizdan keyin boshlaymiz: kontent, ijtimoiy tarmoqlar, nashrlar."],["Hisobot","Nima qilingani va qanday natijalar olinganini ko‘rsatamiz."]],
+whom:[["Yangi brendlarga","Dastlabki oylardanoq siz haqingizda bilishsin."],["O‘sayotgan biznesga","Ijtimoiy tarmoqlar va jamoatchilik oldidagi imidj biznesdan orqada qolganda."],["Ishga tushirish yoki rebrendingdan oldin","O‘zingizni yangidan ko‘rsatish kerak bo‘lganda."]],
+trust:[["Yonida tirik odamlar","Har bir ariza ortida ZAYA menejeri turadi. Telegram @zaya_booking yoki info@zaya.uz ga yozing."],["Sun’iy intellekt yashirinmaydi","Saytdagi va Telegramdagi chatni sun’iy intellekt yordamchisi yuritadi va buni aytadi. Narx, muddat va shartlarni faqat menejer aytadi. Chatda parol, kod va karta ma’lumotlarini so‘ramaymiz."],["Ma’lumotlar roziligingiz bilan","Kontaktlar menejerga faqat sizning «ha» javobingizdan keyin yetkaziladi. Ularni ZAYA jamoasi ko‘radi. Tafsilotlar ma’lumotlar sahifasida."],["Avval tahlil, keyin va’dalar","Natijani oldindan va’da qilmaymiz: avval brendingizni ko‘ramiz, keyin reja taklif qilib, narxni muhokama qilamiz."]],
 req:[["Yosh","18 yoshdan"],["Talabalar","xush kelibsiz"],["Tajriba","shart emas"],["Rasm","yuz va to‘liq bo‘y, filtrsiz"]],
 path:[["Ariza","Ism, yosh, bo‘y va rasmlarni Telegram @zaya_booking ga yuboring."],["Kasting","Agentlikda shaxsiy uchrashuv."],["Shartnoma","Rasmiy hamkorlik."],["Portfolio","Fotosessiya va ilk loyihalar."]],
 face:["Portret tez orada","sm"]},
@@ -883,22 +902,23 @@ dirs:[
 ["Media","Media","Content and media projects for your brand.",[]],
 ["SMM","SMM","Your brand’s social media: management, content and ads.",[]],
 ["PR","PR","Reputation and visibility, so people talk about you.",[]]],
-steps:[["Diagnostic","A full business audit: risks, bottlenecks and growth points."],["Strategy","A plan built around your vision, goals and resources."],["Implementation","We build departments and processes, turnkey."],["Support","We track results and keep developing the system."]],
-whom:[["Small business owners","When everything rests on you and it’s time for a system."],["Entrepreneurs","Who want to scale without chaos."],["Companies raising investment","So the business is transparent and investor-ready."]],
+steps:[["Review","We look at your brand, social media and goals: what is there and what is missing."],["Proposal","Scope, timing and cost are agreed before we start."],["Launch","We begin once you agree: content, social media, publications."],["Report","We show what was done and what results it brought."]],
+whom:[["New brands","So people know about you from the first months."],["Growing businesses","When social media and public image lag behind the business itself."],["Before a launch or a rebrand","When you need to present yourself anew."]],
+trust:[["Real people behind it","Every request has a ZAYA manager behind it. Write to Telegram @zaya_booking or info@zaya.uz."],["The AI does not hide","The chat on the site and in Telegram is run by an AI assistant, and it says so. Only a manager names the price, timing and terms. We never ask for passwords, codes or card details in the chat."],["Data with your consent","Your contacts reach a manager only after your “yes”. The ZAYA team sees them. Details on the data page."],["A review first, promises later","We do not promise results in advance: first we look at your brand, then propose a plan and discuss the cost."]],
 req:[["Age","18+"],["Students","welcome"],["Experience","not required"],["Photos","face and full length, no filters"]],
 path:[["Apply","Send name, age, height and photos to @zaya_booking on Telegram."],["Casting","A personal meeting at the agency."],["Contract","Official partnership."],["Portfolio","A shoot and your first projects."]],
 face:["Portrait soon","cm"]}};
 
 T.uz.skip="O‘tkazib yuborish";T.en.skip="Skip";
 Object.assign(T.uz,{"cue":"Biz haqimizda bilib oling",
-"ab.k":"Biz haqimizda","ab.h":"Biz — <em>ZAYA</em>","ab.p":"Toshkentdagi kompaniya: biznesni va odamlarni o‘stiramiz. Tizimlar quramiz va yuzlarni kashf etamiz: ikki yo‘nalish, bitta cho‘qqi.",
-"ab.biz.k":"ZAYA Consulting","ab.biz.h":"Biznes kalit topshirish asosida","ab.biz.p":"Biznesni diagnostika va strategiyadan tortib ishlaydigan bo‘limlargacha tizimlashtiramiz: marketing, IT, yurisprudensiya, sotuv, HR va R&amp;D.",
+"ab.k":"Biz haqimizda","ab.h":"Biz — <em>ZAYA</em>","ab.p":"Toshkentdagi kompaniya: brendlarni ko‘zga tashlanadigan qilamiz va yuzlarni kashf etamiz: ikki yo‘nalish, bitta cho‘qqi.",
+"ab.biz.k":"ZAYA Production","ab.biz.h":"Media, SMM, PR","ab.biz.p":"Brendlarni ko‘zga tashlanadigan qilamiz: kontent, ijtimoiy tarmoqlar va obro‘. Avval tahlil, keyin reja.",
 "ab.mod.k":"ZAYA Model Agency","ab.mod.h":"Model agentligi","ab.mod.p":"Fashion, reklama, podium va shou-biznes uchun modellarni tanlaymiz, o‘rgatamiz va qo‘llab-quvvatlaymiz. Tajriba shart emas.",
 "ab.line":"Biznesga — tizim. Modellarga — yo‘l. Sizga — cho‘qqi.",
 "fk.k":"Sening yo‘ling","fk.h":"Sen tadbirkormisan <em>yoki modelmi?</em>","fk.p":"Yo‘lingni tanla, nimadan boshlashni ko‘rsatamiz."});
 Object.assign(T.en,{"cue":"Get to know us",
-"ab.k":"About us","ab.h":"We are <em>ZAYA</em>","ab.p":"A Tashkent company that grows businesses and people. We build systems and discover faces: two directions, one height.",
-"ab.biz.k":"ZAYA Consulting","ab.biz.h":"Business, turnkey","ab.biz.p":"We systemise your business from diagnostic and strategy to departments that run: marketing, IT, legal, sales, HR and R&amp;D.",
+"ab.k":"About us","ab.h":"We are <em>ZAYA</em>","ab.p":"A Tashkent company that makes brands visible and discovers faces: two directions, one height.",
+"ab.biz.k":"ZAYA Production","ab.biz.h":"Media, SMM, PR","ab.biz.p":"We make brands visible: content, social media and reputation. A review first, then a plan.",
 "ab.mod.k":"ZAYA Model Agency","ab.mod.h":"Model agency","ab.mod.p":"We select, train and guide models for fashion, advertising, runway and entertainment. No experience needed.",
 "ab.line":"For business — a system. For models — a path. For you — heights.",
 "fk.k":"Your path","fk.h":"Are you a business owner <em>or a model?</em>","fk.p":"Choose your path and we’ll show you where to start."});
@@ -906,8 +926,8 @@ Object.assign(T.uz,{"n.cat":"Katalog","m.cat":"Modellar katalogi","m.cat2":"3D-k
 Object.assign(T.en,{"n.cat":"Catalog","m.cat":"Model catalog","m.cat2":"Open the 3D catalog"});
 Object.assign(T.uz,{"n.login":"Kirish","n.cab":"Kabinet"});Object.assign(T.en,{"n.login":"Sign in","n.cab":"Account"});
 T.ru["n.cab"]="Кабинет";
-Object.assign(T.uz,{"q.biz":"Biznes uchun","q.mod":"Modellar uchun","n.dir":"ZAYA Production","n.proc":"Qanday ishlaymiz","n.whom":"Kim uchun","n.cast":"Kasting","n.faces":"Yuzlar"});
-Object.assign(T.en,{"q.biz":"For business","q.mod":"For models","n.dir":"ZAYA Production","n.proc":"How we work","n.whom":"Who it’s for","n.cast":"Casting","n.faces":"Faces"});
+Object.assign(T.uz,{"q.biz":"Biznes uchun","q.mod":"Modellar uchun","n.dir":"ZAYA Production","n.proc":"Qanday ishlaymiz","n.whom":"Kim uchun","n.cast":"Kasting","n.faces":"Yuzlar","n.priv":"Ma’lumotlar"});
+Object.assign(T.en,{"q.biz":"For business","q.mod":"For models","n.dir":"ZAYA Production","n.proc":"How we work","n.whom":"Who it’s for","n.cast":"Casting","n.faces":"Faces","n.priv":"Data"});
 
 /* New Faces: имя (RU/UZ/EN), рост и портрет 3:4 из photos/ (те же снимки, что в каталоге). Пустое photo — заглушка */
 const FACES=[
@@ -970,6 +990,7 @@ function render(l){
   const c=C[l];
   $("dirs").innerHTML=c.dirs.map(d=>`<article class="dir"><span class="cap">${d[0]}</span><h3>${d[1]}</h3><p>${d[2]}</p>${d[3]&&d[3].length?`<ul>${d[3].map(x=>`<li>${x}</li>`).join("")}</ul>`:""}</article>`).join("");
   $("steps").innerHTML=c.steps.map(s=>`<li><strong>${s[0]}</strong><p>${s[1]}</p></li>`).join("");
+  $("trust-list").innerHTML=c.trust.map(w=>`<div><span class="tick"></span><b>${w[0]}</b><p>${w[1]}</p></div>`).join("");
   $("whom").innerHTML=c.whom.map(w=>`<div><span class="tick"></span><b>${w[0]}</b><p>${w[1]}</p></div>`).join("");
   $("req").innerHTML=c.req.map(r=>`<li><span>${r[0]}</span><span>${r[1]}</span></li>`).join("");
   $("path").innerHTML=c.path.map((p,i)=>`<li><b>${["i","ii","iii","iv"][i]}</b><div><strong>${p[0]}</strong><p>${p[1]}</p></div></li>`).join("");
@@ -999,7 +1020,7 @@ const DIRS_B=[["Медиа","Media","Media"],["СММ","SMM","SMM"],["PR","PR","
 const DIRS_M=[["Показы","Podium","Runway"],["Фотосъёмки","Fotosuratga olish","Photoshoots"],["Реклама / видео","Reklama / video","Ads / video"],["Клипы","Klip","Music videos"],["Шоурум / промо","Shourum / promo","Showroom / promo"]];
 const FORMS={
 brief:{
-  kicker:"ZAYA Consulting",
+  kicker:"ZAYA Production",
   title:["Бриф на консультацию","Konsultatsiya uchun brif","Consultation brief"],
   sub:["Расскажите о бизнесе и задаче. Менеджер ZAYA изучит бриф и свяжется с вами.","Biznes va vazifa haqida yozing. ZAYA menejeri brifni ko‘rib chiqib, siz bilan bog‘lanadi.","Tell us about your business and goal. A ZAYA manager will review the brief and contact you."],
   send:["Отправить бриф","Brifni yuborish","Send brief"],
@@ -1048,6 +1069,7 @@ apply:{
   {n:"about",t:"textarea",f:1,l:["О себе","O‘zingiz haqingizda","About you"]}
   ]}
 };
+const AGREE_LINK=["Как мы работаем с данными","Ma’lumotlar bilan qanday ishlaymiz","How we handle data"];
 const AGREE=["Согласен(на) на обработку персональных данных. Менеджер ZAYA свяжется со мной.","Shaxsiy ma’lumotlarni qayta ishlashga roziman. ZAYA menejeri men bilan bog‘lanadi.","I agree to the processing of my personal data. A ZAYA manager will contact me."];
 const MSG={
   chips:["Выберите хотя бы один вариант","Kamida bitta variantni tanlang","Choose at least one option"],
@@ -1072,7 +1094,7 @@ function fieldHTML(f){
 function openForm(type){
   const F=FORMS[type];if(!F)return;
   lastFocus=document.activeElement;
-  dbody.innerHTML=`<span class="cap">${F.kicker}</span><h2 id="dlg-t">${tr(F.title)}</h2><p class="sub">${tr(F.sub)}</p><form class="frm" data-type="${type}">${F.fields.map(fieldHTML).join("")}<label class="agree full"><input type="checkbox" name="consent" required><span>${tr(AGREE)}</span></label><div class="hp" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off"></div><div class="act full"><p class="err" role="alert"></p><button class="btn fill" type="submit"><span>${tr(F.send)}</span></button></div></form>`;
+  dbody.innerHTML=`<span class="cap">${F.kicker}</span><h2 id="dlg-t">${tr(F.title)}</h2><p class="sub">${tr(F.sub)}</p><form class="frm" data-type="${type}">${F.fields.map(fieldHTML).join("")}<label class="agree full"><input type="checkbox" name="consent" required><span>${tr(AGREE)} <a class="ul" href="privacy.html" target="_blank" rel="noopener">${tr(AGREE_LINK)}</a></span></label><div class="hp" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off"></div><div class="act full"><p class="err" role="alert"></p><button class="btn fill" type="submit"><span>${tr(F.send)}</span></button></div></form>`;
   const form=dbody.querySelector("form");
   const b=form.elements.birth;
   if(b){const p=form.querySelector("[data-minor]");b.max=new Date().toISOString().slice(0,10);b.min="1940-01-01";
@@ -1408,10 +1430,10 @@ const DECKS={
     {img:PH+"kamilla-muzrabbekova-1.jpg",q:["Покажи, какой ты есть. Остальное мы раскроем.","O‘zingni ko‘rsat. Qolganini biz ochamiz.","Show who you are. We’ll bring out the rest."]}
   ],
   business:[
-    {w:["Система","Tizim","System"],q:["Бизнес растёт там, где есть система.","Biznes tizim bor joyda o‘sadi.","A business grows where there is a system."]},
-    {w:["Рост","O‘sish","Growth"],q:["Хаос — это система, которую ещё не построили.","Tartibsizlik — hali qurilmagan tizim.","Chaos is a system that hasn’t been built yet."]},
-    {w:["Команда","Jamoa","Team"],q:["Сильная команда — это процессы, а не героизм.","Kuchli jamoa — jarayonlar, qahramonlik emas.","A strong team is processes, not heroics."]},
-    {w:["Результат","Natija","Result"],q:["Решение по данным обходится дешевле ошибки.","Ma’lumotga tayangan qaror xatodan arzonroq.","A decision backed by data costs less than a mistake."]}
+    {w:["Медиа","Media","Media"],q:["Историю бренда нужно рассказывать так, чтобы её хотели пересказать.","Brend hikoyasini shunday aytish kerakki, uni qayta aytib berishni xohlashsin.","Tell your brand’s story so that people want to retell it."]},
+    {w:["СММ","SMM","SMM"],q:["Соцсети — не витрина, а разговор.","Ijtimoiy tarmoqlar vitrina emas, suhbatdir.","Social media is not a shop window, it is a conversation."]},
+    {w:["PR","PR","PR"],q:["Репутация складывается из мелочей, поэтому мы следим за каждой.","Obro‘ mayda narsalardan tashkil topadi, shuning uchun har biriga e’tibor beramiz.","Reputation is made of small things, so we watch every one."]},
+    {w:["Результат","Natija","Result"],q:["Считаем то, что можно измерить, и честно об этом говорим.","O‘lchash mumkin bo‘lganni sanaymiz va bu haqda ochiq aytamiz.","We measure what can be measured and say so honestly."]}
   ]
 };
 const DECK_MS=7500,decks=[];

@@ -5,15 +5,15 @@
   window.__zayaSales = 1;
   var SID_KEY = 'zaya-sales-sid', LOG_KEY = 'zaya-sales-log';
   var T = {
-    ru: { btn: 'Чат с менеджером', title: 'ИИ-менеджер ZAYA', sub: 'Вы общаетесь с ИИ. Менеджер подключится к заявке.', ph: 'Напишите сообщение…', send: 'Отправить', close: 'Закрыть',
-      hi: 'Здравствуйте! Я ИИ-менеджер ZAYA Consulting. Помогу понять, чем мы полезны вашему бизнесу, и запишу на консультацию. Чем вы занимаетесь?',
-      q: ['Что вы делаете?', 'Хочу консультацию', 'Сколько это стоит?'], err: 'Не получилось отправить. Попробуйте ещё раз.', off: 'Чат сейчас недоступен. Оставьте бриф, и менеджер свяжется с вами.', brief: 'Оставить бриф', lead: 'Заявка передана менеджеру ✓' },
-    uz: { btn: 'Menejer bilan chat', title: 'ZAYA AI-menejeri', sub: 'Siz sun’iy intellekt bilan yozishyapsiz. Menejer arizaga ulanadi.', ph: 'Xabar yozing…', send: 'Yuborish', close: 'Yopish',
-      hi: 'Assalomu alaykum! Men ZAYA Consulting’ning sun’iy intellekt menejeriman. Biznesingizga qanday foydali bo‘lishimizni tushuntirib, konsultatsiyaga yozib qo‘yaman. Faoliyatingiz qanday?',
-      q: ['Nima qilasiz?', 'Konsultatsiya olmoqchiman', 'Narxi qancha?'], err: 'Yuborib bo‘lmadi. Yana urinib ko‘ring.', off: 'Chat hozir mavjud emas. Brif qoldiring, menejer siz bilan bog‘lanadi.', brief: 'Brif qoldirish', lead: 'Ariza menejerga yuborildi ✓' },
-    en: { btn: 'Chat with a manager', title: 'ZAYA AI manager', sub: 'You are chatting with an AI. A human manager will join your request.', ph: 'Write a message…', send: 'Send', close: 'Close',
-      hi: 'Hello! I am the AI manager of ZAYA Consulting. I will help you see how we can be useful and book a consultation. What does your business do?',
-      q: ['What do you do?', 'I want a consultation', 'How much does it cost?'], err: 'Could not send. Please try again.', off: 'The chat is unavailable right now. Leave a brief and a manager will contact you.', brief: 'Leave a brief', lead: 'Request sent to a manager ✓' },
+    ru: { btn: 'Чат с менеджером', title: 'ИИ-менеджер ZAYA', sub: 'Вы общаетесь с ИИ. Менеджер подключится к заявке.', ph: 'Напишите сообщение…', send: 'Отправить', close: 'Закрыть', priv: 'Как мы храним данные',
+      hi: 'Здравствуйте! Я ИИ-менеджер ZAYA Production. Помогу понять, чем мы полезны вашему бренду (Медиа, СММ, PR), и запишу на разбор с менеджером. Чем вы занимаетесь?',
+      q: ['Что входит в Production?', 'Хочу разбор бренда', 'Сколько это стоит?'], err: 'Не получилось отправить. Попробуйте ещё раз.', off: 'Чат сейчас недоступен. Оставьте бриф, и менеджер свяжется с вами.', brief: 'Оставить бриф', lead: 'Заявка передана менеджеру ✓' },
+    uz: { btn: 'Menejer bilan chat', title: 'ZAYA AI-menejeri', sub: 'Siz sun’iy intellekt bilan yozishyapsiz. Menejer arizaga ulanadi.', ph: 'Xabar yozing…', send: 'Yuborish', close: 'Yopish', priv: 'Ma’lumotlar qanday saqlanadi',
+      hi: 'Assalomu alaykum! Men ZAYA Production’ning sun’iy intellekt menejeriman. Brendingizga (Media, SMM, PR) qanday foydali bo‘lishimizni tushuntirib, menejer bilan tahlilga yozib qo‘yaman. Faoliyatingiz qanday?',
+      q: ['Production nimani o‘z ichiga oladi?', 'Brend tahlilini xohlayman', 'Narxi qancha?'], err: 'Yuborib bo‘lmadi. Yana urinib ko‘ring.', off: 'Chat hozir mavjud emas. Brif qoldiring, menejer siz bilan bog‘lanadi.', brief: 'Brif qoldirish', lead: 'Ariza menejerga yuborildi ✓' },
+    en: { btn: 'Chat with a manager', title: 'ZAYA AI manager', sub: 'You are chatting with an AI. A human manager will join your request.', ph: 'Write a message…', send: 'Send', close: 'Close', priv: 'How we handle data',
+      hi: 'Hello! I am the AI manager of ZAYA Production. I will help you see how we can be useful to your brand (Media, SMM, PR) and book a review with a manager. What does your business do?',
+      q: ['What does Production include?', 'I want a brand review', 'How much does it cost?'], err: 'Could not send. Please try again.', off: 'The chat is unavailable right now. Leave a brief and a manager will contact you.', brief: 'Leave a brief', lead: 'Request sent to a manager ✓' },
   };
   var lang = function () { var l = document.documentElement.lang; return T[l] ? l : 'ru'; };
   var tx = function (k) { return T[lang()][k]; };
@@ -68,7 +68,7 @@
 
   function labels() {
     btn.setAttribute('aria-label', tx('btn')); box.setAttribute('aria-label', tx('title'));
-    ht.textContent = tx('title'); hs.textContent = tx('sub'); inp.placeholder = tx('ph'); sendb.textContent = tx('send'); hx.setAttribute('aria-label', tx('close'));
+    ht.textContent = tx('title'); hs.textContent = tx('sub') + ' '; var pl = el('a', '', tx('priv')); pl.href = 'privacy.html'; pl.target = '_blank'; pl.rel = 'noopener'; pl.style.color = '#DBB577'; hs.appendChild(pl); inp.placeholder = tx('ph'); sendb.textContent = tx('send'); hx.setAttribute('aria-label', tx('close'));
     quick.textContent = '';
     if (!log.some(function (m) { return m.r === 'u'; })) tx('q').forEach(function (q) { var b = el('button', '', q); b.type = 'button'; b.onclick = function () { send(q); }; quick.appendChild(b); });
   }
