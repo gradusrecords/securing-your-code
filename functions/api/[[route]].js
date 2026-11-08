@@ -311,9 +311,11 @@ async function authVerify(req, env) {
   return json({ ok: true, user: pubUser(user) }, 200, { 'set-cookie': c });
 }
 
+/* Telegram accepts only A-Z a-z 0-9 _ - in the webhook secret; whatever is saved in TG_SECRET (even with a stray space or symbol) is turned into a valid token */
+const tgToken = async env => { const raw = String(env.TG_SECRET || '').trim(); return /^[A-Za-z0-9_-]{1,256}$/.test(raw) ? raw : 'z' + (await sha('tg:' + raw)).slice(0, 48); };
 async function tgSetup(req, env, url) {
-  if (!env.TG_SECRET || !same(url.searchParams.get('key') || '', env.TG_SECRET)) return fail(403, 'forbidden');
-  const r = await tg(env, 'setWebhook', { url: `${url.origin}/api/tg/webhook`, secret_token: env.TG_SECRET, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
+  if (!env.TG_SECRET || !same((url.searchParams.get('key') || '').trim(), String(env.TG_SECRET).trim())) return fail(403, 'forbidden');
+  const r = await tg(env, 'setWebhook', { url: `${url.origin}/api/tg/webhook`, secret_token: await tgToken(env), allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
   return json({ ok: true, telegram: r });
 }
 
@@ -348,7 +350,8 @@ async function joinByContact(env, chat, m, phone) {
   await botMenu(env, chat, user);
 }
 async function tgWebhook(req, env) {
-  if (!env.TG_SECRET || !same(req.headers.get('x-telegram-bot-api-secret-token') || '', env.TG_SECRET)) return fail(403, 'forbidden');
+  const hdr = req.headers.get('x-telegram-bot-api-secret-token') || '';
+  if (!env.TG_SECRET || !(same(hdr, await tgToken(env)) || same(hdr, String(env.TG_SECRET)))) return fail(403, 'forbidden');
   const u = await body(req, 20000);
   if (u.callback_query) { await botCallback(env, u.callback_query); return json({ ok: true }); }
   const m = u.message;
