@@ -248,6 +248,7 @@ section{padding-block:clamp(100px,13vw,190px)}
 .face:hover .img{transform:scale(1.05)}
 .face .mono{position:absolute;left:50%;top:44%;width:34%;transform:translate(-50%,-50%) translateZ(70px);opacity:.5;transition:opacity 1s var(--ease);filter:drop-shadow(0 18px 18px rgba(0,0,0,.6));z-index:6;pointer-events:none}
 .face:hover .mono{opacity:.9}
+.face.ph .mono,.face.ph .soon{display:none}
 .face .soon{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:var(--gold);z-index:6;opacity:.85}
 .meta{display:flex;justify-content:space-between;align-items:baseline;margin-top:22px;gap:10px;padding-inline:6px}
 .meta h3{margin:0;font-family:var(--serif);font-weight:400;font-size:21px}
@@ -917,9 +918,13 @@ T.ru["n.cab"]="Кабинет";
 Object.assign(T.uz,{"q.biz":"Biznes uchun","q.mod":"Modellar uchun","n.dir":"Yo‘nalishlar","n.proc":"Qanday ishlaymiz","n.whom":"Kim uchun","n.cast":"Kasting","n.faces":"Yuzlar"});
 Object.assign(T.en,{"q.biz":"For business","q.mod":"For models","n.dir":"Directions","n.proc":"How we work","n.whom":"Who it’s for","n.cast":"Casting","n.faces":"Faces"});
 
-/* New Faces: put portrait URLs here (3:4), e.g. ["photos/1.jpg","photos/2.jpg","photos/3.jpg","photos/4.jpg"] */
-const PHOTOS=[];
-const FACES=[178,186,175,177];
+/* New Faces: имя (RU/UZ/EN), рост и портрет 3:4 из photos/ (те же снимки, что в каталоге). Пустое photo — заглушка */
+const FACES=[
+  {n:["Шахризода","Shahrizoda","Shahrizoda"],h:163,photo:"photos/shahrizoda-turayeva-1.jpg"},
+  {n:["Лаура","Laura","Laura"],h:172,photo:"photos/laura-vinnikova-1.jpg"},
+  {n:["Мансур","Mansur","Mansur"],h:190,photo:"photos/mansur-abdukayumov-1.jpg"},
+  {n:["Эмиль","Emil","Emil"],h:186,photo:"photos/emil-sadigzade-1.jpg"}
+];
 document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.ru[el.dataset.i]=el.innerHTML});
 
 /* ---------------- 3D helpers ---------------- */
@@ -977,9 +982,10 @@ function render(l){
   $("whom").innerHTML=c.whom.map(w=>`<div><span class="tick"></span><b>${w[0]}</b><p>${w[1]}</p></div>`).join("");
   $("req").innerHTML=c.req.map(r=>`<li><span>${r[0]}</span><span>${r[1]}</span></li>`).join("");
   $("path").innerHTML=c.path.map((p,i)=>`<li><b>${["i","ii","iii","iv"][i]}</b><div><strong>${p[0]}</strong><p>${p[1]}</p></div></li>`).join("");
-  $("faces").innerHTML=FACES.map((h,i)=>{
-    const ph=PHOTOS[i],bg=ph?`background-image:url('${ph}')`:`background:radial-gradient(60% 40% at 50% ${26+i*5}%,rgba(219,181,119,.28),transparent 70%),radial-gradient(90% 70% at ${i%2?20:80}% 100%,#14543d,transparent 70%),linear-gradient(180deg,${i%2?"#0E3829":"#18150f"},#050505)`;
-    return `<a class="face rise in" href="#conditions" aria-label="New Face ${["I","II","III","IV"][i]}"><div class="slab" data-slab><div class="front"><div class="img" style="${bg}"></div><i class="glare"></i></div><img class="mono" src="monogram.png" alt=""><span class="soon cap">${ph?"":c.face[0]}</span></div><div class="meta"><h3>New Face ${["I","II","III","IV"][i]}</h3><span class="cap">${h} ${c.face[1]}</span></div></a>`}).join("");
+  const li=({ru:0,uz:1,en:2})[l]||0;
+  $("faces").innerHTML=FACES.map((f,i)=>{
+    const h=f.h,nm=f.n[li],ph=f.photo,bg=ph?`background-image:url('${ph}');background-position:center 12%`:`background:radial-gradient(60% 40% at 50% ${26+i*5}%,rgba(219,181,119,.28),transparent 70%),radial-gradient(90% 70% at ${i%2?20:80}% 100%,#14543d,transparent 70%),linear-gradient(180deg,${i%2?"#0E3829":"#18150f"},#050505)`;
+    return `<a class="face rise in${ph?" ph":""}" href="catalog.html" aria-label="${nm}, New Face"><div class="slab" data-slab><div class="front"><div class="img" style="${bg}"></div><i class="glare"></i></div><img class="mono" src="monogram.png" alt=""><span class="soon cap">${ph?"":c.face[0]}</span></div><div class="meta"><h3>${nm}</h3><span class="cap">${h} ${c.face[1]}</span></div></a>`}).join("");
   document.querySelectorAll("[data-slab]").forEach(s=>{buildSlab(s,10);bindTilt(s,12);s.removeAttribute("data-slab")});
 }
 
