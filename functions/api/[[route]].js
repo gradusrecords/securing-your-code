@@ -16,6 +16,7 @@ import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
+const BUILD = '2026-11-08-tg-token';   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
 
 const SCHEMA = [
@@ -164,6 +165,7 @@ export async function onRequest(ctx) {
     /* Telegram webhook: authenticated by the secret token header, not by cookies */
     if (path === 'tg/webhook' && method === 'POST') return tgWebhook(req, env);
     if (path === 'tg/setup' && method === 'GET') return tgSetup(req, env, url);
+    if (path === 'health' && method === 'GET') return json({ ok: true, build: BUILD });   // which version of the code is live
 
     if (method !== 'GET' && method !== 'HEAD') {
       if (req.headers.get('x-zaya') !== '1') return fail(403, 'forbidden');
