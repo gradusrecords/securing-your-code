@@ -16,7 +16,7 @@ import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-08-name-sync';   // change it with every deploy that matters: GET /api/health shows what is live
+const BUILD = '2026-11-08-production';   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
 
 const SCHEMA = [

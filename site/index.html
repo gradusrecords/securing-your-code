@@ -602,7 +602,7 @@ body.ready .pull{opacity:1}
       </span>
       <span class="ng ng-business">
         <a href="#home" class="ul back">ZAYA</a>
-        <a href="#directions" class="ul" data-i="n.dir">Направления</a>
+        <a href="#production" class="ul" data-i="n.dir">ZAYA Production</a>
         <a href="#process" class="ul" data-i="n.proc">Как работаем</a>
         <a href="#forwhom" class="ul" data-i="n.whom">Для кого</a>
       </span>
@@ -707,18 +707,18 @@ body.ready .pull{opacity:1}
         <h1 data-i="b.h">Бизнес <em>под ключ</em></h1>
         <p class="qh-p" data-i="b.p">Мы систематизируем ваш бизнес: от полной диагностики и стратегии до работающих отделов. Вы сохраняете своё видение, мы выстраиваем вокруг него систему.</p>
         <div class="qh-q sm"></div>
-        <div class="acts qh-acts"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить консультацию</span></a><a class="btn mag" href="#directions"><span data-i="b.cta2">Направления</span></a></div>
+        <div class="acts qh-acts"><a class="btn fill mag" href="#" data-open="brief" role="button"><span data-i="b.cta">Получить консультацию</span></a><a class="btn mag" href="#production"><span data-i="b.cta2">Услуги</span></a></div>
       </div>
       <div class="qh-vis"><div class="qh-arch t"></div><div class="qh-dots"></div></div>
     </div>
   </header>
 
-  <section id="directions" class="paper">
+  <section id="production" class="paper">
     <div class="wrap">
       <div class="head rise">
-        <span class="cap"><span data-i="dir.k">Направления</span></span>
-        <h2 data-i="dir.h">Шесть опор <em>сильного бизнеса</em></h2>
-        <p data-i="dir.p">Берём на себя одно направление или выстраиваем всю компанию целиком.</p>
+        <span class="cap"><span data-i="dir.k">Услуги</span></span>
+        <h2 data-i="dir.h">ZAYA <em>Production</em></h2>
+        <p data-i="dir.p">Медиа, СММ и PR: три услуги, которые делают ваш бренд заметным.</p>
       </div>
       <div class="dirs" id="dirs"></div>
     </div>
@@ -833,8 +833,8 @@ const T={ru:{},uz:{
 "slogan":"Sening cho‘qqing shu yerdan boshlanadi",
 "d.biz.k":"Biznes uchun","d.biz.h":"Mijozlarga","d.biz.p":"Biznesni kalit topshirish asosida konsalting va tizimlashtirish",
 "d.mod.h":"Modellarga","d.mod.p":"Kasting va agentlikka qo‘shilish shartlari",
-"b.h":"Biznes <em>kalit topshirish</em> asosida","b.p":"Biznesingizni tizimlashtiramiz: to‘liq diagnostika va strategiyadan tortib ishlaydigan bo‘limlargacha. Siz o‘z qarashingizni saqlaysiz, biz uning atrofida tizim quramiz.","b.cta":"Konsultatsiya olish","b.cta2":"Yo‘nalishlar",
-"dir.k":"Yo‘nalishlar","dir.h":"Kuchli biznesning <em>olti tayanchi</em>","dir.p":"Bitta yo‘nalishni o‘z zimmamizga olamiz yoki butun kompaniyani to‘liq quramiz.",
+"b.h":"Biznes <em>kalit topshirish</em> asosida","b.p":"Biznesingizni tizimlashtiramiz: to‘liq diagnostika va strategiyadan tortib ishlaydigan bo‘limlargacha. Siz o‘z qarashingizni saqlaysiz, biz uning atrofida tizim quramiz.","b.cta":"Konsultatsiya olish","b.cta2":"Xizmatlar",
+"dir.k":"Xizmatlar","dir.h":"ZAYA <em>Production</em>","dir.p":"Media, SMM va PR: brendingizni ko‘zga tashlanadigan qiladigan uchta xizmat.",
 "pr.k":"Qanday ishlaymiz","pr.h":"Diagnostikadan <em>natijagacha</em>",
 "w.k":"Kim uchun","w.h":"Biznes <em>o‘sishga</em> tayyor bo‘lganda",
 "x.mod":"Model bo‘lish →",
@@ -846,8 +846,8 @@ en:{
 "slogan":"Your heights begin here",
 "d.biz.k":"For business","d.biz.h":"Clients","d.biz.p":"Turnkey business consulting and systemisation",
 "d.mod.h":"Models","d.mod.p":"Casting and how to join the agency",
-"b.h":"Business, <em>turnkey</em>","b.p":"We systemise your business — from a full diagnostic and strategy to departments that actually run. You keep your vision; we build the system around it.","b.cta":"Book a consultation","b.cta2":"Directions",
-"dir.k":"Directions","dir.h":"Six pillars of <em>a strong business</em>","dir.p":"We take on a single function or build the entire company end to end.",
+"b.h":"Business, <em>turnkey</em>","b.p":"We systemise your business — from a full diagnostic and strategy to departments that actually run. You keep your vision; we build the system around it.","b.cta":"Book a consultation","b.cta2":"Services",
+"dir.k":"Services","dir.h":"ZAYA <em>Production</em>","dir.p":"Media, SMM and PR: three services that make your brand stand out.",
 "pr.k":"How we work","pr.h":"From diagnostic <em>to results</em>",
 "w.k":"Who it’s for","w.h":"When a business is ready <em>to grow</em>",
 "x.mod":"Become a model →",
@@ -860,12 +860,9 @@ document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.
 const C={
 ru:{
 dirs:[
-["Marketing","Маркетинг","Чтобы о вас знали и выбирали.",["Стратегия и позиционирование бренда","SMM, реклама и контент","Продакшн и лица для кампаний"]],
-["IT","IT","Чтобы бизнес работал как система.",["Автоматизация процессов","CRM и учёт","Сайты, боты и AI-ассистенты"]],
-["Legal","Юриспруденция","Чтобы рост был защищён.",["Структура и регистрация компании","Договоры и оферты","Сопровождение сделок"]],
-["Sales","Отдел продаж","Чтобы продажи не зависели от одного человека.",["Воронка и CRM-этапы","Скрипты и регламенты","Обучение и KPI менеджеров"]],
-["HR","HR","Чтобы в команде были правильные люди.",["Оргструктура и должностные инструкции","Найм и адаптация","Мотивация и корпоративная культура"]],
-["R&D","R&D","Чтобы бизнес не стоял на месте.",["Исследование рынка и конкурентов","Новые продукты и направления","Тестирование гипотез"]]],
+["Media","Медиа","Контент и медиапроекты для вашего бренда.",[]],
+["SMM","СММ","Соцсети бренда: ведение, контент и реклама.",[]],
+["PR","PR","Репутация и публичность: чтобы о вас говорили.",[]]],
 steps:[["Диагностика","Полный аудит бизнеса: находим риски, узкие места и точки роста."],["Стратегия","План развития под ваше видение, цели и ресурсы."],["Внедрение","Выстраиваем отделы и процессы под ключ."],["Сопровождение","Контролируем результат и развиваем систему дальше."]],
 whom:[["Владельцам малого бизнеса","Когда всё держится на вас и пора выстроить систему."],["Предпринимателям","Которые хотят масштабироваться без хаоса."],["Компаниям перед инвестициями","Чтобы бизнес был прозрачным и готовым к инвестору."]],
 req:[["Возраст","от 18 лет"],["Студенты","приветствуются"],["Опыт","не обязателен"],["Фото","лицо и полный рост, без фильтров"]],
@@ -873,12 +870,9 @@ path:[["Заявка","Имя, возраст, рост и фото в Telegram 
 face:["Портрет скоро","см"]},
 uz:{
 dirs:[
-["Marketing","Marketing","Sizni bilishsin va tanlashsin.",["Brend strategiyasi va pozitsiyalash","SMM, reklama va kontent","Prodakshn va kampaniyalar uchun yuzlar"]],
-["IT","IT","Biznes tizim kabi ishlasin.",["Jarayonlarni avtomatlashtirish","CRM va hisob","Saytlar, botlar va AI-yordamchilar"]],
-["Legal","Yurisprudensiya","O‘sish himoyalangan bo‘lsin.",["Kompaniya tuzilmasi va ro‘yxatdan o‘tkazish","Shartnomalar va ofertalar","Bitimlarni kuzatib borish"]],
-["Sales","Sotuv bo‘limi","Sotuv bir kishiga bog‘liq bo‘lmasin.",["Voronka va CRM bosqichlari","Skriptlar va reglamentlar","Menejerlarni o‘qitish va KPI"]],
-["HR","HR","Jamoada to‘g‘ri odamlar bo‘lsin.",["Tashkiliy tuzilma va lavozim yo‘riqnomalari","Yollash va moslashtirish","Motivatsiya va korporativ madaniyat"]],
-["R&D","R&D","Biznes bir joyda turib qolmasin.",["Bozor va raqobatchilarni tadqiq qilish","Yangi mahsulotlar va yo‘nalishlar","Gipotezalarni sinash"]]],
+["Media","Media","Brendingiz uchun kontent va media loyihalar.",[]],
+["SMM","SMM","Brend ijtimoiy tarmoqlari: yuritish, kontent va reklama.",[]],
+["PR","PR","Obro‘ va ommaviylik: siz haqingizda gapirishsin.",[]]],
 steps:[["Diagnostika","Biznesning to‘liq auditi: xavflar, tor joylar va o‘sish nuqtalarini topamiz."],["Strategiya","Sizning qarashingiz, maqsad va resurslaringizga mos reja."],["Joriy etish","Bo‘lim va jarayonlarni kalit topshirish asosida quramiz."],["Kuzatuv","Natijani nazorat qilamiz va tizimni rivojlantiramiz."]],
 whom:[["Kichik biznes egalariga","Hammasi sizga bog‘liq bo‘lsa va tizim qurish vaqti kelganda."],["Tadbirkorlarga","Tartibsizliksiz kengaymoqchi bo‘lganlarga."],["Investitsiya oldidagi kompaniyalarga","Biznes shaffof va investorga tayyor bo‘lishi uchun."]],
 req:[["Yosh","18 yoshdan"],["Talabalar","xush kelibsiz"],["Tajriba","shart emas"],["Rasm","yuz va to‘liq bo‘y, filtrsiz"]],
@@ -886,12 +880,9 @@ path:[["Ariza","Ism, yosh, bo‘y va rasmlarni Telegram @zaya_booking ga yuborin
 face:["Portret tez orada","sm"]},
 en:{
 dirs:[
-["Marketing","Marketing","So people know you — and choose you.",["Brand strategy and positioning","Social, advertising and content","Production and faces for campaigns"]],
-["IT","IT","So the business runs as a system.",["Process automation","CRM and accounting","Websites, bots and AI assistants"]],
-["Legal","Legal","So your growth is protected.",["Company structure and registration","Contracts and terms","Transaction support"]],
-["Sales","Sales team","So sales don’t depend on one person.",["Funnel and CRM stages","Scripts and playbooks","Training and KPIs for managers"]],
-["HR","HR","So the right people are on the team.",["Org structure and job descriptions","Hiring and onboarding","Motivation and culture"]],
-["R&D","R&D","So the business keeps moving.",["Market and competitor research","New products and directions","Hypothesis testing"]]],
+["Media","Media","Content and media projects for your brand.",[]],
+["SMM","SMM","Your brand’s social media: management, content and ads.",[]],
+["PR","PR","Reputation and visibility, so people talk about you.",[]]],
 steps:[["Diagnostic","A full business audit: risks, bottlenecks and growth points."],["Strategy","A plan built around your vision, goals and resources."],["Implementation","We build departments and processes, turnkey."],["Support","We track results and keep developing the system."]],
 whom:[["Small business owners","When everything rests on you and it’s time for a system."],["Entrepreneurs","Who want to scale without chaos."],["Companies raising investment","So the business is transparent and investor-ready."]],
 req:[["Age","18+"],["Students","welcome"],["Experience","not required"],["Photos","face and full length, no filters"]],
@@ -915,8 +906,8 @@ Object.assign(T.uz,{"n.cat":"Katalog","m.cat":"Modellar katalogi","m.cat2":"3D-k
 Object.assign(T.en,{"n.cat":"Catalog","m.cat":"Model catalog","m.cat2":"Open the 3D catalog"});
 Object.assign(T.uz,{"n.login":"Kirish","n.cab":"Kabinet"});Object.assign(T.en,{"n.login":"Sign in","n.cab":"Account"});
 T.ru["n.cab"]="Кабинет";
-Object.assign(T.uz,{"q.biz":"Biznes uchun","q.mod":"Modellar uchun","n.dir":"Yo‘nalishlar","n.proc":"Qanday ishlaymiz","n.whom":"Kim uchun","n.cast":"Kasting","n.faces":"Yuzlar"});
-Object.assign(T.en,{"q.biz":"For business","q.mod":"For models","n.dir":"Directions","n.proc":"How we work","n.whom":"Who it’s for","n.cast":"Casting","n.faces":"Faces"});
+Object.assign(T.uz,{"q.biz":"Biznes uchun","q.mod":"Modellar uchun","n.dir":"ZAYA Production","n.proc":"Qanday ishlaymiz","n.whom":"Kim uchun","n.cast":"Kasting","n.faces":"Yuzlar"});
+Object.assign(T.en,{"q.biz":"For business","q.mod":"For models","n.dir":"ZAYA Production","n.proc":"How we work","n.whom":"Who it’s for","n.cast":"Casting","n.faces":"Faces"});
 
 /* New Faces: имя (RU/UZ/EN), рост и портрет 3:4 из photos/ (те же снимки, что в каталоге). Пустое photo — заглушка */
 const FACES=[
@@ -977,7 +968,7 @@ addEventListener("pointermove",e=>{px=e.clientX/innerWidth-.5;py=e.clientY/inner
 
 function render(l){
   const c=C[l];
-  $("dirs").innerHTML=c.dirs.map(d=>`<article class="dir"><span class="cap">${d[0]}</span><h3>${d[1]}</h3><p>${d[2]}</p><ul>${d[3].map(x=>`<li>${x}</li>`).join("")}</ul></article>`).join("");
+  $("dirs").innerHTML=c.dirs.map(d=>`<article class="dir"><span class="cap">${d[0]}</span><h3>${d[1]}</h3><p>${d[2]}</p>${d[3]&&d[3].length?`<ul>${d[3].map(x=>`<li>${x}</li>`).join("")}</ul>`:""}</article>`).join("");
   $("steps").innerHTML=c.steps.map(s=>`<li><strong>${s[0]}</strong><p>${s[1]}</p></li>`).join("");
   $("whom").innerHTML=c.whom.map(w=>`<div><span class="tick"></span><b>${w[0]}</b><p>${w[1]}</p></div>`).join("");
   $("req").innerHTML=c.req.map(r=>`<li><span>${r[0]}</span><span>${r[1]}</span></li>`).join("");
@@ -1004,7 +995,7 @@ const FORM_URL="https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP_
 const li=()=>({ru:0,uz:1,en:2})[document.documentElement.lang]||0;
 const tr=a=>a[li()];
 /* option = [stored value (ru), ru, uz, en] shown as [ru, uz, en]; stored value is always the Russian text for the sheet */
-const DIRS_B=[["Маркетинг","Marketing","Marketing"],["IT","IT","IT"],["Юриспруденция","Yurisprudensiya","Legal"],["Отдел продаж","Sotuv bo‘limi","Sales team"],["HR","HR","HR"],["R&D","R&D","R&D"],["Комплексно под ключ","Kompleks, kalit topshirish","Full turnkey"]];
+const DIRS_B=[["Медиа","Media","Media"],["СММ","SMM","SMM"],["PR","PR","PR"],["Всё вместе","Hammasi birga","All together"]];
 const DIRS_M=[["Показы","Podium","Runway"],["Фотосъёмки","Fotosuratga olish","Photoshoots"],["Реклама / видео","Reklama / video","Ads / video"],["Клипы","Klip","Music videos"],["Шоурум / промо","Shourum / promo","Showroom / promo"]];
 const FORMS={
 brief:{
@@ -1346,7 +1337,7 @@ function revealIn(root){if(!root)return;root.querySelectorAll(".rise:not(.in)").
 
 /* ---------------- router ---------------- */
 const VIEWS={home:"v-home",business:"v-business",models:"v-models"};
-const ANCHORS={directions:"business",process:"business",forwhom:"business",conditions:"models","faces-sec":"models",about:"home",choose:"home"};
+const ANCHORS={production:"business",directions:"business",process:"business",forwhom:"business",conditions:"models","faces-sec":"models",about:"home",choose:"home"};
 let current=null;
 const curtain=$("curtain");
 function show(view,anchor){
