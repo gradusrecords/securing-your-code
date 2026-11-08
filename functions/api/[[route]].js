@@ -16,7 +16,7 @@ import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-08-tg-token';   // change it with every deploy that matters: GET /api/health shows what is live
+const BUILD = '2026-11-08-name-sync';   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
 
 const SCHEMA = [
@@ -691,7 +691,9 @@ async function saveLinked(env, phone, code, kind, row) {
     if (p.params) { const g = String(p.params).split(/[-–\/ ]+/).filter(Boolean); put('bust', g[0]); put('waist', g[1]); put('hips', g[2]); }
     // the real name from the application wins over the Telegram name, unless the person has typed their own name in the profile
     let name = u.name;
-    if (!prof.name_set && !prof.name_app && m.name) { name = m.name; prof.name_app = '1'; }   // only the first linked application names the person
+    // only the person's first linked application names them, and later fixes of the name in the sheet follow automatically
+    const first = await env.DB.prepare('SELECT code FROM apps WHERE phone=? AND code IS NOT NULL ORDER BY id LIMIT 1').bind(phone).first();
+    if (!prof.name_set && m.name && (!prof.name_app || (first && first.code === code))) { name = m.name; prof.name_app = '1'; }
     await env.DB.prepare('UPDATE users SET name=?, profile=? WHERE id=?').bind(name || m.name, JSON.stringify(prof), u.id).run();
   }
 }
