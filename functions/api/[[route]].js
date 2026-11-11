@@ -16,7 +16,7 @@ import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-08-production-hero';   // change it with every deploy that matters: GET /api/health shows what is live
+const BUILD = '2026-11-11-quest-report';   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
 
 const SCHEMA = [
@@ -185,6 +185,7 @@ export async function onRequest(ctx) {
 
     if (path === 'quest/tick' && method === 'POST') return questTickKey(req, env);
     if (path === 'quest/status' && method === 'GET') return questStatus(req, env);
+    if (path === 'quest/report' && method === 'GET') return questReport(req, env);
 
     const user = await me(req, env);
     if (path === 'me' && method === 'GET') return json(user ? { ok: true, user: pubUser(user) } : { ok: false });   // 200 either way: no console noise for visitors
@@ -810,6 +811,24 @@ async function questToggle(env, user, status) {
   if (!q) return fail(404, 'no quest');
   await env.DB.prepare('UPDATE quest SET status=? WHERE user_id=?').bind(status, user.id).run();
   return json({ ok: true, status });
+}
+/* read-only report by model (QUEST_KEY): who does the quest tasks and how */
+async function questReport(req, env) {
+  if (!env.QUEST_KEY || !same(req.headers.get('x-quest-key') || '', env.QUEST_KEY)) return fail(403, 'forbidden');
+  const rows = (await env.DB.prepare(`SELECT u.id,u.name,u.tg_chat,u.last_seen,q.start,q.status,q.lang,q.created_at qcreated,
+      (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
+      (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=u.id) done,
+      (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=u.id) last_done,
+      (SELECT COUNT(*) FROM messages m WHERE m.thread=u.id AND m.from_role='user') chat_msgs
+    FROM users u JOIN quest q ON q.user_id=u.id WHERE u.role='user'`).all()).results || [];
+  const people = rows.filter(r => inRoster(env, r.codes));
+  const out = people.map(r => {
+    const day = Math.min(Math.max(dayNumber(r.start), 1), TOTAL), done = String(r.done || '').split(',').filter(Boolean).map(Number).sort((x, y) => x - y);
+    const st = progressOf(done, day);
+    return { name: r.name || '#' + r.id, codes: r.codes, startedDay: r.start, day, status: r.status, doneDays: done, doneCount: st.doneCount, missed: day - done.filter(d => d <= day).length, points: st.points, level: st.level, streak: st.streak,
+      lastDone: r.last_done ? new Date(r.last_done * 1000).toISOString() : null, daysSinceDone: r.last_done ? Math.floor((NOW() - r.last_done) / 86400) : null, lastSeen: r.last_seen ? new Date(r.last_seen * 1000).toISOString() : null, chatMsgs: r.chat_msgs, tgChat: !!r.tg_chat };
+  }).sort((x, y) => y.points - x.points);
+  return json({ ok: true, today: todayYmd(), total: TOTAL, models: out });
 }
 /* sends today's task to everybody who has not got it yet; called every morning by the GitHub Action (and by a manager button) */
 /* catalog models who have an account and a bot chat but never got a quest row (they logged in before the quest existed): start it for them */
