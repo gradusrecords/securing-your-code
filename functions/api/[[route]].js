@@ -11,12 +11,13 @@
 import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, resultText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
 import { rosterOf } from '../_quest/roster.js';
 import { salesTurn, SALES_GREETING } from '../_sales/sales.js';
+import { staffTurn, STAFF_HELP } from '../_bot/admin.js';
 import { bt, actionOf, menuKeyboard, langKeyboard, doneButton } from '../_bot/texts.js';
 import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-12-result';   // change it with every deploy that matters: GET /api/health shows what is live
+const BUILD = '2026-11-12-staff-bot';   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
 
 const SCHEMA = [
@@ -422,7 +423,7 @@ async function tgWebhook(req, env) {
   }
   // людям из кабинета (модели, менеджеры) отвечает служебная подсказка, остальным — ИИ-менеджер по продажам
   const known = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
-  if (known) { await botUserText(env, known, chat, text); return json({ ok: true }); }
+  if (known) { await botUserText(env, known, chat, text, m); return json({ ok: true }); }
   if (!env.ANTHROPIC_API_KEY) {
     await say(env, chat, 'Это служебный бот ZAYA. Напишите менеджеру: @zaya_booking.');
     return json({ ok: true });
@@ -452,6 +453,7 @@ async function botLang(env, user) {
   return normLang(a && a.lang);
 }
 async function botMenu(env, chat, user, text) {
+  if (isStaff(user)) { await say(env, chat, text || STAFF_HELP, { reply_markup: { remove_keyboard: true } }); return; }
   const lang = await botLang(env, user);
   const q = isStaff(user) ? null : await env.DB.prepare('SELECT status FROM quest WHERE user_id=?').bind(user.id).first();
   await say(env, chat, text || bt(lang).menu(firstNameOf(user.name)), { reply_markup: menuKeyboard(lang, { quest: !!q, paused: !!q && q.status !== 'on' }) });
@@ -489,9 +491,9 @@ async function botApps(env, user, chat, lang) {
   if (!rows.length) { await say(env, chat, B.noApps); return; }
   await say(env, chat, B.appsTitle + '\n' + rows.map(a => `• ${B.kind[a.kind] || a.kind}${a.code ? ' ' + a.code : ''} — ${STATUS_TEXT[a.status] ? STATUS_TEXT[a.status][L(lang)] : a.status} (${new Date(a.created_at * 1000).toISOString().slice(0, 10)})`).join('\n'));
 }
-async function botUserText(env, user, chat, text) {
+async function botUserText(env, user, chat, text, m) {
+  if (isStaff(user)) return botStaff(env, user, chat, text, m);
   const lang = await botLang(env, user), B = bt(lang);
-  if (isStaff(user)) { await say(env, chat, B.staff); return; }
   let act = actionOf(text);
   if (!act) {
     const c = text.match(/^\/(menu|task|done|apps|progress|rules|lang)\b/);
@@ -535,7 +537,7 @@ async function botUserText(env, user, chat, text) {
   if (!t || t.startsWith('/')) return botMenu(env, chat, user);
   if (!(await hit(env, 'botmsg:' + user.id, 30, 3600))) return say(env, chat, B.limit);
   await env.DB.prepare('INSERT INTO messages(thread,from_role,from_id,body,created_at) VALUES(?,?,?,?,?)').bind(user.id, 'user', user.id, t, NOW()).run();
-  await notifyManagers(env, `💬 ${user.name || '+' + user.phone} (Telegram): ${t.slice(0, 300)}`);
+  await notifyManagers(env, `💬 ${user.name || '+' + user.phone} (Telegram): ${t.slice(0, 1000)}` + `\n↩️ Ответьте на это сообщение, чтобы написать человеку. #u${user.id}`);
   await say(env, chat, B.sent);
 }
 async function botCallback(env, cq) {
@@ -551,6 +553,62 @@ async function botCallback(env, cq) {
   await ans(undo ? '↩️' : B.doneOk(n));
   await tg(env, 'editMessageReplyMarkup', { chat_id: chat, message_id: cq.message.message_id, reply_markup: doneButton(lang, n, !undo) });
   if (!undo && !r.had) await say(env, chat, B.doneOk(n) + '\n\n' + progressText({}, r.prog, r.cur, lang));
+}
+
+
+/* ---------- владелец и менеджер в боте: вопросы помощнику, ответы людям ---------- */
+/* a message from the team to a person: saved in the cabinet chat and delivered to their Telegram */
+async function staffSend(env, staff, uid, text) {
+  const body = clip(text, 2000);
+  const target = Number.isInteger(uid) && uid > 0 ? await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(uid).first() : null;
+  if (!target || !body) return { ok: false, error: 'person not found' };
+  if (isStaff(target)) return { ok: false, error: 'this is a team member' };
+  await env.DB.prepare('INSERT INTO messages(thread,from_role,from_id,body,created_at) VALUES(?,?,?,?,?)').bind(target.id, 'manager', staff.id, body, NOW()).run();
+  await env.DB.prepare("UPDATE messages SET seen=1 WHERE thread=? AND from_role='user' AND seen=0").bind(target.id).run();
+  if (!target.tg_chat) return { ok: true, name: target.name, delivered: 'cabinet only: the person has not connected the bot' };
+  const r = await say(env, target.tg_chat, bt(await botLang(env, target)).managerMsg(body));
+  return r && r.ok ? { ok: true, name: target.name, delivered: 'telegram' } : { ok: false, name: target.name, error: 'telegram did not accept the message (saved in the cabinet chat)' };
+}
+/* what the assistant may know: quest by model, applications, unread messages. No phone numbers. */
+async function staffSnapshot(env) {
+  const quest = questRowsOut(env, await questRowsRaw(env)).map(m => ({ id: m.id, name: m.name, codes: m.codes, lang: m.lang, day: m.day, done: m.doneCount, missedPast: Math.max(0, m.day - 1 - m.doneDays.filter(d => d < m.day).length), doneToday: m.doneDays.includes(m.day), points: m.points, level: m.level, streak: m.streak, daysSinceLastDone: m.daysSinceDone, paused: m.status !== 'on', wroteToManager: m.chatMsgs, botConnected: m.tgChat }));
+  const known = new Set(quest.flatMap(m => String(m.codes || '').split(',').map(c => c.trim().toUpperCase())));
+  const apps = (await env.DB.prepare("SELECT a.id,a.kind,a.status,a.name,a.code,a.created_at,a.payload,(SELECT id FROM users u WHERE u.phone=a.phone) uid FROM apps a ORDER BY a.id DESC LIMIT 40").all()).results || [];
+  const counts = (await env.DB.prepare('SELECT kind,status,COUNT(*) c FROM apps GROUP BY kind,status').all()).results || [];
+  const unread = (await env.DB.prepare(`SELECT u.id,u.name,
+      (SELECT body FROM messages m WHERE m.thread=u.id AND m.from_role='user' ORDER BY m.id DESC LIMIT 1) last,
+      (SELECT created_at FROM messages m WHERE m.thread=u.id AND m.from_role='user' ORDER BY m.id DESC LIMIT 1) at,
+      (SELECT COUNT(*) FROM messages m WHERE m.thread=u.id AND m.from_role='user' AND m.seen=0) n
+    FROM users u WHERE EXISTS(SELECT 1 FROM messages m WHERE m.thread=u.id AND m.from_role='user' AND m.seen=0) LIMIT 30`).all()).results || [];
+  const iso = ts => new Date(ts * 1000 + 5 * 3600e3).toISOString().slice(0, 16).replace('T', ' ');
+  return {
+    nowTashkent: iso(NOW()), questTotalDays: TOTAL,
+    questModels: quest, rosterCodesWithoutBot: [...rosterOf(env)].filter(c => !known.has(c)),
+    applicationCounts: counts.map(c => ({ kind: c.kind === 'apply' ? 'анкета модели' : 'бриф бизнеса', status: STATUS_TEXT[c.status] ? STATUS_TEXT[c.status][0] : c.status, count: c.c })),
+    latestApplications: apps.map(a => { const p = safeJson(a.payload); return { userId: a.uid || null, kind: a.kind === 'apply' ? 'анкета модели' : 'бриф бизнеса', code: a.code || null, name: a.name, status: STATUS_TEXT[a.status] ? STATUS_TEXT[a.status][0] : a.status, created: iso(a.created_at), ...(a.kind === 'brief' ? { company: clip(p.company, 80), need: clip(p.dirs, 80), task: clip(p.task, 300), budget: clip(p.budget, 40) } : {}) }; }),
+    unreadFromPeople: unread.map(u => ({ id: u.id, name: u.name, unread: u.n, lastMessage: clip(u.last, 300), at: u.at ? iso(u.at) : null })),
+  };
+}
+async function botStaff(env, staff, chat, text, m) {
+  const t = clip(text, 2000);
+  // a reply to an incoming notification goes straight to that person
+  const src = m && m.reply_to_message && String(m.reply_to_message.text || '').match(/#u(\d+)\s*$/);
+  if (src) {
+    if (!t) { await say(env, chat, 'Напишите ответ текстом.'); return; }
+    const r = await staffSend(env, staff, +src[1], t);
+    await say(env, chat, r.ok ? `✅ Отправлено: ${r.name || ''}${r.delivered === 'telegram' ? '' : ' (только в кабинет: бот у человека не подключён)'}` : `Не отправлено${r.name ? ' (' + r.name + ')' : ''}: ${r.error}`);
+    return;
+  }
+  if (!t || /^\/(start|menu|help)\b/.test(t)) { await say(env, chat, STAFF_HELP, { reply_markup: { remove_keyboard: true } }); return; }
+  if (!env.ANTHROPIC_API_KEY) { await say(env, chat, STAFF_HELP); return; }
+  if (!(await hit(env, 'staff:' + staff.id, 120, 3600))) { await say(env, chat, 'Слишком много запросов. Попробуйте чуть позже.'); return; }
+  tg(env, 'sendChatAction', { chat_id: chat, action: 'typing' });
+  try {
+    const out = await staffTurn(env, staff.id, t, await staffSnapshot(env), (uid, body) => staffSend(env, staff, uid, body));
+    await say(env, chat, out.reply);
+  } catch {
+    await say(env, chat, 'Сейчас не получилось ответить. Попробуйте ещё раз или откройте панель: https://zaya.uz/#cabinet');
+  }
 }
 
 /* ---------- ИИ-менеджер по продажам: чат на сайте и сохранение заявки ---------- */
@@ -815,20 +873,23 @@ async function questToggle(env, user, status) {
 /* read-only report by model (QUEST_KEY): who does the quest tasks and how */
 async function questReport(req, env) {
   if (!env.QUEST_KEY || !same(req.headers.get('x-quest-key') || '', env.QUEST_KEY)) return fail(403, 'forbidden');
-  const rows = (await env.DB.prepare(`SELECT u.id,u.name,u.tg_chat,u.last_seen,q.start,q.status,q.lang,q.created_at qcreated,
+  const rows = await questRowsRaw(env);
+  return json({ ok: true, today: todayYmd(), total: TOTAL, models: questRowsOut(env, rows) });
+}
+const questRowsRaw = async env => (await env.DB.prepare(`SELECT u.id,u.name,u.tg_chat,u.last_seen,q.start,q.status,q.lang,q.created_at qcreated,
       (SELECT group_concat(code) FROM apps a WHERE a.phone=u.phone AND a.kind='apply') codes,
       (SELECT group_concat(day) FROM quest_log l WHERE l.user_id=u.id) done,
       (SELECT MAX(done_at) FROM quest_log l WHERE l.user_id=u.id) last_done,
       (SELECT COUNT(*) FROM messages m WHERE m.thread=u.id AND m.from_role='user') chat_msgs
     FROM users u JOIN quest q ON q.user_id=u.id WHERE u.role='user'`).all()).results || [];
+function questRowsOut(env, rows) {
   const people = rows.filter(r => inRoster(env, r.codes));
-  const out = people.map(r => {
+  return people.map(r => {
     const day = Math.min(Math.max(dayNumber(r.start), 1), TOTAL), done = String(r.done || '').split(',').filter(Boolean).map(Number).sort((x, y) => x - y);
     const st = progressOf(done, day);
-    return { name: r.name || '#' + r.id, codes: r.codes, startedDay: r.start, day, status: r.status, doneDays: done, doneCount: st.doneCount, missed: day - done.filter(d => d <= day).length, points: st.points, level: st.level, streak: st.streak,
+    return { id: r.id, lang: r.lang || 'ru', name: r.name || '#' + r.id, codes: r.codes, startedDay: r.start, day, status: r.status, doneDays: done, doneCount: st.doneCount, missed: day - done.filter(d => d <= day).length, points: st.points, level: st.level, streak: st.streak,
       lastDone: r.last_done ? new Date(r.last_done * 1000).toISOString() : null, daysSinceDone: r.last_done ? Math.floor((NOW() - r.last_done) / 86400) : null, lastSeen: r.last_seen ? new Date(r.last_seen * 1000).toISOString() : null, chatMsgs: r.chat_msgs, tgChat: !!r.tg_chat };
   }).sort((x, y) => y.points - x.points);
-  return json({ ok: true, today: todayYmd(), total: TOTAL, models: out });
 }
 /* sends today's task to everybody who has not got it yet; called every morning by the GitHub Action (and by a manager button) */
 /* catalog models who have an account and a bot chat but never got a quest row (they logged in before the quest existed): start it for them */
@@ -1190,7 +1251,7 @@ async function sendUserMessage(req, env, user, ctx) {
   if (!text) return fail(400, 'empty');
   if (!(await hit(env, 'msg:' + user.id, 40, 3600))) return fail(429, 'too many requests');
   const r = await env.DB.prepare("INSERT INTO messages(thread,from_role,from_id,body,created_at) VALUES(?,?,?,?,?)").bind(user.id, 'user', user.id, text, NOW()).run();
-  ctx.waitUntil(notifyManagers(env, `💬 ${user.name || '+' + user.phone}: ${text.slice(0, 300)}`));
+  ctx.waitUntil(notifyManagers(env, `💬 ${user.name || '+' + user.phone} (кабинет на сайте): ${text.slice(0, 1000)}` + `\n↩️ Ответьте на это сообщение, чтобы написать человеку. #u${user.id}`));
   return json({ ok: true, id: r.meta.last_row_id });
 }
 async function sendManagerMessage(req, env, manager, ctx) {
