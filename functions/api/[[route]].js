@@ -8,7 +8,7 @@
    Secret:    QUEST_KEY (the GitHub Action that sends the morning quest tasks calls POST /api/quest/tick with it)
    Secret:    SHEET_KEY (same value as the API_KEY script property in the Google Apps Script: lets the server read a sheet row by its application code) */
 
-import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
+import { TOTAL, LEVELS, profileOf, taskFor, taskText, finalText, progressOf, todayYmd, dayNumber, normLang, msgs, rulesOf, rulesText, progressText, WARN_DAYS, warnText, resultText, staffRiskText, ANNOUNCEMENTS, announceText } from '../_quest/quest.js';
 import { rosterOf } from '../_quest/roster.js';
 import { salesTurn, SALES_GREETING } from '../_sales/sales.js';
 import { bt, actionOf, menuKeyboard, langKeyboard, doneButton } from '../_bot/texts.js';
@@ -16,7 +16,7 @@ import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-11-quest-report';   // change it with every deploy that matters: GET /api/health shows what is live
+const BUILD = '2026-11-12-result';   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
 
 const SCHEMA = [
@@ -923,7 +923,7 @@ const firstNameOf = full => (profileOf({ name: full, profile: {} }, {}).name) ||
 async function questTickKey(req, env) {
   if (!env.QUEST_KEY || !same(req.headers.get('x-quest-key') || '', env.QUEST_KEY)) return fail(403, 'forbidden');
   const slot = new URL(req.url).searchParams.get('slot') || 'morning';
-  if (slot !== 'morning' && !['lounge', 'nudge', 'night'].includes(slot)) return fail(400, 'bad slot');
+  if (slot !== 'morning' && !['lounge', 'nudge', 'night', 'result'].includes(slot)) return fail(400, 'bad slot');
   return json({ ok: true, slot, ...(slot === 'morning' ? await questTick(env) : await questSlot(env, slot)) });
 }
 /* read-only report for today: who got which message (protected by QUEST_KEY, sends nothing) */
@@ -976,8 +976,8 @@ async function questSlot(env, slot, limit = 20) {
     const lang = normLang(r.lang), pf = profileOf({ name: r.name, profile: safeJson(r.profile) }, safeJson(r.payload));
     const done = String(r.done || '').split(',').filter(Boolean).map(Number).includes(day);
     const task = taskFor(day, pf, lang), nextTask = day < TOTAL ? taskFor(day + 1, pf, lang) : null;
-    const text = slot === 'lounge' ? loungeText(day, lang) : slot === 'nudge' ? nudgeText({ day, task, done, name: pf.name, lang }) : nightText({ day, task, nextTask, done, name: pf.name, lang });
-    await questSay(env, r.user_id, r.tg_chat, day, slot, text, slot === 'nudge' && !done ? { reply_markup: doneButton(lang, day, false) } : {});
+    const text = slot === 'result' ? (dd => resultText(pf.name, progressOf(dd, day), day, lang, day - 1 - dd.filter(x => x < day).length))(String(r.done || '').split(',').filter(Boolean).map(Number)) : slot === 'lounge' ? loungeText(day, lang) : slot === 'nudge' ? nudgeText({ day, task, done, name: pf.name, lang }) : nightText({ day, task, nextTask, done, name: pf.name, lang });
+    await questSay(env, r.user_id, r.tg_chat, day, slot, text, (slot === 'nudge' || slot === 'result') && !done ? { reply_markup: doneButton(lang, day, false) } : {});
     sent++;
   }
   return { sent, remaining: left };

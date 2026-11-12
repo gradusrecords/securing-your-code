@@ -315,6 +315,22 @@ const WARN = {
 };
 export const warnText = (days, name, lang) => WARN[normLang(lang)][days](name);
 export const staffRiskText = (name, phone, idle, days) => `⚠️ ${name || '+' + phone} (+${phone}): нет активности в квесте ${idle} дн.` + (days >= 14 ? ' Модель получила последнее предупреждение. Рекомендуем связаться: решение о сотрудничестве за вами.' : days >= 7 ? ' Модель предупреждена, нужен личный контакт менеджера.' : '');
+/* a personal summary of the quest so far (sent on the owner's request: POST /api/quest/tick?slot=result) */
+const RES = {
+  ru: { head: n => `${n ? n + ', т' : 'Т'}вой результат в квесте «30 дней» на сегодня 📊`, line: (d, done, pts, lv, s) => `День ${d} из ${TOTAL}. Выполнено: ${done} из ${d}. Очки: ${pts}. Уровень: ${lv}. Серия: ${s} дн. подряд.`,
+        full: 'Ни одного пропуска. Так держать!', some: m => `Пропущено дней: ${m}. Их можно закрыть: кнопкой «✅ Выполнено» под заданием или в кабинете на zaya.uz.`,
+        none: 'Пока не отмечено ни одного задания. Начни с сегодняшнего: нажми «📌 Задание дня», выполни и нажми «✅ Выполнено». Если что-то мешает, напиши сюда, менеджер ответит.' },
+  uz: { head: n => `${n ? n + ', ' : ''}«30 kun» kvestidagi bugungi natijang 📊`, line: (d, done, pts, lv, s) => `${d}-kun, jami ${TOTAL}. Bajarildi: ${d} tadan ${done} ta. Ball: ${pts}. Daraja: ${lv}. Ketma-ket: ${s} kun.`,
+        full: 'Birorta ham o‘tkazib yuborilmagan. Shunday davom et!', some: m => `O‘tkazib yuborilgan kunlar: ${m}. Ularni yopish mumkin: topshiriq ostidagi «✅ Bajarildi» tugmasi bilan yoki zaya.uz kabinetida.`,
+        none: 'Hozircha birorta topshiriq belgilanmagan. Bugungisidan boshla: «📌 Kun topshirig‘i»ni bos, bajar va «✅ Bajarildi»ni bos. Nimadir xalaqit bersa, shu yerga yoz, menejer javob beradi.' },
+  en: { head: n => `${n ? n + ', y' : 'Y'}our “30 days” quest result so far 📊`, line: (d, done, pts, lv, s) => `Day ${d} of ${TOTAL}. Done: ${done} of ${d}. Points: ${pts}. Level: ${lv}. Streak: ${s} days in a row.`,
+        full: 'Not a single day missed. Keep it up!', some: m => `Days missed: ${m}. You can still close them: with the “✅ Done” button under the task or in the cabinet at zaya.uz.`,
+        none: 'No task is marked yet. Start with today’s: press “📌 Task of the day”, do it and press “✅ Done”. If something is in the way, write here and a manager will reply.' },
+};
+export function resultText(name, st, day, lang, missed = Math.max(0, day - st.doneCount)) {   // missed: past days only, today is still open
+  const l = normLang(lang), r = RES[l];
+  return [r.head(name), '', r.line(day, st.doneCount, st.points, S[l].levels[st.levelIdx], st.streak), '', st.doneCount === 0 ? r.none : missed === 0 ? r.full : r.some(missed)].join('\n');
+}
 export function progressText(pf, st, day, lang) {
   const x = S[normLang(lang)], m = MEANING[normLang(lang)];
   const nx = st.nextAt != null ? `\n${st.nextAt - st.points} → ${x.levels[st.levelIdx + 1]}` : '';
