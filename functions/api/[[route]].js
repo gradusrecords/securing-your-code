@@ -17,7 +17,9 @@ import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-12-marketing';   // change it with every deploy that matters: GET /api/health shows what is live
+const BUILD = '2026-11-15-models-only';
+/* the marketing sales assistant is switched off (15.11.2026: zaya.uz is only ZAYA Models and ZAYA Academy); the code stays for a future Academy assistant */
+const SALES_ON = false;   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
 
 const SCHEMA = [
@@ -324,7 +326,7 @@ async function tgSetup(req, env, url) {
 }
 
 /* joining through the bot only: the model taps the invite link, presses "Share number", and the cabinet, the applications and the quest are connected (no website needed) */
-const JOIN_HELLO = `Здравствуйте! Это бот ZAYA.\nЧтобы подключить личный кабинет и квест «30 дней», нажмите кнопку «Поделиться номером» ниже.\n\nAssalomu alaykum! Bu ZAYA boti.\nShaxsiy kabinet va «30 kun» kvestini ulash uchun pastdagi «Raqamni ulashish» tugmasini bosing.\n\nHello! This is the ZAYA bot.\nTo connect your personal cabinet and the “30 days” quest, press the “Share number” button below.\n\n— — —\nБизнесу: просто напишите, что вам нужно, и ИИ-менеджер ZAYA Marketing ответит.\nBiznes uchun: shunchaki yozing, ZAYA Marketing sun’iy intellekt menejeri javob beradi.\nFor business: just write what you need and the ZAYA Marketing AI manager will reply.`;
+const JOIN_HELLO = `Здравствуйте! Это бот ZAYA.\nЧтобы подключить личный кабинет и квест «30 дней», нажмите кнопку «Поделиться номером» ниже.\n\nAssalomu alaykum! Bu ZAYA boti.\nShaxsiy kabinet va «30 kun» kvestini ulash uchun pastdagi «Raqamni ulashish» tugmasini bosing.\n\nHello! This is the ZAYA bot.\nTo connect your personal cabinet and the “30 days” quest, press the “Share number” button below.`;
 const JOIN = {
   ru: { none: 'Мы не нашли заявку с этим номером. Подайте анкету на zaya.uz или напишите менеджеру: @zaya_booking.', ok: '✅ Готово! Ваши данные подключены. Личный кабинет: zaya.uz → «Войти» (код придёт в этот бот).', quest: 'Квест «30 дней» уже начался: первое задание выше.', many: 'Слишком много попыток. Попробуйте позже.' },
   uz: { none: 'Bu raqam bilan ariza topilmadi. zaya.uz da anketa yuboring yoki menejerga yozing: @zaya_booking.', ok: '✅ Tayyor! Ma’lumotlaringiz ulandi. Shaxsiy kabinet: zaya.uz → «Kirish» (kod shu botga keladi).', quest: '«30 kun» kvesti boshlandi: birinchi topshiriq yuqorida.', many: 'Urinishlar juda ko‘p. Keyinroq urinib ko‘ring.' },
@@ -380,7 +382,7 @@ async function tgWebhook(req, env) {
     return json({ ok: true });
   }
   const text = String(m.text || '');
-  if (/^\/start\s+biz\b/.test(text) && env.ANTHROPIC_API_KEY) {
+  if (SALES_ON && /^\/start\s+biz\b/.test(text) && env.ANTHROPIC_API_KEY) {
     await say(env, chat, SALES_GREETING.ru + '\n\n' + SALES_GREETING.uz + '\n\n' + SALES_GREETING.en);
     return json({ ok: true });
   }
@@ -424,8 +426,8 @@ async function tgWebhook(req, env) {
   // людям из кабинета (модели, менеджеры) отвечает служебная подсказка, остальным — ИИ-менеджер по продажам
   const known = await env.DB.prepare('SELECT * FROM users WHERE tg_chat=?').bind(chat).first();
   if (known) { await botUserText(env, known, chat, text, m); return json({ ok: true }); }
-  if (!env.ANTHROPIC_API_KEY) {
-    await say(env, chat, 'Это служебный бот ZAYA. Напишите менеджеру: @zaya_booking.');
+  if (!SALES_ON || !env.ANTHROPIC_API_KEY) {
+    await say(env, chat, 'Это бот ZAYA Models. Чтобы подключить кабинет, нажмите /start и «Поделиться номером». Стать моделью: анкета на zaya.uz. Вопросы: @zaya_booking.\n\nBu ZAYA Models boti. Kabinetni ulash uchun /start va «Raqamni ulashish»ni bosing. Model bo‘lish: zaya.uz dagi anketa. Savollar: @zaya_booking.');
     return json({ ok: true });
   }
   if (!text.trim()) { await say(env, chat, 'Напишите, пожалуйста, текстом: чем занимается ваш бизнес и что хотите улучшить.'); return json({ ok: true }); }
@@ -613,7 +615,7 @@ async function botStaff(env, staff, chat, text, m) {
 
 /* ---------- ИИ-менеджер по продажам: чат на сайте и сохранение заявки ---------- */
 async function salesWeb(req, env, ctx) {
-  if (!env.ANTHROPIC_API_KEY) return fail(503, 'ai manager is not configured');
+  if (!SALES_ON || !env.ANTHROPIC_API_KEY) return fail(503, 'ai manager is not configured');
   const d = await body(req, 6000);
   const sid = String(d.sid || '');
   if (!/^[A-Za-z0-9]{16,40}$/.test(sid)) return fail(400, 'bad session');
