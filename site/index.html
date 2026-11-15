@@ -820,67 +820,30 @@ const $=id=>document.getElementById(id);
 
 /* ---------------- copy (short strings) ---------------- */
 const T={ru:{},uz:{
-"n.mod":"ZAYA Models","n.contact":"Aloqa","city":"Toshkent","copy":"Nusxa",
+"n.mod":"ZAYA Models","n.contact":"Aloqa","copy":"Nusxa",
 "slogan":"Sening cho‘qqing shu yerdan boshlanadi",
-"d.biz.k":"Biznes uchun","d.biz.h":"Mijozlarga","d.biz.p":"Brendingiz uchun Media, SMM va PR",
-"d.mod.h":"Modellarga","d.mod.p":"Kasting va agentlikka qo‘shilish shartlari",
-"b.h":"Haqida <em>gapiradigan</em> brend","b.p":"Media, SMM va PR. Brendingizni tahlil qilishdan boshlaymiz, so‘ng reja taklif qilamiz va boshlashdan oldin narxni muhokama qilamiz.","b.cta":"Brendni tahlil qildirish","b.cta2":"Xizmatlar",
-"dir.k":"Xizmatlar","dir.h":"ZAYA <em>Marketing</em>","dir.p":"Media, SMM va PR: brendingizni ko‘zga tashlanadigan qiladigan uchta xizmat.",
-"tr.k":"Shaffoflik","tr.h":"Bizga <em>ishonsa</em> bo‘ladimi","tr.p":"Qisqa va ochiq: siz va ma’lumotlaringiz bilan qanday ishlashimiz haqida.","tr.link":"Ma’lumotlar bilan qanday ishlaymiz",
-"pr.k":"Qanday ishlaymiz","pr.h":"Tahlildan <em>hisobotgacha</em>",
-"w.k":"Kim uchun","w.h":"Brend o‘zini <em>namoyon qilish</em> vaqti kelganda",
-"x.mod":"Model bo‘lish →",
 "m.h":"<em>ZAYA</em> yuzi bo‘l","m.p":"Fashion, reklama, podium va shou-biznes uchun modellar. Tajriba shart emas: har bir modelni tanlaymiz, o‘rgatamiz va qo‘llab-quvvatlaymiz.","m.cta":"Kastingga yozilish","m.cta2":"Shartlar",
 "c.k":"Kasting","c.h":"Agentlikka <em>qanday qo‘shilish</em> mumkin","c.req":"Talablar","c.path":"Yo‘l","m.apply":"Ariza topshirish",
-"f.k":"Agentlik yuzlari","x.biz":"Media, SMM va PR →"},
+"f.k":"Agentlik yuzlari"},
 en:{
-"n.mod":"ZAYA Models","n.contact":"Contact","city":"Tashkent","copy":"Copy",
+"n.mod":"ZAYA Models","n.contact":"Contact","copy":"Copy",
 "slogan":"Your heights begin here",
-"d.biz.k":"For business","d.biz.h":"Clients","d.biz.p":"Media, SMM and PR for your brand",
-"d.mod.h":"Models","d.mod.p":"Casting and how to join the agency",
-"b.h":"A brand people <em>talk about</em>","b.p":"Media, SMM and PR. We start with a review of your brand, then propose a plan and agree the cost before we begin.","b.cta":"Get a brand review","b.cta2":"Services",
-"dir.k":"Services","dir.h":"ZAYA <em>Marketing</em>","dir.p":"Media, SMM and PR: three services that make your brand stand out.",
-"tr.k":"Transparency","tr.h":"Can you <em>trust us</em>","tr.p":"Short and honest: how we work with you and with your data.","tr.link":"How we handle data",
-"pr.k":"How we work","pr.h":"From review <em>to report</em>",
-"w.k":"Who it’s for","w.h":"When a brand is ready <em>to speak up</em>",
-"x.mod":"Become a model →",
 "m.h":"Become a <em>ZAYA</em> face","m.p":"Models for fashion, advertising, runway and entertainment. No experience needed: we select, train and guide every model.","m.cta":"Sign up for casting","m.cta2":"Conditions",
 "c.k":"Casting","c.h":"How to join <em>the agency</em>","c.req":"Requirements","c.path":"The path","m.apply":"Apply now",
-"f.k":"Our faces","x.biz":"Media, SMM and PR →"}};
+"f.k":"Our faces"}};
 document.querySelectorAll("[data-i]").forEach(el=>{if(!(el.dataset.i in T.ru))T.ru[el.dataset.i]=el.innerHTML});
 
 /* ---------------- structured content ---------------- */
 const C={
 ru:{
-dirs:[
-["Media","Медиа","Контент и медиапроекты для вашего бренда.",[]],
-["SMM","СММ","Соцсети бренда: ведение, контент и реклама.",[]],
-["PR","PR","Репутация и публичность: чтобы о вас говорили.",[]]],
-steps:[["Разбор","Смотрим ваш бренд, соцсети и цели: что уже есть и чего не хватает."],["Предложение","Состав работ, сроки и стоимость обсуждаем до старта."],["Запуск","Начинаем после вашего согласия: контент, соцсети, публикации."],["Отчёт","Показываем, что сделано и какие получились результаты."]],
-whom:[["Новым брендам","Чтобы о вас узнали с первых месяцев."],["Растущему бизнесу","Когда соцсети и публичный образ отстают от самого бизнеса."],["Перед запуском или ребрендингом","Когда нужно показать себя заново."]],
-trust:[["Рядом живые люди","За каждой заявкой стоит менеджер ZAYA. Пишите в Telegram @zaya_booking или на info@zaya.uz."],["ИИ не прячется","Чат на сайте и в Telegram ведёт ИИ-помощник и говорит об этом. Цену, сроки и условия называет только менеджер. Пароли, коды и данные карт в чате мы не просим."],["Данные с вашего согласия","Контакты уходят менеджеру только после вашего «да». Их видит команда ZAYA. Подробности на странице о данных."],["Сначала разбор, потом обещания","Результат заранее не обещаем: сначала смотрим ваш бренд, потом предлагаем план и обсуждаем стоимость."]],
 req:[["Возраст","от 18 лет"],["Студенты","приветствуются"],["Опыт","не обязателен"],["Фото","лицо и полный рост, без фильтров"]],
 path:[["Заявка","Имя, возраст, рост и фото в Telegram @zaya_booking."],["Кастинг","Личная встреча в агентстве."],["Договор","Официальное сотрудничество."],["Портфолио","Фотосессия и первые проекты."]],
 face:["Портрет скоро","см"]},
 uz:{
-dirs:[
-["Media","Media","Brendingiz uchun kontent va media loyihalar.",[]],
-["SMM","SMM","Brend ijtimoiy tarmoqlari: yuritish, kontent va reklama.",[]],
-["PR","PR","Obro‘ va ommaviylik: siz haqingizda gapirishsin.",[]]],
-steps:[["Tahlil","Brendingiz, ijtimoiy tarmoqlaringiz va maqsadlaringizni ko‘ramiz: nima bor va nima yetishmaydi."],["Taklif","Ishlar tarkibi, muddat va narxni boshlashdan oldin muhokama qilamiz."],["Boshlash","Sizning roziligingizdan keyin boshlaymiz: kontent, ijtimoiy tarmoqlar, nashrlar."],["Hisobot","Nima qilingani va qanday natijalar olinganini ko‘rsatamiz."]],
-whom:[["Yangi brendlarga","Dastlabki oylardanoq siz haqingizda bilishsin."],["O‘sayotgan biznesga","Ijtimoiy tarmoqlar va jamoatchilik oldidagi imidj biznesdan orqada qolganda."],["Ishga tushirish yoki rebrendingdan oldin","O‘zingizni yangidan ko‘rsatish kerak bo‘lganda."]],
-trust:[["Yonida tirik odamlar","Har bir ariza ortida ZAYA menejeri turadi. Telegram @zaya_booking yoki info@zaya.uz ga yozing."],["Sun’iy intellekt yashirinmaydi","Saytdagi va Telegramdagi chatni sun’iy intellekt yordamchisi yuritadi va buni aytadi. Narx, muddat va shartlarni faqat menejer aytadi. Chatda parol, kod va karta ma’lumotlarini so‘ramaymiz."],["Ma’lumotlar roziligingiz bilan","Kontaktlar menejerga faqat sizning «ha» javobingizdan keyin yetkaziladi. Ularni ZAYA jamoasi ko‘radi. Tafsilotlar ma’lumotlar sahifasida."],["Avval tahlil, keyin va’dalar","Natijani oldindan va’da qilmaymiz: avval brendingizni ko‘ramiz, keyin reja taklif qilib, narxni muhokama qilamiz."]],
 req:[["Yosh","18 yoshdan"],["Talabalar","xush kelibsiz"],["Tajriba","shart emas"],["Rasm","yuz va to‘liq bo‘y, filtrsiz"]],
 path:[["Ariza","Ism, yosh, bo‘y va rasmlarni Telegram @zaya_booking ga yuboring."],["Kasting","Agentlikda shaxsiy uchrashuv."],["Shartnoma","Rasmiy hamkorlik."],["Portfolio","Fotosessiya va ilk loyihalar."]],
 face:["Portret tez orada","sm"]},
 en:{
-dirs:[
-["Media","Media","Content and media projects for your brand.",[]],
-["SMM","SMM","Your brand’s social media: management, content and ads.",[]],
-["PR","PR","Reputation and visibility, so people talk about you.",[]]],
-steps:[["Review","We look at your brand, social media and goals: what is there and what is missing."],["Proposal","Scope, timing and cost are agreed before we start."],["Launch","We begin once you agree: content, social media, publications."],["Report","We show what was done and what results it brought."]],
-whom:[["New brands","So people know about you from the first months."],["Growing businesses","When social media and public image lag behind the business itself."],["Before a launch or a rebrand","When you need to present yourself anew."]],
-trust:[["Real people behind it","Every request has a ZAYA manager behind it. Write to Telegram @zaya_booking or info@zaya.uz."],["The AI does not hide","The chat on the site and in Telegram is run by an AI assistant, and it says so. Only a manager names the price, timing and terms. We never ask for passwords, codes or card details in the chat."],["Data with your consent","Your contacts reach a manager only after your “yes”. The ZAYA team sees them. Details on the data page."],["A review first, promises later","We do not promise results in advance: first we look at your brand, then propose a plan and discuss the cost."]],
 req:[["Age","18+"],["Students","welcome"],["Experience","not required"],["Photos","face and full length, no filters"]],
 path:[["Apply","Send name, age, height and photos to @zaya_booking on Telegram."],["Casting","A personal meeting at the agency."],["Contract","Official partnership."],["Portfolio","A shoot and your first projects."]],
 face:["Portrait soon","cm"]}};
@@ -888,22 +851,18 @@ face:["Portrait soon","cm"]}};
 T.uz.skip="O‘tkazib yuborish";T.en.skip="Skip";
 Object.assign(T.uz,{"cue":"Biz haqimizda bilib oling",
 "ab.k":"Biz haqimizda","ab.h":"Biz — <em>ZAYA</em>","ab.p":"Toshkentdagi model agentligi. Yuzlarni kashf etamiz va modellarni kasbga olib kiramiz: agentlik va akademiya, bitta cho‘qqi.",
-"ab.biz.k":"ZAYA Marketing","ab.biz.h":"Media, SMM, PR","ab.biz.p":"Brendlarni ko‘zga tashlanadigan qilamiz: kontent, ijtimoiy tarmoqlar va obro‘. Avval tahlil, keyin reja.",
 "ab.mod.k":"ZAYA Models","ab.mod.h":"Model agentligi","ab.mod.p":"Fashion, reklama, podium va shou-biznes uchun modellarni tanlaymiz, o‘rgatamiz va qo‘llab-quvvatlaymiz. Tajriba shart emas.",
-"ab.line":"Agentlik — yo‘l. Akademiya — poydevor. Senga — cho‘qqi.","ab.ac.k":"ZAYA Academy","ab.ac.h":"Modellar akademiyasi","ab.ac.p":"ZAYA’dan ta’lim. Dastur va qabul shu yerda e’lon qilinadi.",
-"fk.k":"Sening yo‘ling","fk.h":"Sen tadbirkormisan <em>yoki modelmi?</em>","fk.p":"Yo‘lingni tanla, nimadan boshlashni ko‘rsatamiz."});
+"ab.line":"Agentlik — yo‘l. Akademiya — poydevor. Senga — cho‘qqi."});
 Object.assign(T.en,{"cue":"Get to know us",
 "ab.k":"About us","ab.h":"We are <em>ZAYA</em>","ab.p":"A model agency from Tashkent. We discover faces and guide models into the profession: an agency and an academy, one height.",
-"ab.biz.k":"ZAYA Marketing","ab.biz.h":"Media, SMM, PR","ab.biz.p":"We make brands visible: content, social media and reputation. A review first, then a plan.",
 "ab.mod.k":"ZAYA Models","ab.mod.h":"Model agency","ab.mod.p":"We select, train and guide models for fashion, advertising, runway and entertainment. No experience needed.",
-"ab.line":"The agency is the path. The academy is the foundation. The heights are yours.","ab.ac.k":"ZAYA Academy","ab.ac.h":"Model academy","ab.ac.p":"Training by ZAYA. The programme and enrolment will be announced here.",
-"fk.k":"Your path","fk.h":"Are you a business owner <em>or a model?</em>","fk.p":"Choose your path and we’ll show you where to start."});
+"ab.line":"The agency is the path. The academy is the foundation. The heights are yours."});
 Object.assign(T.uz,{"n.cat":"Katalog","m.cat":"Modellar katalogi","m.cat2":"3D-katalogni ochish"});
 Object.assign(T.en,{"n.cat":"Catalog","m.cat":"Model catalog","m.cat2":"Open the 3D catalog"});
 Object.assign(T.uz,{"n.login":"Kirish","n.cab":"Kabinet"});Object.assign(T.en,{"n.login":"Sign in","n.cab":"Account"});
 T.ru["n.cab"]="Кабинет";
-Object.assign(T.uz,{"q.mod":"ZAYA Models","q.acad":"ZAYA Academy","n.acad":"ZAYA Academy","n.dir":"ZAYA Marketing","n.proc":"Qanday ishlaymiz","n.whom":"Kim uchun","n.cast":"Kasting","n.faces":"Yuzlar","n.priv":"Ma’lumotlar"});
-Object.assign(T.en,{"q.mod":"ZAYA Models","q.acad":"ZAYA Academy","n.acad":"ZAYA Academy","n.dir":"ZAYA Marketing","n.proc":"How we work","n.whom":"Who it’s for","n.cast":"Casting","n.faces":"Faces","n.priv":"Data"});
+Object.assign(T.uz,{"q.mod":"ZAYA Models","q.acad":"ZAYA Academy","n.acad":"ZAYA Academy","n.cast":"Kasting","n.faces":"Yuzlar","n.priv":"Ma’lumotlar"});
+Object.assign(T.en,{"q.mod":"ZAYA Models","q.acad":"ZAYA Academy","n.acad":"ZAYA Academy","n.cast":"Casting","n.faces":"Faces","n.priv":"Data"});
 
 /* New Faces: имя (RU/UZ/EN), рост и портрет 3:4 из photos/ (те же снимки, что в каталоге). Пустое photo — заглушка */
 const FACES=[
@@ -975,7 +934,6 @@ function render(l){
 }
 
 
-/* ---------------- ZAYA Academy page (data: academy.js) ---------------- */
 /* ---------------- Academy: online payment (services come from the server; none connected = no pay buttons) ---------------- */
 const PAY={product:"start",name:"",phone:"",parent:"",ok:false,providers:null,amounts:{},paid:false,err:"",busy:false};
 const PROV_NAME={payme:"Payme",click:"Click",uzum:"Uzum"};
@@ -1020,6 +978,7 @@ function renderPay(li){
     }catch(_){PAY.busy=false;f.querySelectorAll("[data-pay]").forEach(x=>x.disabled=false);fail("net")}
   });
 }
+/* ---------------- ZAYA Academy page (data: academy.js) ---------------- */
 function renderAcademy(li){
   const A=window.ZAYA_ACADEMY;if(!A)return;
   const t=x=>Array.isArray(x)?x[li]:x, esc=x=>String(x).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
@@ -1053,37 +1012,14 @@ function setLang(l){
 }
 document.querySelectorAll(".lang button").forEach(b=>b.addEventListener("click",()=>setLang(b.dataset.lang)));
 
-/* ---------------- forms: brief (business) / application (models) -> Google Sheets via Apps Script ---------------- */
+/* ---------------- forms: application (models) -> Google Sheets via Apps Script ---------------- */
 /* Paste the deployed Apps Script web-app URL here (see apps-script/README.md). */
 const FORM_URL="https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec";
 const li=()=>({ru:0,uz:1,en:2})[document.documentElement.lang]||0;
 const tr=a=>a[li()];
 /* option = [stored value (ru), ru, uz, en] shown as [ru, uz, en]; stored value is always the Russian text for the sheet */
-const DIRS_B=[["Медиа","Media","Media"],["СММ","SMM","SMM"],["PR","PR","PR"],["Всё вместе","Hammasi birga","All together"]];
 const DIRS_M=[["Показы","Podium","Runway"],["Фотосъёмки","Fotosuratga olish","Photoshoots"],["Реклама / видео","Reklama / video","Ads / video"],["Клипы","Klip","Music videos"],["Шоурум / промо","Shourum / promo","Showroom / promo"]];
 const FORMS={
-brief:{
-  kicker:"ZAYA Marketing",
-  title:["Бриф на консультацию","Konsultatsiya uchun brif","Consultation brief"],
-  sub:["Расскажите о бизнесе и задаче. Менеджер ZAYA изучит бриф и свяжется с вами.","Biznes va vazifa haqida yozing. ZAYA menejeri brifni ko‘rib chiqib, siz bilan bog‘lanadi.","Tell us about your business and goal. A ZAYA manager will review the brief and contact you."],
-  send:["Отправить бриф","Brifni yuborish","Send brief"],
-  done:["Мы получили ваш бриф. Менеджер ZAYA свяжется с вами в ближайшее время.","Brifingizni oldik. ZAYA menejeri tez orada siz bilan bog‘lanadi.","We have your brief. A ZAYA manager will contact you shortly."],
-  fields:[
-  {n:"name",t:"text",r:1,a:"name",l:["Ваше имя","Ismingiz","Your name"]},
-  {n:"company",t:"text",a:"organization",l:["Компания / проект","Kompaniya / loyiha","Company / project"]},
-  {n:"position",t:"text",a:"organization-title",l:["Должность","Lavozim","Position"]},
-  {n:"phone",t:"tel",r:1,a:"tel",ph:"+998",l:["Телефон","Telefon","Phone"]},
-  {n:"telegram",t:"text",ph:"@username",l:["Telegram","Telegram","Telegram"]},
-  {n:"email",t:"email",a:"email",l:["E-mail","E-mail","E-mail"]},
-  {n:"city",t:"text",v:"Ташкент",a:"address-level2",l:["Город","Shahar","City"]},
-  {n:"industry",t:"text",r:1,l:["Сфера бизнеса","Biznes sohasi","Industry"]},
-  {n:"team",t:"select",o:[["1–5","1–5","1–5"],["6–20","6–20","6–20"],["21–50","21–50","21–50"],["50+","50+","50+"]],l:["Размер команды","Jamoa hajmi","Team size"]},
-  {n:"contact",t:"select",o:[["Telegram","Telegram","Telegram"],["Звонок","Qo‘ng‘iroq","Phone call"],["E-mail","E-mail","E-mail"]],l:["Как с вами удобнее связаться","Siz bilan qanday bog‘lanish qulay","Preferred way to reach you"]},
-  {n:"dirs",t:"chips",f:1,r:1,o:DIRS_B,l:["Что нужно бизнесу","Biznesga nima kerak","What the business needs"]},
-  {n:"task",t:"textarea",f:1,r:1,l:["Опишите задачу или проблему","Vazifa yoki muammoni tasvirlang","Describe the goal or problem"]},
-  {n:"budget",t:"select",o:[["до $1 000","$1 000 gacha","up to $1,000"],["$1 000–5 000","$1 000–5 000","$1,000–5,000"],["$5 000–15 000","$5 000–15 000","$5,000–15,000"],["от $15 000","$15 000 dan","from $15,000"],["Обсудим","Muhokama qilamiz","To discuss"]],l:["Ориентировочный бюджет","Taxminiy byudjet","Approximate budget"]},
-  {n:"timing",t:"select",o:[["Как можно скорее","Imkon qadar tezroq","As soon as possible"],["В течение месяца","Bir oy ichida","Within a month"],["1–3 месяца","1–3 oy","1–3 months"],["Пока изучаю","Hozircha o‘rganyapman","Just exploring"]],l:["Когда хотите начать","Qachon boshlamoqchisiz","When to start"]}
-  ]},
 apply:{
   kicker:"ZAYA Models",
   title:["Анкета модели","Model anketasi","Model application"],
@@ -1380,7 +1316,7 @@ const TRACK={artist:"Maryam",title:"Faqat sen"};   // shown in the mini player
   addEventListener("message",e=>{
     if(e.source!==fr.contentWindow)return;
     if(e.data==="zaya-close")close();
-    else if(e.data&&e.data.zaya==="form"&&(e.data.type==="apply"||e.data.type==="brief")){close();setTimeout(()=>openForm(e.data.type),500)}
+    else if(e.data&&e.data.zaya==="form"&&e.data.type==="apply"){close();setTimeout(()=>openForm(e.data.type),500)}
   });
   window.zayaOpenCabinet=open;
   /* label: "Sign in" or "Account" depending on the session */

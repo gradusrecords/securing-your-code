@@ -240,7 +240,7 @@ const I={
   kBrief:["Бриф бизнеса","Biznes brifi","Business brief"],
   sent:["Отправлена","Yuborilgan","Submitted"],
   data:["Данные заявки","Ariza ma’lumotlari","Application details"],
-  noApps:["Заявок пока нет. Заполните анкету или бриф, и менеджер свяжется с вами.","Hozircha arizalar yo‘q. Anketa yoki brifni to‘ldiring, menejer siz bilan bog‘lanadi.","No applications yet. Fill in the application or the brief and a manager will contact you."],
+  noApps:["Заявок пока нет. Заполните анкету модели, и менеджер свяжется с вами.","Hozircha arizalar yo‘q. Model anketasini to‘ldiring, menejer siz bilan bog‘lanadi.","No applications yet. Fill in the model application and a manager will contact you."],
   fillApply:["Анкета модели","Model anketasi","Model application"],
   fillBrief:["Бриф для бизнеса","Biznes brifi","Business brief"],
   save:["Сохранить","Saqlash","Save"],
@@ -449,7 +449,7 @@ function orderCard(o){
 function viewApps(){
   const apps=state.data.apps,ords=(state.data.orders||[]).map(orderCard);
   if(ords.length)return h("div",null,linkBlock(false),h("div",{class:"apps"},ords,apps.map(appCard)));
-  if(!apps.length)return h("div",null,linkBlock(true),h("div",{class:"empty"},t("noApps"),h("div",{class:"acts"},h("button",{class:"btn fill",type:"button",onclick:()=>openForm("apply")},t("fillApply")),h("button",{class:"btn",type:"button",onclick:()=>openForm("brief")},t("fillBrief")))));
+  if(!apps.length)return h("div",null,linkBlock(true),h("div",{class:"empty"},t("noApps"),h("div",{class:"acts"},h("button",{class:"btn fill",type:"button",onclick:()=>openForm("apply")},t("fillApply")))));
   return h("div",null,linkBlock(false),h("div",{class:"apps"},apps.map(appCard)));
 }
 const MODEL_FIELDS=["height","weight","bust","waist","hips","shoes","hair","eyes"];
