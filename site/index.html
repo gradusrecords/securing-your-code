@@ -242,6 +242,7 @@ section{padding-block:clamp(100px,13vw,190px)}
 .tbl tr.sum td{font-weight:400;border-bottom:0}
 @media (max-width:640px){.tbl{min-width:0;font-size:13.5px}.tbl th,.tbl td{padding:12px 6px}.tbl th{font-size:9.5px;letter-spacing:.08em}.tbl th:first-child,.tbl td:first-child{padding-left:0}#ac-dirs-tbl .tbl{min-width:560px}.tblw{padding-right:38px}}
 .tbl tr.hl td{color:var(--acc)}
+.qh-vis .illu{display:block;margin-top:12px;text-align:center;font-size:9.5px;letter-spacing:.28em;color:var(--gold-dim);opacity:.8}
 .fine{margin:22px 0 0;color:var(--soft);font-size:15px;max-width:90ch}
 .callout{margin-top:clamp(28px,4vw,48px);padding:clamp(22px,3vw,36px);border:1px solid var(--line);display:grid;gap:10px}
 .callout b{font-family:var(--serif);font-weight:400;font-size:26px;color:var(--ink)}
@@ -744,7 +745,7 @@ body.ready .pull{opacity:1}
         <div class="qh-q sm"></div>
         <div class="acts qh-acts"><a class="btn fill mag" href="#" data-open="apply" role="button"><span id="ac-cta"></span></a><a class="btn mag" href="#ac-levels"><span id="ac-cta2"></span></a><a class="btn mag" href="#ac-price"><span id="ac-cta3"></span></a></div>
       </div>
-      <div class="qh-vis"><div class="qh-arch t"></div><div class="qh-dots"></div></div>
+      <div class="qh-vis"><div class="qh-arch"></div><div class="qh-dots"></div><span class="cap illu" id="ac-illu"></span></div>
     </div>
   </header>
   <section id="ac-two" class="paper"><div class="wrap"><div class="head rise" data-ac-head="two"></div><div class="duo rise" id="ac-two-list"></div><p class="fine rise" id="ac-two-note"></p></div></section>
@@ -963,7 +964,7 @@ function renderAcademy(li){
   document.querySelectorAll("[data-ac-head]").forEach(h=>{const d=A[h.dataset.acHead];h.innerHTML=`<span class="cap"><span>${esc(t(d.k))}</span></span><h2>${t(d.h)}</h2>${d.p?`<p>${esc(t(d.p))}</p>`:""}`});
   set("ac-h",t(A.hero.h));set("ac-p",esc(t(A.hero.p)));set("ac-cta",esc(t(A.hero.cta)));set("ac-cta2",esc(t(A.hero.cta2)));set("ac-cta3",esc(t(A.hero.cta3)));
   document.querySelectorAll("[data-ac-cta]").forEach(e=>e.textContent=t(A.hero.cta));
-  set("ac-n1",esc(t(A.nav.levels)));set("ac-n2",esc(t(A.nav.price)));set("ac-n3",esc(t(A.nav.safe)));
+  set("ac-illu",esc(t(A.illu)));set("ac-n1",esc(t(A.nav.levels)));set("ac-n2",esc(t(A.nav.price)));set("ac-n3",esc(t(A.nav.safe)));
   set("ac-two-list",A.two.items.map(x=>`<article><span class="cap">${esc(t(x[1]))}</span><h3>${esc(x[0])}</h3><p>${esc(t(x[2]))}</p></article>`).join(""));set("ac-two-note",esc(t(A.two.note)));
   set("ac-levels-list",A.levels.items.map(x=>`<article class="dir"><span class="cap">${esc(t(x.cap))}</span><h3>${esc(t(x.t))}</h3><p>${esc(t(x.p))}</p><ul>${x.li.map(v=>`<li>${esc(t(v))}</li>`).join("")}</ul></article>`).join(""));
   set("ac-priv-tbl",table([A.priv.first,...A.priv.cols],A.priv.rows));

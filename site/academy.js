@@ -13,11 +13,12 @@ window.ZAYA_ACADEMY = {
     cta3: ['Стоимость', 'Narxlar', 'Prices'],
   },
   deck: [
-    { w: ['Start', 'Start', 'Start'], q: ['Start: база. Дефиле, позирование и первая тест-съёмка.', 'Start: asos. Defile, pozalar va birinchi test-syomka.', 'Start: the basics. Runway, posing and a first test shoot.'] },
-    { w: ['Pro', 'Pro', 'Pro'], q: ['Pro: показ с клиентами, две съёмки и комп-карта.', 'Pro: mijozlar ishtirokidagi namoyish, ikki syomka va komp-karta.', 'Pro: a show with clients, two shoots and a comp card.'] },
-    { w: ['Elite', 'Elite', 'Elite'], q: ['Elite: бук, английский и зарубежные агентства.', 'Elite: buk, ingliz tili va xorijiy agentliklar.', 'Elite: a book, English and agencies abroad.'] },
-    { w: ['26 недель', '26 hafta', '26 weeks'], q: ['Перевод на следующий уровень — только по результатам экзамена.', 'Keyingi darajaga faqat imtihon natijasi bo‘yicha o‘tiladi.', 'You move to the next level only by passing the exam.'] },
+    { img: 'photos/academy-1.jpg', q: ['Start: база. Дефиле, позирование и первая тест-съёмка.', 'Start: asos. Defile, pozalar va birinchi test-syomka.', 'Start: the basics. Runway, posing and a first test shoot.'] },
+    { img: 'photos/academy-2.jpg', q: ['Pro: показ с клиентами, две съёмки и комп-карта.', 'Pro: mijozlar ishtirokidagi namoyish, ikki syomka va komp-karta.', 'Pro: a show with clients, two shoots and a comp card.'] },
+    { img: 'photos/academy-3.jpg', q: ['Elite: бук, английский и зарубежные агентства.', 'Elite: buk, ingliz tili va xorijiy agentliklar.', 'Elite: a book, English and agencies abroad.'] },
+    { img: 'photos/academy-4.jpg', q: ['Перевод на следующий уровень — только по результатам экзамена.', 'Keyingi darajaga faqat imtihon natijasi bo‘yicha o‘tiladi.', 'You move to the next level only by passing the exam.'] },
   ],
+  illu: ['Иллюстрация', 'Illyustratsiya', 'Illustration'],
   nav: { levels: ['Программа', 'Dastur', 'Programme'], price: ['Стоимость', 'Narxlar', 'Prices'], safe: ['Безопасность', 'Xavfsizlik', 'Safety'] },
 
   two: {
