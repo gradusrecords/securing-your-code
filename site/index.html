@@ -241,6 +241,8 @@ section{padding-block:clamp(100px,13vw,190px)}
 .tbl td.yes{color:var(--acc)}
 .tbl tr.sum td{font-weight:400;border-bottom:0}
 @media (max-width:640px){.tbl{min-width:0;font-size:13.5px}.tbl th,.tbl td{padding:12px 6px}.tbl th{font-size:9.5px;letter-spacing:.08em}.tbl th:first-child,.tbl td:first-child{padding-left:0}#ac-dirs-tbl .tbl{min-width:560px}.tblw{padding-right:38px}}
+.tbl.stack{min-width:900px}.tbl.stack td:first-child{font-family:var(--serif);font-size:22px;white-space:nowrap}
+@media (max-width:900px){.tbl.stack{min-width:0}.tbl.stack thead{display:none}.tbl.stack,.tbl.stack tbody,.tbl.stack tr,.tbl.stack td{display:block;width:100%}.tbl.stack tr{padding:18px 0;border-bottom:1px solid var(--line)}.tbl.stack td{border:0;padding:5px 0;text-align:left;display:grid;grid-template-columns:42% 1fr;gap:12px}.tbl.stack td::before{content:attr(data-label);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding-top:3px}.tbl.stack td:first-child{display:block;font-size:28px;padding-bottom:8px;white-space:normal}.tbl.stack td:first-child::before{display:none}}
 .tbl tr.hl td{color:var(--acc)}
 .qh-vis .illu{display:block;margin-top:12px;text-align:center;font-size:9.5px;letter-spacing:.28em;color:var(--gold-dim);opacity:.8}
 .fine{margin:22px 0 0;color:var(--soft);font-size:15px;max-width:90ch}
@@ -749,7 +751,7 @@ body.ready .pull{opacity:1}
     </div>
   </header>
   <section id="ac-two" class="paper"><div class="wrap"><div class="head rise" data-ac-head="two"></div><div class="duo rise" id="ac-two-list"></div><p class="fine rise" id="ac-two-note"></p></div></section>
-  <section id="ac-levels"><div class="wrap"><div class="head rise" data-ac-head="levels"></div><div class="dirs rise" id="ac-levels-list"></div></div></section>
+  <section id="ac-levels"><div class="wrap"><div class="head rise" data-ac-head="levels"></div><div class="tblw rise" id="ac-levels-tbl"></div></div></section>
   <section id="ac-priv" class="paper"><div class="wrap"><div class="head rise" data-ac-head="priv"></div><div class="tblw rise" id="ac-priv-tbl"></div></div></section>
   <section id="ac-plan"><div class="wrap"><div class="head rise" data-ac-head="plan"></div><div class="tblw rise" id="ac-plan-tbl"></div><p class="fine rise" id="ac-plan-note"></p><p class="fine rise" id="ac-plan-exam"></p></div></section>
   <section id="ac-dirs" class="paper"><div class="wrap"><div class="head rise" data-ac-head="dirs"></div><div class="tblw rise" id="ac-dirs-tbl"></div></div></section>
@@ -966,7 +968,7 @@ function renderAcademy(li){
   document.querySelectorAll("[data-ac-cta]").forEach(e=>e.textContent=t(A.hero.cta));
   set("ac-illu",esc(t(A.illu)));set("ac-n1",esc(t(A.nav.levels)));set("ac-n2",esc(t(A.nav.price)));set("ac-n3",esc(t(A.nav.safe)));
   set("ac-two-list",A.two.items.map(x=>`<article><span class="cap">${esc(t(x[1]))}</span><h3>${esc(x[0])}</h3><p>${esc(t(x[2]))}</p></article>`).join(""));set("ac-two-note",esc(t(A.two.note)));
-  set("ac-levels-list",A.levels.items.map(x=>`<article class="dir"><span class="cap">${esc(t(x.cap))}</span><h3>${esc(t(x.t))}</h3><p>${esc(t(x.p))}</p><ul>${x.li.map(v=>`<li>${esc(t(v))}</li>`).join("")}</ul></article>`).join(""));
+  set("ac-levels-tbl",`<table class="tbl stack"><thead><tr>${A.levels.cols.map(h=>`<th>${esc(t(h))}</th>`).join("")}</tr></thead><tbody>${A.levels.rows.map(r=>`<tr>${r.map((v,k)=>`<td data-label="${esc(t(A.levels.cols[k]))}"${v===null?' class="no"':""}>${v===null?"—":esc(t(v))}</td>`).join("")}</tr>`).join("")}</tbody></table>`);
   set("ac-priv-tbl",table([A.priv.first,...A.priv.cols],A.priv.rows));
   set("ac-plan-tbl",table([A.plan.first,...A.plan.cols],A.plan.rows,`<tr class="sum">${A.plan.total.map((v,k)=>`<td>${esc(t(v))}</td>`).join("")}</tr>`));set("ac-plan-note",esc(t(A.plan.note)));set("ac-plan-exam",esc(t(A.plan.exam)));
   set("ac-dirs-tbl",table(A.dirs.cols,A.dirs.rows));
