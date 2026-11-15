@@ -442,8 +442,13 @@ function linkBlock(open){
   const body=h("div",{style:"margin-top:12px"},h("p",{class:"note",style:"margin:0 0 12px"},t("linkHint")),h("div",{class:"row",style:"margin:0"},inp,btn),msg);
   return h("details",{class:"card",style:"margin-bottom:18px",open:open?true:null},h("summary",{style:"margin:0"},t("linkTitle")),body);
 }
+function orderCard(o){
+  const n=String(o.amount).replace(/\B(?=(\d{3})+(?!\d))/g," ");
+  return h("div",{class:"card app"},h("div",{class:"head"},h("div",null,h("div",{class:"sub"},"ZAYA Academy · "+["оплата","to‘lov","payment"][LI]),h("h3",{class:"t"},o.title[LI]),h("div",{class:"note"},n+[" сум"," so‘m"," UZS"][LI]+" · №"+o.id+" · "+fmtDate(o.paid_at||o.created_at))),h("span",{class:"pill"},o.statusText[LI])));
+}
 function viewApps(){
-  const apps=state.data.apps;
+  const apps=state.data.apps,ords=(state.data.orders||[]).map(orderCard);
+  if(ords.length)return h("div",null,linkBlock(false),h("div",{class:"apps"},ords,apps.map(appCard)));
   if(!apps.length)return h("div",null,linkBlock(true),h("div",{class:"empty"},t("noApps"),h("div",{class:"acts"},h("button",{class:"btn fill",type:"button",onclick:()=>openForm("apply")},t("fillApply")),h("button",{class:"btn",type:"button",onclick:()=>openForm("brief")},t("fillBrief")))));
   return h("div",null,linkBlock(false),h("div",{class:"apps"},apps.map(appCard)));
 }

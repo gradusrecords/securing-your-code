@@ -14,10 +14,11 @@ import { salesTurn, SALES_GREETING } from '../_sales/sales.js';
 import { staffTurn, STAFF_HELP } from '../_bot/admin.js';
 import { bt, actionOf, menuKeyboard, langKeyboard, doneButton } from '../_bot/texts.js';
 import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
+import { PRODUCTS, PAY_SCHEMA, providers, payLink, productName, handlePayme, handleClick } from '../_pay/pay.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-16-academy-img5';
+const BUILD = '2026-11-17-academy-pay';
 /* the marketing sales assistant is switched off (15.11.2026: zaya.uz is only ZAYA Models and ZAYA Academy); the code stays for a future Academy assistant */
 const SALES_ON = false;   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
@@ -42,7 +43,7 @@ const SCHEMA = [
 let schemaReady = false;
 async function ensureSchema(env) {
   if (schemaReady) return;
-  await env.DB.batch(SCHEMA.map(s => env.DB.prepare(s)));
+  await env.DB.batch([...SCHEMA, ...PAY_SCHEMA].map(s => env.DB.prepare(s)));
   for (const col of ['code TEXT', 'synced_at INTEGER']) {       // columns added later: ignore "duplicate column"
     try { await env.DB.prepare(`ALTER TABLE apps ADD COLUMN ${col}`).run(); } catch (e) { /* already there */ }
   }
@@ -169,6 +170,11 @@ export async function onRequest(ctx) {
     if (path === 'tg/webhook' && method === 'POST') return tgWebhook(req, env);
     if (path === 'tg/setup' && method === 'GET') return tgSetup(req, env, url);
     if (path === 'health' && method === 'GET') return json({ ok: true, build: BUILD });   // which version of the code is live
+    /* payment services call these themselves: authenticated by their own key or signature, not by cookies */
+    if (path === 'pay/payme' && method === 'POST') return handlePayme(env, req, o => orderPaid(env, o), o => notifyManagers(env, `↩️ Payme отменил оплату после проведения: заказ №${o.id}, ${productName(o.product, 'ru')}, ${o.name}. Проверьте в кабинете Payme.`));
+    if (path === 'pay/click/prepare' && method === 'POST') return handleClick(env, req, 'prepare', o => orderPaid(env, o));
+    if (path === 'pay/click/complete' && method === 'POST') return handleClick(env, req, 'complete', o => orderPaid(env, o));
+    if (path === 'pay/config' && method === 'GET') return json({ ok: true, providers: providers(env), products: Object.fromEntries(Object.entries(PRODUCTS).map(([k, v]) => [k, v.amount])) });
 
     if (method !== 'GET' && method !== 'HEAD') {
       if (req.headers.get('x-zaya') !== '1') return fail(403, 'forbidden');
@@ -177,6 +183,7 @@ export async function onRequest(ctx) {
     }
 
     if (path === 'submit' && method === 'POST') return submit(req, env, ctx);
+    if (path === 'pay/order' && method === 'POST') return payOrder(req, env, url);
     if (path === 'sales/chat' && method === 'POST') return salesWeb(req, env, ctx);
     if (path === 'auth/start' && method === 'POST') return authStart(req, env);
     if (path === 'auth/verify' && method === 'POST') return authVerify(req, env);
@@ -266,6 +273,40 @@ async function submit(req, env, ctx) {
   return json({ ok: true, id: r.meta.last_row_id });
 }
 
+/* ---------- Academy payments: orders (the payment services themselves are in ../_pay/pay.js) ---------- */
+const sum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const ORDER_STATUS = { new: ['Ждёт оплаты', 'To‘lov kutilmoqda', 'Awaiting payment'], pending: ['Оплата в процессе', 'To‘lov jarayonda', 'Payment in progress'], paid: ['Оплачено, ждите старта группы', 'To‘langan, guruh boshlanishini kuting', 'Paid, wait for the group to start'], cancelled: ['Отменено', 'Bekor qilingan', 'Cancelled'] };
+const PAID_TEXT = [
+  (o) => `✅ Оплата получена: ${productName(o.product, 'ru')}, ${sum(o.amount)} сум (заказ №${o.id}).\nМесто в группе за вами. Менеджер ZAYA Academy напишет вам о дате старта и расписании.`,
+  (o) => `✅ To‘lov qabul qilindi: ${productName(o.product, 'uz')}, ${sum(o.amount)} so‘m (buyurtma №${o.id}).\nGuruhdagi joy sizniki. ZAYA Academy menejeri boshlanish sanasi va jadval haqida yozadi.`,
+  (o) => `✅ Payment received: ${productName(o.product, 'en')}, ${sum(o.amount)} UZS (order No. ${o.id}).\nYour place in the group is reserved. A ZAYA Academy manager will write to you about the start date and schedule.`,
+];
+async function payOrder(req, env, url) {
+  const on = providers(env);
+  if (!on.length) return fail(503, 'payments are not connected yet');
+  const d = await body(req, 4000);
+  if (d.website) return json({ ok: true });
+  const prod = PRODUCTS[d.product];
+  if (!prod) return fail(400, 'bad product');
+  if (!on.includes(d.provider)) return fail(400, 'bad provider');
+  if (!d.consent) return fail(400, 'consent required');
+  const phone = normPhone(d.phone), name = clip(d.name, 120), parent = clip(d.parent, 120);
+  if (name.length < 2 || !phone) return fail(400, 'name and phone required');
+  if (prod.parent && parent.length < 2) return fail(400, 'parent required');
+  if (!(await hit(env, 'pay:' + ip(req), 10, 3600)) || !(await hit(env, 'pay:' + phone, 6, 3600))) return fail(429, 'too many requests');
+  const lang = lang3(d.lang);
+  const r = await env.DB.prepare("INSERT INTO orders(product,amount,name,phone,parent,lang,provider,status,created_at) VALUES(?,?,?,?,?,?,?,'new',?)")
+    .bind(d.product, prod.amount, name, phone, parent || null, lang, d.provider, NOW()).run();
+  const order = { id: r.meta.last_row_id, amount: prod.amount, lang };
+  return json({ ok: true, id: order.id, amount: prod.amount, url: payLink(env, d.provider, order, url.origin) });
+}
+async function orderPaid(env, o) {
+  await notifyManagers(env, `💳 Оплата Академии: ${productName(o.product, 'ru')}, ${sum(o.amount)} сум, ${o.provider}. ${o.name}${o.parent ? ' (родитель: ' + o.parent + ')' : ''}, +${o.phone}. Заказ №${o.id}.`);
+  const u = await env.DB.prepare('SELECT tg_chat, tg_lang FROM users WHERE phone=? AND tg_chat IS NOT NULL').bind(o.phone).first();
+  if (u) await say(env, u.tg_chat, PAID_TEXT[L(lang3(u.tg_lang || o.lang))](o));
+}
+const myOrders = async (env, phone, limit = 20) => ((await env.DB.prepare("SELECT id,product,amount,status,provider,created_at,paid_at FROM orders WHERE phone=? AND status IN ('paid','pending','cancelled') ORDER BY id DESC LIMIT ?").bind(phone, limit).all()).results || []);
+
 async function notifyManagers(env, text) {
   const rows = await env.DB.prepare("SELECT tg_chat FROM users WHERE role IN ('manager','owner') AND tg_chat IS NOT NULL").all();
   await Promise.all((rows.results || []).map(r => say(env, r.tg_chat, text)));
@@ -337,7 +378,8 @@ async function joinByContact(env, chat, m, phone) {
   if (!phone) { await say(env, chat, JOIN.ru.none, off); return; }
   if (!(await hit(env, 'join:' + chat, 6, 3600))) { await say(env, chat, JOIN.ru.many, off); return; }
   let user = await env.DB.prepare('SELECT * FROM users WHERE phone=?').bind(phone).first();
-  const app = await env.DB.prepare('SELECT name,lang FROM apps WHERE phone=? ORDER BY id DESC LIMIT 1').bind(phone).first();
+  const app = (await env.DB.prepare('SELECT name,lang FROM apps WHERE phone=? ORDER BY id DESC LIMIT 1').bind(phone).first())
+    || (await env.DB.prepare("SELECT name,lang FROM orders WHERE phone=? AND status='paid' ORDER BY id DESC LIMIT 1").bind(phone).first());   // paid for the Academy without an application: the cabinet opens too
   const rows = user || app ? [] : await fetchSheetByPhone(env, phone);        // the number must be in an application (site or sheet)
   if (!user && !app && !rows.length) { await say(env, chat, JOIN.ru.none, off); return; }
   const role = roleFor(env, phone);
@@ -490,8 +532,10 @@ async function botTask(env, user, chat, lang) {
 async function botApps(env, user, chat, lang) {
   const B = bt(lang);
   const rows = (await env.DB.prepare('SELECT kind,status,code,created_at FROM apps WHERE phone=? ORDER BY id DESC LIMIT 8').bind(user.phone).all()).results || [];
-  if (!rows.length) { await say(env, chat, B.noApps); return; }
-  await say(env, chat, B.appsTitle + '\n' + rows.map(a => `• ${B.kind[a.kind] || a.kind}${a.code ? ' ' + a.code : ''} — ${STATUS_TEXT[a.status] ? STATUS_TEXT[a.status][L(lang)] : a.status} (${new Date(a.created_at * 1000).toISOString().slice(0, 10)})`).join('\n'));
+  const ords = await myOrders(env, user.phone, 5);
+  if (!rows.length && !ords.length) { await say(env, chat, B.noApps); return; }
+  const ol = ords.map(o => `• ${productName(o.product, lang)}, ${sum(o.amount)} — ${ORDER_STATUS[o.status][L(lang)]} (№${o.id})`);
+  await say(env, chat, B.appsTitle + '\n' + [...ol, ...rows.map(a => `• ${B.kind[a.kind] || a.kind}${a.code ? ' ' + a.code : ''} — ${STATUS_TEXT[a.status] ? STATUS_TEXT[a.status][L(lang)] : a.status} (${new Date(a.created_at * 1000).toISOString().slice(0, 10)})`)].join('\n'));
 }
 async function botUserText(env, user, chat, text, m) {
   if (isStaff(user)) return botStaff(env, user, chat, text, m);
@@ -583,7 +627,9 @@ async function staffSnapshot(env) {
       (SELECT COUNT(*) FROM messages m WHERE m.thread=u.id AND m.from_role='user' AND m.seen=0) n
     FROM users u WHERE EXISTS(SELECT 1 FROM messages m WHERE m.thread=u.id AND m.from_role='user' AND m.seen=0) LIMIT 30`).all()).results || [];
   const iso = ts => new Date(ts * 1000 + 5 * 3600e3).toISOString().slice(0, 16).replace('T', ' ');
+  const pays = (await env.DB.prepare("SELECT o.id,o.product,o.amount,o.name,o.provider,o.status,o.paid_at,o.created_at,(SELECT id FROM users u WHERE u.phone=o.phone) uid FROM orders o WHERE o.status IN ('paid','cancelled') ORDER BY o.id DESC LIMIT 30").all()).results || [];
   return {
+    academyPayments: pays.map(o => ({ order: o.id, userId: o.uid || null, name: o.name, product: productName(o.product, 'ru'), amountUzs: o.amount, service: o.provider, status: ORDER_STATUS[o.status][0], at: iso(o.paid_at || o.created_at) })),
     nowTashkent: iso(NOW()), questTotalDays: TOTAL,
     questModels: quest, rosterCodesWithoutBot: [...rosterOf(env)].filter(c => !known.has(c)),
     applicationCounts: counts.map(c => ({ kind: c.kind === 'apply' ? 'анкета модели' : 'бриф бизнеса', status: STATUS_TEXT[c.status] ? STATUS_TEXT[c.status][0] : c.status, count: c.c })),
@@ -1173,6 +1219,7 @@ async function myData(env, user) {
   return json({
     ok: true, user: pubUser(user),
     apps: (apps.results || []).map(a => ({ ...a, payload: safeJson(a.payload), statuses: STATUS[a.kind === 'apply' ? 'apply' : 'brief'] })),
+    orders: (await myOrders(env, user.phone)).map(o => ({ ...o, title: PRODUCTS[o.product] ? PRODUCTS[o.product].name : [o.product, o.product, o.product], statusText: ORDER_STATUS[o.status] })),
     photos: photos.results || [], unread: unread ? unread.c : 0, quest: !isStaff(user) && await questEligible(env, user),
   });
 }
