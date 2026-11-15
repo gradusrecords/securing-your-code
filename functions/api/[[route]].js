@@ -17,7 +17,7 @@ import { quoteFor, loungeText, nudgeText, nightText } from '../_quest/daily.js';
 
 const enc = new TextEncoder();
 const NOW = () => Math.floor(Date.now() / 1000);
-const BUILD = '2026-11-15-academy-img';
+const BUILD = '2026-11-16-academy-img5';
 /* the marketing sales assistant is switched off (15.11.2026: zaya.uz is only ZAYA Models and ZAYA Academy); the code stays for a future Academy assistant */
 const SALES_ON = false;   // change it with every deploy that matters: GET /api/health shows what is live
 const DEFAULT_FORM_URL = 'https://script.google.com/macros/s/AKfycbxxezmfOLH33McpeAim-GdP__7HaZnNHBh1BCWQGijX5xH6vYeNofXUeYBk-QOhHniTrQ/exec';
